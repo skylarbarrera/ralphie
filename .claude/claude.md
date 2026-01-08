@@ -252,6 +252,13 @@ npx bundlephobia <package>
 
 ## Ralph-Specific Guidelines
 
+### Required Reading
+Before starting work in a Ralph loop, ALWAYS read:
+- `PRD.md` - Project requirements and task list
+- `progress.txt` - What has already been completed
+
+Use these to determine what task to work on next.
+
 ### Task Completion Criteria
 A task is ONLY complete when:
 - [ ] Code is written and works
