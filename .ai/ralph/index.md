@@ -110,3 +110,15 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 299 passing (22 new)
 - notes: isGitCommitCommand() detects git commit; parseGitCommitOutput() extracts hash+message; integrated into handleToolEnd()
 - next: Add activityLog and lastCommit to useClaudeStream hook
+
+## 6a1e134 — Add activityLog and lastCommit to ClaudeStreamState
+- files: src/hooks/useClaudeStream.ts, tests/useClaudeStream.test.tsx
+- tests: 303 passing (4 new)
+- notes: Hook now exposes activityLog and lastCommit from state machine
+- next: Create colors module with Claude Code color scheme
+
+## e7f6f27 — Add colors module with Claude Code color scheme
+- files: src/lib/colors.ts, tests/colors.test.ts, tests/App.test.tsx
+- tests: 326 passing (23 new)
+- notes: COLORS, ELEMENT_COLORS, CATEGORY_COLORS, STATE_COLORS; helper functions for status/category/state colors
+- next: Create usePulse hook for pulsing animations
