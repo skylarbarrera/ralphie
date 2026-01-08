@@ -4,7 +4,7 @@ import { render } from 'ink';
 import { Command } from 'commander';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
-import { App } from './App.js';
+import { IterationRunner } from './App.js';
 
 export const DEFAULT_PROMPT = `You are Ralph, an autonomous coding assistant running in a loop.
 
@@ -85,9 +85,8 @@ export function run(options: CliOptions): void {
   const idleTimeoutMs = options.timeoutIdle * 1000;
 
   const { waitUntilExit, unmount } = render(
-    <App
+    <IterationRunner
       prompt={prompt}
-      iteration={1}
       totalIterations={options.iterations}
       cwd={options.cwd}
       idleTimeoutMs={idleTimeoutMs}

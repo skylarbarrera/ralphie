@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
-import { App } from '../src/App.js';
+import { App, IterationRunner, type IterationResult } from '../src/App.js';
 import type { ClaudeStreamState } from '../src/hooks/useClaudeStream.js';
-import type { ToolGroup, ActiveTool } from '../src/lib/state-machine.js';
+import type { ToolGroup, ActiveTool, Stats } from '../src/lib/state-machine.js';
 
 vi.mock('../src/hooks/useClaudeStream.js', () => ({
   useClaudeStream: () => ({
@@ -318,6 +318,294 @@ describe('App', () => {
         <App prompt="test" iteration={5} totalIterations={20} _mockState={createMockState()} />
       );
       expect(lastFrame()).toContain('Iteration 5/20');
+    });
+  });
+
+  describe('onIterationComplete callback', () => {
+    it('calls callback when iteration completes', async () => {
+      const onComplete = vi.fn();
+      const state = createMockState({
+        phase: 'done',
+        isRunning: false,
+        elapsedMs: 5000,
+        taskText: 'Test task',
+      });
+      render(
+        <App
+          prompt="test"
+          iteration={1}
+          totalIterations={3}
+          _mockState={state}
+          onIterationComplete={onComplete}
+        />
+      );
+      await vi.waitFor(() => {
+        expect(onComplete).toHaveBeenCalledWith({
+          iteration: 1,
+          durationMs: 5000,
+          stats: expect.any(Object),
+          error: null,
+          taskText: 'Test task',
+        });
+      });
+    });
+
+    it('does not call callback when not done', () => {
+      const onComplete = vi.fn();
+      const state = createMockState({
+        phase: 'reading',
+        isRunning: true,
+      });
+      render(
+        <App
+          prompt="test"
+          _mockState={state}
+          onIterationComplete={onComplete}
+        />
+      );
+      expect(onComplete).not.toHaveBeenCalled();
+    });
+  });
+});
+
+function createMockStats(overrides: Partial<Stats> = {}): Stats {
+  return {
+    toolsStarted: 0,
+    toolsCompleted: 0,
+    toolsErrored: 0,
+    reads: 0,
+    writes: 0,
+    commands: 0,
+    metaOps: 0,
+    ...overrides,
+  };
+}
+
+function createMockResult(overrides: Partial<IterationResult> = {}): IterationResult {
+  return {
+    iteration: 1,
+    durationMs: 5000,
+    stats: createMockStats(),
+    error: null,
+    taskText: 'Test task',
+    ...overrides,
+  };
+}
+
+describe('IterationRunner', () => {
+  describe('during iteration', () => {
+    it('renders App with correct iteration number', () => {
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={5}
+          _mockCurrentIteration={2}
+          _mockState={createMockState()}
+        />
+      );
+      expect(lastFrame()).toContain('Iteration 2/5');
+    });
+
+    it('starts at iteration 1 by default', () => {
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={3}
+          _mockState={createMockState()}
+        />
+      );
+      expect(lastFrame()).toContain('Iteration 1/3');
+    });
+  });
+
+  describe('final summary', () => {
+    it('shows summary when all iterations complete', () => {
+      const results: IterationResult[] = [
+        createMockResult({ iteration: 1, durationMs: 3000, taskText: 'Task one' }),
+        createMockResult({ iteration: 2, durationMs: 4000, taskText: 'Task two' }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={2}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('All iterations complete');
+      expect(output).toContain('2 succeeded');
+    });
+
+    it('shows error count when iterations fail', () => {
+      const results: IterationResult[] = [
+        createMockResult({ iteration: 1, durationMs: 3000 }),
+        createMockResult({ iteration: 2, durationMs: 1000, error: new Error('Timeout') }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={2}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('1 succeeded');
+      expect(output).toContain('1 failed');
+    });
+
+    it('shows total duration', () => {
+      const results: IterationResult[] = [
+        createMockResult({ durationMs: 30000 }),
+        createMockResult({ durationMs: 35000 }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={2}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      expect(lastFrame()).toContain('1m 5s');
+    });
+
+    it('shows aggregated tool stats', () => {
+      const results: IterationResult[] = [
+        createMockResult({ stats: createMockStats({ reads: 5, writes: 2, commands: 1 }) }),
+        createMockResult({ stats: createMockStats({ reads: 3, writes: 1, commands: 2 }) }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={2}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('8 reads');
+      expect(output).toContain('3 writes');
+      expect(output).toContain('3 commands');
+    });
+
+    it('shows per-iteration results list', () => {
+      const results: IterationResult[] = [
+        createMockResult({ iteration: 1, taskText: 'Implementing auth', durationMs: 5000 }),
+        createMockResult({ iteration: 2, taskText: 'Adding tests', durationMs: 3000 }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={2}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('Iteration 1');
+      expect(output).toContain('Implementing auth');
+      expect(output).toContain('Iteration 2');
+      expect(output).toContain('Adding tests');
+    });
+
+    it('truncates long task text in results', () => {
+      const longTask = 'This is a very long task description that should be truncated for display';
+      const results: IterationResult[] = [
+        createMockResult({ taskText: longTask }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('...');
+      expect(output).not.toContain(longTask);
+    });
+
+    it('handles missing task text gracefully', () => {
+      const results: IterationResult[] = [
+        createMockResult({ taskText: null }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      expect(lastFrame()).toContain('No task');
+    });
+
+    it('shows success/error icons per iteration', () => {
+      const results: IterationResult[] = [
+        createMockResult({ iteration: 1 }),
+        createMockResult({ iteration: 2, error: new Error('Failed') }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={2}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('✓');
+      expect(output).toContain('✗');
+    });
+  });
+
+  describe('duration formatting', () => {
+    it('formats seconds correctly', () => {
+      const results: IterationResult[] = [
+        createMockResult({ durationMs: 45000 }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      expect(lastFrame()).toContain('45s');
+    });
+
+    it('formats minutes and seconds correctly', () => {
+      const results: IterationResult[] = [
+        createMockResult({ durationMs: 125000 }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      expect(lastFrame()).toContain('2m 5s');
+    });
+
+    it('formats hours and minutes correctly', () => {
+      const results: IterationResult[] = [
+        createMockResult({ durationMs: 3900000 }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      expect(lastFrame()).toContain('1h 5m');
     });
   });
 });

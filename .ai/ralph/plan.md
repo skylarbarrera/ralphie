@@ -1,27 +1,20 @@
 ## Goal
-Create the CLI entry point (src/cli.tsx) using commander for argument parsing and Ink for rendering.
+Implement iteration loop in App.tsx to run N iterations sequentially with final summary.
 
 ## Files
-- src/cli.tsx - CLI entry point with commander options and Ink render
-- tests/cli.test.tsx - Unit tests for CLI argument parsing and rendering
+- src/App.tsx - add iteration loop logic, iteration state management, final summary display
+- src/hooks/useClaudeStream.ts - may need to expose reset/restart capability
+- tests/App.test.tsx - add tests for iteration loop and summary
 
 ## Tests
-- Parses -n/--iterations option (default: 1)
-- Parses -p/--prompt option
-- Parses --prompt-file option (reads from file)
-- Parses --cwd option
-- Parses --timeout-idle option (default: 120)
-- Parses --save-jsonl option
-- Parses --quiet option
-- Parses --title option
-- Default prompt contains Ralph loop instructions
-- Renders App component with correct props
-- Handles graceful shutdown on SIGINT
+- App restarts claude for each iteration up to N
+- Iteration counter increments correctly
+- Final summary shows after all iterations complete
+- Early exit on error stops iteration loop
+- Component displays correct iteration number during run
 
 ## Exit Criteria
-- CLI parses all options from PRD
-- Default prompt defined for Ralph loop
-- Renders Ink App with parsed options
-- Handles Ctrl+C gracefully
-- Tests pass with 80%+ coverage
+- App runs N iterations sequentially (waits for each to complete)
+- Final summary displays after all iterations
+- Tests pass with good coverage
 - Changes committed
