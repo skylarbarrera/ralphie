@@ -50,3 +50,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 16 passing
 - notes: Displays `│ ▶ "First assistant text..."` with truncation support
 - next: Create ToolItem.tsx component
+
+## 8455922 — Add ToolItem Ink component
+- files: src/components/ToolItem.tsx, tests/ToolItem.test.tsx
+- tests: 18 passing
+- notes: Displays single tool with spinner/checkmark/error icon, category verb, and duration
+- next: Create ToolList.tsx component

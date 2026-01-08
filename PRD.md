@@ -62,7 +62,7 @@ Build a TypeScript CLI that wraps `claude` to provide Claude Code-style terminal
 ### Ink Components
 - [x] Create `src/components/IterationHeader.tsx` - `┌─ Iteration 1/10 ──── 0:42 elapsed`
 - [x] Create `src/components/TaskTitle.tsx` - `▶ "First assistant text chunk..."`
-- [ ] Create `src/components/ToolItem.tsx` - Single tool with spinner/checkmark + duration
+- [x] Create `src/components/ToolItem.tsx` - Single tool with spinner/checkmark + duration
 - [ ] Create `src/components/ToolList.tsx` - Coalesced list, shows active + completed tools
 - [ ] Create `src/components/StatusBar.tsx` - Bottom status with phase
 

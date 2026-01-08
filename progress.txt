@@ -55,3 +55,12 @@
   - Tests: 16 passing
   - Commit: 95171c4 feat(ui): add TaskTitle Ink component
 
+✅ 2026-01-08: Created ToolItem Ink component
+  - Created src/components/ToolItem.tsx - displays single tool status
+  - Shows spinner for active tools, checkmark/error icon for completed
+  - Category-based verb (Reading, Editing, Running, Processing)
+  - Duration formatted in seconds with one decimal (e.g., 0.8s)
+  - Color-coded icons per category and state
+  - Tests: 18 passing
+  - Commit: 8455922 feat(ui): add ToolItem Ink component
+
