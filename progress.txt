@@ -152,3 +152,12 @@
   - Tests: 299 passing (22 new tests for git commit parsing)
   - Commit: 2c49b20 feat(state): add git commit parsing and detection
 
+✅ 2026-01-08: Updated useClaudeStream hook (Hook Updates)
+  - Added activityLog and lastCommit to ClaudeStreamState interface
+  - Imported ActivityItem and LastCommit types from types.ts
+  - Updated initial state to include empty activityLog and null lastCommit
+  - Updated updateStateFromMachine() to sync activityLog and lastCommit from machine
+  - Added 4 tests for activity log and commit tracking in hook state
+  - Tests: 303 passing
+  - Commit: bbee756 feat(hooks): add activityLog and lastCommit to ClaudeStreamState
+

@@ -55,9 +55,9 @@ Enhance Ralph CLI with Claude Code-style activity feed, better pending states, a
 - [x] Add commit as activity item when detected
 
 ### Hook Updates
-- [ ] Add `activityLog` to `ClaudeStreamState` in `src/hooks/useClaudeStream.ts`
-- [ ] Add `lastCommit` to `ClaudeStreamState`
-- [ ] Update `updateStateFromMachine()` to include new fields
+- [x] Add `activityLog` to `ClaudeStreamState` in `src/hooks/useClaudeStream.ts`
+- [x] Add `lastCommit` to `ClaudeStreamState`
+- [x] Update `updateStateFromMachine()` to include new fields
 
 ### New Utilities
 - [ ] Create `src/lib/colors.ts` with Claude Code color scheme (cyan, green, yellow, red, magenta)

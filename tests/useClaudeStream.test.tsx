@@ -383,3 +383,136 @@ describe('useClaudeStream hook exports', () => {
     expect(typeof useClaudeStream).toBe('function');
   });
 });
+
+describe('activity log and commit tracking in hook state', () => {
+  it('tracks activity log from text events', () => {
+    const parser = new StreamParser();
+    const machine = new StateMachine();
+
+    parser.on('text', (event) => {
+      machine.handleText(event);
+    });
+
+    const textMsg = JSON.stringify({
+      type: 'assistant',
+      message: {
+        id: 'msg-1',
+        role: 'assistant',
+        content: [{ type: 'text', text: 'Working on authentication' }],
+      },
+    });
+
+    parser.parseLine(textMsg);
+
+    const state = machine.getState();
+    expect(state.activityLog).toHaveLength(1);
+    expect(state.activityLog[0].type).toBe('thought');
+    expect((state.activityLog[0] as { text: string }).text).toBe('Working on authentication');
+  });
+
+  it('tracks activity log from tool events', () => {
+    const parser = new StreamParser();
+    const machine = new StateMachine();
+
+    parser.on('tool_start', (event) => {
+      machine.handleToolStart(event);
+    });
+    parser.on('tool_end', (event) => {
+      machine.handleToolEnd(event);
+    });
+
+    const toolStartMsg = JSON.stringify({
+      type: 'assistant',
+      message: {
+        id: 'msg-1',
+        role: 'assistant',
+        content: [{
+          type: 'tool_use',
+          id: 'tool-1',
+          name: 'Read',
+          input: { file_path: '/path/file.ts' },
+        }],
+      },
+    });
+
+    const toolEndMsg = JSON.stringify({
+      type: 'user',
+      message: {
+        id: 'msg-2',
+        role: 'user',
+        content: [{
+          type: 'tool_result',
+          tool_use_id: 'tool-1',
+          content: 'file contents',
+        }],
+      },
+    });
+
+    parser.parseLine(toolStartMsg);
+    expect(machine.getState().activityLog).toHaveLength(1);
+    expect(machine.getState().activityLog[0].type).toBe('tool_start');
+
+    parser.parseLine(toolEndMsg);
+    expect(machine.getState().activityLog).toHaveLength(2);
+    expect(machine.getState().activityLog[1].type).toBe('tool_complete');
+  });
+
+  it('tracks git commit in lastCommit and activity log', () => {
+    const parser = new StreamParser();
+    const machine = new StateMachine();
+
+    parser.on('tool_start', (event) => {
+      machine.handleToolStart(event);
+    });
+    parser.on('tool_end', (event) => {
+      machine.handleToolEnd(event);
+    });
+
+    const toolStartMsg = JSON.stringify({
+      type: 'assistant',
+      message: {
+        id: 'msg-1',
+        role: 'assistant',
+        content: [{
+          type: 'tool_use',
+          id: 'tool-1',
+          name: 'Bash',
+          input: { command: 'git commit -m "feat: add auth"' },
+        }],
+      },
+    });
+
+    const toolEndMsg = JSON.stringify({
+      type: 'user',
+      message: {
+        id: 'msg-2',
+        role: 'user',
+        content: [{
+          type: 'tool_result',
+          tool_use_id: 'tool-1',
+          content: '[main abc1234] feat: add auth\n 2 files changed',
+        }],
+      },
+    });
+
+    parser.parseLine(toolStartMsg);
+    parser.parseLine(toolEndMsg);
+
+    const state = machine.getState();
+    expect(state.lastCommit).not.toBeNull();
+    expect(state.lastCommit!.hash).toBe('abc1234');
+    expect(state.lastCommit!.message).toBe('feat: add auth');
+
+    const commitActivity = state.activityLog.find(a => a.type === 'commit');
+    expect(commitActivity).toBeDefined();
+    expect((commitActivity as { hash: string }).hash).toBe('abc1234');
+  });
+
+  it('initializes with empty activityLog and null lastCommit', () => {
+    const machine = new StateMachine();
+    const state = machine.getState();
+
+    expect(state.activityLog).toEqual([]);
+    expect(state.lastCommit).toBeNull();
+  });
+});

@@ -8,7 +8,7 @@ import {
   type ToolGroup,
   type Stats,
 } from '../lib/state-machine.js';
-import type { ResultEvent } from '../lib/types.js';
+import type { ResultEvent, ActivityItem, LastCommit } from '../lib/types.js';
 import { JsonlLogger } from '../lib/logger.js';
 
 export type SpawnFn = (
@@ -37,6 +37,8 @@ export interface ClaudeStreamState {
   result: ResultEvent | null;
   error: Error | null;
   isRunning: boolean;
+  activityLog: ActivityItem[];
+  lastCommit: LastCommit | null;
 }
 
 const DEFAULT_IDLE_TIMEOUT_MS = 120_000;
@@ -70,6 +72,8 @@ export function useClaudeStream(options: UseClaudeStreamOptions): ClaudeStreamSt
     result: null,
     error: null,
     isRunning: false,
+    activityLog: [],
+    lastCommit: null,
   }));
 
   const processRef = useRef<ChildProcess | null>(null);
@@ -111,6 +115,8 @@ export function useClaudeStream(options: UseClaudeStreamOptions): ClaudeStreamSt
       stats: machineState.stats,
       elapsedMs: machine.getElapsedMs(),
       result: machineState.result,
+      activityLog: machineState.activityLog,
+      lastCommit: machineState.lastCommit,
     }));
   }, []);
 
