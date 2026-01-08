@@ -1,0 +1,523 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import {
+  StateMachine,
+  createStateMachine,
+  type Phase,
+  type ToolCategory,
+} from '../src/lib/state-machine.js';
+import type { ToolStartEvent, ToolEndEvent, TextEvent, ResultEvent } from '../src/lib/types.js';
+
+describe('StateMachine', () => {
+  let sm: StateMachine;
+
+  beforeEach(() => {
+    sm = createStateMachine(1, 5);
+  });
+
+  describe('initial state', () => {
+    it('starts with correct initial values', () => {
+      const state = sm.getState();
+
+      expect(state.iteration).toBe(1);
+      expect(state.totalIterations).toBe(5);
+      expect(state.phase).toBe('idle');
+      expect(state.taskText).toBeNull();
+      expect(state.activeTools.size).toBe(0);
+      expect(state.completedTools).toHaveLength(0);
+      expect(state.toolGroups).toHaveLength(0);
+      expect(state.result).toBeNull();
+    });
+
+    it('starts with zero stats', () => {
+      const state = sm.getState();
+
+      expect(state.stats.toolsStarted).toBe(0);
+      expect(state.stats.toolsCompleted).toBe(0);
+      expect(state.stats.toolsErrored).toBe(0);
+      expect(state.stats.reads).toBe(0);
+      expect(state.stats.writes).toBe(0);
+      expect(state.stats.commands).toBe(0);
+      expect(state.stats.metaOps).toBe(0);
+    });
+
+    it('records startTime close to now', () => {
+      const before = Date.now();
+      const newSm = createStateMachine();
+      const after = Date.now();
+
+      expect(newSm.getState().startTime).toBeGreaterThanOrEqual(before);
+      expect(newSm.getState().startTime).toBeLessThanOrEqual(after);
+    });
+  });
+
+  describe('handleText', () => {
+    it('sets taskText from first text event', () => {
+      const event: TextEvent = { type: 'text', text: 'Working on your task...' };
+      sm.handleText(event);
+
+      expect(sm.getState().taskText).toBe('Working on your task...');
+    });
+
+    it('trims and truncates taskText to 100 chars', () => {
+      const longText = '  ' + 'a'.repeat(150) + '  ';
+      sm.handleText({ type: 'text', text: longText });
+
+      expect(sm.getState().taskText).toHaveLength(100);
+      expect(sm.getState().taskText).toBe('a'.repeat(100));
+    });
+
+    it('does not overwrite taskText on subsequent text events', () => {
+      sm.handleText({ type: 'text', text: 'First message' });
+      sm.handleText({ type: 'text', text: 'Second message' });
+
+      expect(sm.getState().taskText).toBe('First message');
+    });
+
+    it('transitions from idle to thinking', () => {
+      expect(sm.getState().phase).toBe('idle');
+      sm.handleText({ type: 'text', text: 'Hello' });
+      expect(sm.getState().phase).toBe('thinking');
+    });
+  });
+
+  describe('handleToolStart', () => {
+    it('adds tool to activeTools', () => {
+      const event: ToolStartEvent = {
+        type: 'tool_start',
+        toolUseId: 'tool-1',
+        toolName: 'Read',
+        input: { file_path: '/path/to/file.ts' },
+      };
+      sm.handleToolStart(event);
+
+      const active = sm.getState().activeTools;
+      expect(active.size).toBe(1);
+      expect(active.get('tool-1')).toMatchObject({
+        id: 'tool-1',
+        name: 'Read',
+        category: 'read',
+        input: { file_path: '/path/to/file.ts' },
+      });
+    });
+
+    it('increments toolsStarted stat', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Edit', input: {} });
+
+      expect(sm.getState().stats.toolsStarted).toBe(2);
+    });
+
+    it('transitions phase based on tool category', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      expect(sm.getState().phase).toBe('reading');
+
+      sm = createStateMachine();
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Edit', input: {} });
+      expect(sm.getState().phase).toBe('editing');
+
+      sm = createStateMachine();
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't3', toolName: 'Bash', input: {} });
+      expect(sm.getState().phase).toBe('running');
+
+      sm = createStateMachine();
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't4', toolName: 'TodoWrite', input: {} });
+      expect(sm.getState().phase).toBe('thinking');
+    });
+
+    it('categorizes tools correctly', () => {
+      const toolTests: Array<{ name: string; expected: ToolCategory }> = [
+        { name: 'Read', expected: 'read' },
+        { name: 'Grep', expected: 'read' },
+        { name: 'Glob', expected: 'read' },
+        { name: 'WebFetch', expected: 'read' },
+        { name: 'WebSearch', expected: 'read' },
+        { name: 'LSP', expected: 'read' },
+        { name: 'Edit', expected: 'write' },
+        { name: 'Write', expected: 'write' },
+        { name: 'NotebookEdit', expected: 'write' },
+        { name: 'Bash', expected: 'command' },
+        { name: 'TodoWrite', expected: 'meta' },
+        { name: 'Task', expected: 'meta' },
+        { name: 'UnknownTool', expected: 'meta' },
+      ];
+
+      for (const { name, expected } of toolTests) {
+        sm = createStateMachine();
+        sm.handleToolStart({ type: 'tool_start', toolUseId: 't', toolName: name, input: {} });
+        expect(sm.getState().activeTools.get('t')?.category).toBe(expected);
+      }
+    });
+  });
+
+  describe('handleToolEnd', () => {
+    beforeEach(() => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+    });
+
+    it('removes tool from activeTools', () => {
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+
+      expect(sm.getState().activeTools.size).toBe(0);
+    });
+
+    it('adds tool to completedTools', () => {
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+
+      const completed = sm.getState().completedTools;
+      expect(completed).toHaveLength(1);
+      expect(completed[0]).toMatchObject({
+        id: 't1',
+        name: 'Read',
+        category: 'read',
+        isError: false,
+      });
+      expect(completed[0].durationMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('increments toolsCompleted stat', () => {
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+
+      expect(sm.getState().stats.toolsCompleted).toBe(1);
+    });
+
+    it('increments toolsErrored stat on error', () => {
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: true });
+
+      expect(sm.getState().stats.toolsErrored).toBe(1);
+    });
+
+    it('increments category-specific stats', () => {
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+      expect(sm.getState().stats.reads).toBe(1);
+
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Edit', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't2', content: '', isError: false });
+      expect(sm.getState().stats.writes).toBe(1);
+
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't3', toolName: 'Bash', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't3', content: '', isError: false });
+      expect(sm.getState().stats.commands).toBe(1);
+
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't4', toolName: 'TodoWrite', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't4', content: '', isError: false });
+      expect(sm.getState().stats.metaOps).toBe(1);
+    });
+
+    it('ignores tool_end for unknown toolUseId', () => {
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 'unknown', content: '', isError: false });
+
+      expect(sm.getState().completedTools).toHaveLength(0);
+      expect(sm.getState().stats.toolsCompleted).toBe(0);
+    });
+
+    it('transitions to thinking when no active tools remain', () => {
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+
+      expect(sm.getState().phase).toBe('thinking');
+    });
+
+    it('keeps phase based on remaining active tools priority', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Bash', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+
+      expect(sm.getState().phase).toBe('running');
+    });
+  });
+
+  describe('handleResult', () => {
+    it('sets result and transitions to done', () => {
+      const resultEvent: ResultEvent = {
+        type: 'result',
+        durationMs: 5000,
+        isError: false,
+        numTurns: 3,
+        totalCostUsd: 0.05,
+        usage: { inputTokens: 1000, outputTokens: 500 },
+      };
+      sm.handleResult(resultEvent);
+
+      expect(sm.getState().result).toEqual(resultEvent);
+      expect(sm.getState().phase).toBe('done');
+    });
+  });
+
+  describe('tool groups (coalescing)', () => {
+    it('groups consecutive tools of same category', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Grep', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't2', content: '', isError: false });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't3', toolName: 'Glob', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't3', content: '', isError: false });
+
+      const groups = sm.getState().toolGroups;
+      expect(groups).toHaveLength(1);
+      expect(groups[0].category).toBe('read');
+      expect(groups[0].tools).toHaveLength(3);
+    });
+
+    it('creates new group when category changes', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Edit', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't2', content: '', isError: false });
+
+      const groups = sm.getState().toolGroups;
+      expect(groups).toHaveLength(2);
+      expect(groups[0].category).toBe('read');
+      expect(groups[1].category).toBe('write');
+    });
+
+    it('accumulates totalDurationMs in group', () => {
+      vi.useFakeTimers();
+      const now = Date.now();
+      vi.setSystemTime(now);
+
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      vi.setSystemTime(now + 100);
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Grep', input: {} });
+      vi.setSystemTime(now + 250);
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't2', content: '', isError: false });
+
+      const groups = sm.getState().toolGroups;
+      expect(groups[0].totalDurationMs).toBe(250);
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('getActiveToolNames', () => {
+    it('returns names of active tools', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Grep', input: {} });
+
+      const names = sm.getActiveToolNames();
+      expect(names).toContain('Read');
+      expect(names).toContain('Grep');
+      expect(names).toHaveLength(2);
+    });
+  });
+
+  describe('getActiveToolsByCategory', () => {
+    it('filters active tools by category', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Edit', input: {} });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't3', toolName: 'Grep', input: {} });
+
+      const readTools = sm.getActiveToolsByCategory('read');
+      expect(readTools).toHaveLength(2);
+      expect(readTools.map((t) => t.name)).toContain('Read');
+      expect(readTools.map((t) => t.name)).toContain('Grep');
+
+      const writeTools = sm.getActiveToolsByCategory('write');
+      expect(writeTools).toHaveLength(1);
+      expect(writeTools[0].name).toBe('Edit');
+    });
+  });
+
+  describe('getCoalescedSummary', () => {
+    it('returns "Waiting..." when idle with no active tools', () => {
+      expect(sm.getCoalescedSummary()).toBe('Waiting...');
+    });
+
+    it('returns "Thinking..." when thinking with no active tools', () => {
+      sm.handleText({ type: 'text', text: 'Hello' });
+      expect(sm.getCoalescedSummary()).toBe('Thinking...');
+    });
+
+    it('returns done summary when phase is done', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+      sm.handleResult({ type: 'result', isError: false });
+
+      expect(sm.getCoalescedSummary()).toBe('Done (1 tools)');
+    });
+
+    it('shows single tool with display name', () => {
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 't1',
+        toolName: 'Read',
+        input: { file_path: '/path/to/file.ts' },
+      });
+
+      expect(sm.getCoalescedSummary()).toBe('Reading file.ts');
+    });
+
+    it('shows multiple tools of same category', () => {
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 't1',
+        toolName: 'Read',
+        input: { file_path: '/a.ts' },
+      });
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 't2',
+        toolName: 'Read',
+        input: { file_path: '/b.ts' },
+      });
+
+      expect(sm.getCoalescedSummary()).toBe('Reading a.ts, b.ts');
+    });
+
+    it('shows count when more than 3 tools', () => {
+      for (let i = 1; i <= 5; i++) {
+        sm.handleToolStart({
+          type: 'tool_start',
+          toolUseId: `t${i}`,
+          toolName: 'Read',
+          input: { file_path: `/${i}.ts` },
+        });
+      }
+
+      expect(sm.getCoalescedSummary()).toBe('Reading 5 items');
+    });
+
+    it('shows multiple categories separated by bullet', () => {
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 't1',
+        toolName: 'Read',
+        input: { file_path: '/a.ts' },
+      });
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 't2',
+        toolName: 'Bash',
+        input: { command: 'npm test' },
+      });
+
+      const summary = sm.getCoalescedSummary();
+      expect(summary).toContain('Reading');
+      expect(summary).toContain('Running');
+      expect(summary).toContain('•');
+    });
+
+    it('extracts file name from file_path input', () => {
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 't1',
+        toolName: 'Edit',
+        input: { file_path: '/long/path/to/file.ts' },
+      });
+
+      expect(sm.getCoalescedSummary()).toBe('Editing file.ts');
+    });
+
+    it('extracts command from Bash input', () => {
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 't1',
+        toolName: 'Bash',
+        input: { command: 'npm run test:coverage' },
+      });
+
+      expect(sm.getCoalescedSummary()).toBe('Running npm');
+    });
+
+    it('extracts pattern from Glob input', () => {
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 't1',
+        toolName: 'Glob',
+        input: { pattern: '**/*.ts' },
+      });
+
+      expect(sm.getCoalescedSummary()).toBe('Reading **/*.ts');
+    });
+  });
+
+  describe('getElapsedMs', () => {
+    it('returns elapsed time since start', () => {
+      vi.useFakeTimers();
+      const now = Date.now();
+      vi.setSystemTime(now);
+
+      const newSm = createStateMachine();
+
+      vi.setSystemTime(now + 1000);
+      expect(newSm.getElapsedMs()).toBe(1000);
+
+      vi.setSystemTime(now + 5000);
+      expect(newSm.getElapsedMs()).toBe(5000);
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('reset', () => {
+    it('resets all state to initial values', () => {
+      sm.handleText({ type: 'text', text: 'Task' });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+
+      sm.reset();
+
+      const state = sm.getState();
+      expect(state.phase).toBe('idle');
+      expect(state.taskText).toBeNull();
+      expect(state.activeTools.size).toBe(0);
+      expect(state.completedTools).toHaveLength(0);
+      expect(state.toolGroups).toHaveLength(0);
+      expect(state.stats.toolsStarted).toBe(0);
+      expect(state.result).toBeNull();
+    });
+
+    it('preserves iteration numbers by default', () => {
+      sm.reset();
+
+      const state = sm.getState();
+      expect(state.iteration).toBe(1);
+      expect(state.totalIterations).toBe(5);
+    });
+
+    it('updates iteration numbers when provided', () => {
+      sm.reset(3, 10);
+
+      const state = sm.getState();
+      expect(state.iteration).toBe(3);
+      expect(state.totalIterations).toBe(10);
+    });
+
+    it('resets startTime to now', () => {
+      vi.useFakeTimers();
+      const original = Date.now();
+      vi.setSystemTime(original);
+
+      const newSm = createStateMachine();
+
+      vi.setSystemTime(original + 5000);
+      newSm.reset();
+
+      expect(newSm.getState().startTime).toBe(original + 5000);
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('phase priority', () => {
+    it('prioritizes running > editing > reading > thinking', () => {
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't1', toolName: 'Read', input: {} });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't2', toolName: 'Edit', input: {} });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't3', toolName: 'Bash', input: {} });
+      sm.handleToolStart({ type: 'tool_start', toolUseId: 't4', toolName: 'TodoWrite', input: {} });
+
+      expect(sm.getState().phase).toBe('thinking');
+
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't4', content: '', isError: false });
+      expect(sm.getState().phase).toBe('running');
+
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't3', content: '', isError: false });
+      expect(sm.getState().phase).toBe('editing');
+
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't2', content: '', isError: false });
+      expect(sm.getState().phase).toBe('reading');
+
+      sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
+      expect(sm.getState().phase).toBe('thinking');
+    });
+  });
+});
