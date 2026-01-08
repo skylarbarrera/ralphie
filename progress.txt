@@ -208,3 +208,11 @@
   - Tests: 392 passing (25 new tests for ToolActivityItem)
   - Commit: 8e4ff09 feat(ui): extract ToolActivityItem into standalone component
 
+✅ 2026-01-08: Extracted CommitItem into standalone component
+  - Created src/components/CommitItem.tsx with exported CommitItem component
+  - Displays │ ✓ {short hash} - {message} with correct colors
+  - Truncates hash to 7 characters for display
+  - Updated ActivityFeed.tsx to import CommitItem from new file
+  - Tests: 410 passing (18 new tests for CommitItem)
+  - Commit: 23e5163 feat(ui): extract CommitItem into standalone component
+
