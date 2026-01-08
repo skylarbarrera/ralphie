@@ -3,7 +3,6 @@ import { Box, Text } from 'ink';
 import Spinner from 'ink-spinner';
 import type {
   ActivityItem,
-  ThoughtActivity,
   ToolStartActivity,
   ToolCompleteActivity,
   CommitActivity,
@@ -11,20 +10,11 @@ import type {
 import { ELEMENT_COLORS, CATEGORY_COLORS } from '../lib/colors.js';
 import { getToolCategory } from '../lib/tool-categories.js';
 import { formatDuration } from './ToolItem.js';
+import { ThoughtItem } from './ThoughtItem.js';
 
 export interface ActivityFeedProps {
   activityLog: ActivityItem[];
   maxItems?: number;
-}
-
-function ThoughtItem({ item }: { item: ThoughtActivity }): React.ReactElement {
-  return (
-    <Box>
-      <Text color={ELEMENT_COLORS.border}>│ </Text>
-      <Text color={ELEMENT_COLORS.text}>● </Text>
-      <Text color={ELEMENT_COLORS.text}>{item.text}</Text>
-    </Box>
-  );
 }
 
 function ToolStartItem({ item }: { item: ToolStartActivity }): React.ReactElement {

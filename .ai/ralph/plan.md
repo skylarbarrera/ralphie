@@ -1,21 +1,21 @@
 ## Goal
-Create ActivityFeed.tsx component that renders a rolling activity feed with last N activity items.
+Extract ThoughtItem from ActivityFeed into a standalone component file with tests.
 
 ## Files
-- src/components/ActivityFeed.tsx - main container component
-- tests/ActivityFeed.test.tsx - unit tests
+- src/components/ThoughtItem.tsx - new standalone component
+- tests/ThoughtItem.test.tsx - unit tests
+- src/components/ActivityFeed.tsx - update to import ThoughtItem
 
 ## Tests
-- Renders nothing when activity log is empty
-- Renders thought items with bullet prefix
-- Renders tool_start items with spinner
-- Renders tool_complete items with checkmark/error icon
-- Renders commit items with success icon and hash
-- Limits display to maxItems prop (default 20)
-- Shows most recent items when log exceeds maxItems
+- Renders thought text with bullet prefix (● symbol)
+- Displays border character (│)
+- Uses correct colors from ELEMENT_COLORS
+- Handles empty text
+- Handles long text
 
 ## Exit Criteria
-- ActivityFeed renders all activity types correctly
+- ThoughtItem.tsx created and exported
 - Tests pass with good coverage
-- No linting errors
+- ActivityFeed updated to import from new file
+- All existing tests still pass
 - Changes committed
