@@ -1,23 +1,14 @@
 import type { ToolStartEvent, ToolEndEvent, TextEvent, ResultEvent } from './types.js';
+import {
+  type ToolCategory,
+  getToolCategory,
+  getCategoryVerb,
+  getToolDisplayName,
+} from './tool-categories.js';
 
 export type Phase = 'idle' | 'reading' | 'editing' | 'running' | 'thinking' | 'done';
 
-export type ToolCategory = 'read' | 'write' | 'command' | 'meta';
-
-const TOOL_CATEGORIES: Record<string, ToolCategory> = {
-  Read: 'read',
-  Grep: 'read',
-  Glob: 'read',
-  Edit: 'write',
-  Write: 'write',
-  NotebookEdit: 'write',
-  Bash: 'command',
-  TodoWrite: 'meta',
-  Task: 'meta',
-  WebFetch: 'read',
-  WebSearch: 'read',
-  LSP: 'read',
-};
+export type { ToolCategory } from './tool-categories.js';
 
 export interface ActiveTool {
   id: string;
@@ -74,10 +65,6 @@ function createInitialStats(): Stats {
     commands: 0,
     metaOps: 0,
   };
-}
-
-function getToolCategory(toolName: string): ToolCategory {
-  return TOOL_CATEGORIES[toolName] ?? 'meta';
 }
 
 function phaseFromCategory(category: ToolCategory): Phase {
@@ -248,13 +235,13 @@ export class StateMachine {
     const byCategory = new Map<ToolCategory, string[]>();
     for (const tool of this.state.activeTools.values()) {
       const names = byCategory.get(tool.category) ?? [];
-      names.push(this.getToolDisplayName(tool));
+      names.push(getToolDisplayName(tool.name, tool.input));
       byCategory.set(tool.category, names);
     }
 
     const parts: string[] = [];
     for (const [category, names] of byCategory) {
-      const verb = this.getCategoryVerb(category);
+      const verb = getCategoryVerb(category);
       if (names.length === 1) {
         parts.push(`${verb} ${names[0]}`);
       } else if (names.length <= 3) {
@@ -267,42 +254,6 @@ export class StateMachine {
     return parts.join(' • ');
   }
 
-  private getToolDisplayName(tool: ActiveTool): string {
-    const input = tool.input;
-    if (tool.name === 'Read' && typeof input.file_path === 'string') {
-      return input.file_path.split('/').pop() ?? tool.name;
-    }
-    if (tool.name === 'Edit' && typeof input.file_path === 'string') {
-      return input.file_path.split('/').pop() ?? tool.name;
-    }
-    if (tool.name === 'Write' && typeof input.file_path === 'string') {
-      return input.file_path.split('/').pop() ?? tool.name;
-    }
-    if (tool.name === 'Bash' && typeof input.command === 'string') {
-      const cmd = input.command.split(' ')[0];
-      return cmd.length > 20 ? cmd.slice(0, 20) + '...' : cmd;
-    }
-    if (tool.name === 'Glob' && typeof input.pattern === 'string') {
-      return input.pattern;
-    }
-    if (tool.name === 'Grep' && typeof input.pattern === 'string') {
-      return input.pattern.slice(0, 20);
-    }
-    return tool.name;
-  }
-
-  private getCategoryVerb(category: ToolCategory): string {
-    switch (category) {
-      case 'read':
-        return 'Reading';
-      case 'write':
-        return 'Editing';
-      case 'command':
-        return 'Running';
-      case 'meta':
-        return 'Processing';
-    }
-  }
 
   reset(iteration?: number, totalIterations?: number): void {
     this.state = {
