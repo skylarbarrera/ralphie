@@ -92,3 +92,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 37 passing (was 22)
 - notes: IterationRunner manages sequential iterations; aggregates stats; displays final summary with per-iteration results
 - next: Run actual claude iteration and verify output
+
+## 99f0427 — Fix bugs and verify end-to-end output
+- files: src/hooks/useClaudeStream.ts, src/lib/logger.ts, src/lib/state-machine.ts, src/lib/tool-categories.ts, src/components/ToolList.tsx, tests/
+- tests: 268 passing
+- notes: Added --verbose flag (required for stream-json); fixed logger path handling; added input to CompletedTool for display names
+- next: Project complete! All PRD tasks finished

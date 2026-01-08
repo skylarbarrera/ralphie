@@ -92,7 +92,7 @@ Build a TypeScript CLI that wraps `claude` to provide Claude Code-style terminal
 ### Testing
 - [x] Test stream-parser with sample JSONL
 - [x] Test state-machine transitions
-- [ ] Run actual claude iteration and verify output
+- [x] Run actual claude iteration and verify output
 
 ## CLI Interface
 

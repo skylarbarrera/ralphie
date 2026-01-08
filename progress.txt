@@ -123,3 +123,13 @@
   - Tests: 37 passing (was 22 for App.test.tsx)
   - Commit: fda16d0 feat(app): add iteration loop and final summary display
 
+✅ 2026-01-08: Verified end-to-end CLI with actual claude iteration
+  - Fixed missing --verbose flag (required for stream-json with -p)
+  - Fixed logger to handle full paths in filename option (was doubling "runs/")
+  - Added input field to CompletedTool for better tool display names (shows "package.json" not "Read")
+  - Made getToolDisplayName handle undefined input gracefully
+  - Verified CLI displays: iteration header, task text, tool status, final summary
+  - JSONL logging works correctly
+  - Tests: 268 passing
+  - Commit: 99f0427 fix: add --verbose flag and improve tool display
+

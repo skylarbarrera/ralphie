@@ -1,20 +1,20 @@
 ## Goal
-Implement iteration loop in App.tsx to run N iterations sequentially with final summary.
+Run actual claude iteration and verify the CLI output works correctly end-to-end.
 
 ## Files
-- src/App.tsx - add iteration loop logic, iteration state management, final summary display
-- src/hooks/useClaudeStream.ts - may need to expose reset/restart capability
-- tests/App.test.tsx - add tests for iteration loop and summary
+- No new files needed - this is a verification task
+- May need minor fixes to existing files if issues are discovered
 
 ## Tests
-- App restarts claude for each iteration up to N
-- Iteration counter increments correctly
-- Final summary shows after all iterations complete
-- Early exit on error stops iteration loop
-- Component displays correct iteration number during run
+- Run `npm run ralph -- -n 1 -p "echo hello world"` with a simple prompt
+- Verify the UI displays correctly (iteration header, tool list, status bar)
+- Verify JSONL logging works (check ./runs/ directory)
+- Verify graceful completion
 
 ## Exit Criteria
-- App runs N iterations sequentially (waits for each to complete)
-- Final summary displays after all iterations
-- Tests pass with good coverage
-- Changes committed
+- CLI runs without errors for a simple single-iteration task
+- All UI components render correctly
+- JSONL log file is created in ./runs/
+- Process exits cleanly
+- Any discovered bugs are fixed
+- Task marked complete in PRD.md
