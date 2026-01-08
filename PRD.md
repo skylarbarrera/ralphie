@@ -74,8 +74,8 @@ Build a TypeScript CLI that wraps `claude` to provide Claude Code-style terminal
 - [x] Return: `{ tools, activeTool, phase, taskText, stats, error }`
 
 ### Main App
-- [ ] Create `src/App.tsx` - Main Ink component
-- [ ] Compose: IterationHeader, TaskTitle, ToolList, StatusBar
+- [x] Create `src/App.tsx` - Main Ink component
+- [x] Compose: IterationHeader, TaskTitle, ToolList, StatusBar
 - [ ] Handle iteration loop (run N iterations)
 - [ ] Display final summary after all iterations
 

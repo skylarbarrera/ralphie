@@ -93,3 +93,12 @@
   - Tests: 15 passing (integration tests for parser+machine combo)
   - Commit: c225b44 feat(hooks): add useClaudeStream React hook
 
+✅ 2026-01-08: Created App.tsx main Ink component
+  - Created src/App.tsx - composes all UI components into main App
+  - Integrates IterationHeader, TaskTitle, ToolList, StatusBar
+  - Uses useClaudeStream hook for state management
+  - Shows error messages when present
+  - _mockState prop enables testing without spawning claude process
+  - Tests: 22 passing
+  - Commit: d1d9da8 feat(ui): add App.tsx main Ink component
+

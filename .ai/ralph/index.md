@@ -74,3 +74,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 15 passing (integration tests)
 - notes: Spawns claude, parses JSONL stream, updates state machine; handles idle timeout and cleanup
 - next: Create App.tsx main component
+
+## d1d9da8 — Add App.tsx main Ink component
+- files: src/App.tsx, tests/App.test.tsx
+- tests: 22 passing
+- notes: Composes IterationHeader, TaskTitle, ToolList, StatusBar; uses useClaudeStream for state; _mockState prop for testing
+- next: Create cli.tsx entry point
