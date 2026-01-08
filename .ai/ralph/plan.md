@@ -1,25 +1,22 @@
 ## Goal
-Add ActivityItem type and activity log tracking to support rolling activity feed display.
+Add git commit parsing to detect and log commits from Bash tool output.
 
 ## Files
-- src/lib/types.ts - add ActivityItem type
-- src/lib/state-machine.ts - add activityLog, lastCommit to IterationState, output to CompletedTool, addActivityItem helper
-- tests/state-machine.test.ts - add tests for activity log updates
+- src/lib/state-machine.ts - add isGitCommitCommand(), parseGitCommitOutput(), integrate into handleToolEnd()
+- tests/state-machine.test.ts - add tests for git commit parsing
 
 ## Tests
-- ActivityItem type is exported correctly
-- activityLog starts empty in IterationState
-- handleText adds thought to activity log
-- handleToolStart adds tool_start to activity log
-- handleToolEnd adds tool_complete to activity log
-- Activity log capped at 50 items
-- lastCommit starts null in IterationState
+- isGitCommitCommand() detects `git commit` and `git commit -m`
+- isGitCommitCommand() returns false for other commands
+- parseGitCommitOutput() parses commit hash and message from output
+- parseGitCommitOutput() returns null for non-commit output
+- handleToolEnd() adds commit activity when git commit detected
+- handleToolEnd() sets lastCommit when commit detected
 
 ## Exit Criteria
-- ActivityItem type defined with thought, tool_start, tool_complete, commit variants
-- CompletedTool has output?: string field
-- IterationState has activityLog: ActivityItem[] and lastCommit fields
-- addActivityItem helper caps at 50 items
-- handleText, handleToolStart, handleToolEnd add items to activity log
-- All existing tests still pass
-- New tests pass
+- isGitCommitCommand() correctly identifies git commit commands
+- parseGitCommitOutput() extracts hash and message from output
+- handleToolEnd() detects Bash git commit and adds to activity log
+- lastCommit state is set when commit detected
+- All tests pass
+- Changes committed

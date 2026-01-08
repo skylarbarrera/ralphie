@@ -93,6 +93,20 @@ function phaseFromCategory(category: ToolCategory): Phase {
 
 const MAX_ACTIVITY_LOG_SIZE = 50;
 
+export function isGitCommitCommand(command: string): boolean {
+  const trimmed = command.trim();
+  return /^git\s+commit(\s|$)/.test(trimmed);
+}
+
+export function parseGitCommitOutput(output: string): { hash: string; message: string } | null {
+  const match = output.match(/^\[[\w/-]+\s+([a-f0-9]{7,40})\]\s+(.+)$/m);
+  if (!match) return null;
+  return {
+    hash: match[1],
+    message: match[2],
+  };
+}
+
 export class StateMachine {
   private state: IterationState;
 
@@ -225,6 +239,22 @@ export class StateMachine {
       durationMs,
       isError: event.isError,
     });
+
+    if (activeTool.name === 'Bash' && !event.isError) {
+      const command = activeTool.input.command;
+      if (typeof command === 'string' && isGitCommitCommand(command)) {
+        const commit = parseGitCommitOutput(output);
+        if (commit) {
+          this.state.lastCommit = commit;
+          this.addActivityItem({
+            type: 'commit',
+            timestamp: Date.now(),
+            hash: commit.hash,
+            message: commit.message,
+          });
+        }
+      }
+    }
   }
 
   handleResult(event: ResultEvent): void {

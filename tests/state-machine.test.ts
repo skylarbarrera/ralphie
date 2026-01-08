@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   StateMachine,
   createStateMachine,
+  isGitCommitCommand,
+  parseGitCommitOutput,
   type Phase,
   type ToolCategory,
 } from '../src/lib/state-machine.js';
@@ -13,6 +15,7 @@ import type {
   ThoughtActivity,
   ToolStartActivity,
   ToolCompleteActivity,
+  CommitActivity,
 } from '../src/lib/types.js';
 
 describe('StateMachine', () => {
@@ -639,6 +642,222 @@ describe('StateMachine', () => {
       expect(log).toHaveLength(50);
       expect((log[0] as ThoughtActivity).text).toBe('Thought 10');
       expect((log[49] as ThoughtActivity).text).toBe('Thought 59');
+    });
+  });
+
+  describe('git commit detection', () => {
+    describe('isGitCommitCommand', () => {
+      it('detects git commit command', () => {
+        expect(isGitCommitCommand('git commit')).toBe(true);
+      });
+
+      it('detects git commit with message flag', () => {
+        expect(isGitCommitCommand('git commit -m "message"')).toBe(true);
+      });
+
+      it('detects git commit with all flag', () => {
+        expect(isGitCommitCommand('git commit -a -m "message"')).toBe(true);
+      });
+
+      it('detects git commit with leading whitespace', () => {
+        expect(isGitCommitCommand('  git commit -m "test"')).toBe(true);
+      });
+
+      it('returns false for git status', () => {
+        expect(isGitCommitCommand('git status')).toBe(false);
+      });
+
+      it('returns false for git add', () => {
+        expect(isGitCommitCommand('git add .')).toBe(false);
+      });
+
+      it('returns false for git push', () => {
+        expect(isGitCommitCommand('git push origin main')).toBe(false);
+      });
+
+      it('returns false for npm commands', () => {
+        expect(isGitCommitCommand('npm test')).toBe(false);
+      });
+
+      it('returns false for commands containing commit as substring', () => {
+        expect(isGitCommitCommand('echo "commit"')).toBe(false);
+      });
+    });
+
+    describe('parseGitCommitOutput', () => {
+      it('parses standard git commit output', () => {
+        const output = '[main a1b2c3d] feat: add new feature\n 2 files changed, 50 insertions(+)';
+        const result = parseGitCommitOutput(output);
+        expect(result).toEqual({
+          hash: 'a1b2c3d',
+          message: 'feat: add new feature',
+        });
+      });
+
+      it('parses commit with branch containing slash', () => {
+        const output = '[feature/auth abc1234] fix(auth): handle edge case\n 1 file changed';
+        const result = parseGitCommitOutput(output);
+        expect(result).toEqual({
+          hash: 'abc1234',
+          message: 'fix(auth): handle edge case',
+        });
+      });
+
+      it('parses full 40-character hash', () => {
+        const output = '[main a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2] initial commit';
+        const result = parseGitCommitOutput(output);
+        expect(result).toEqual({
+          hash: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2',
+          message: 'initial commit',
+        });
+      });
+
+      it('returns null for non-commit output', () => {
+        const output = 'On branch main\nYour branch is up to date';
+        expect(parseGitCommitOutput(output)).toBeNull();
+      });
+
+      it('returns null for empty output', () => {
+        expect(parseGitCommitOutput('')).toBeNull();
+      });
+
+      it('returns null for error output', () => {
+        const output = 'error: pathspec \'file.txt\' did not match any file(s)';
+        expect(parseGitCommitOutput(output)).toBeNull();
+      });
+
+      it('parses commit with hyphenated branch name', () => {
+        const output = '[fix-bug-123 def5678] docs: update readme';
+        const result = parseGitCommitOutput(output);
+        expect(result).toEqual({
+          hash: 'def5678',
+          message: 'docs: update readme',
+        });
+      });
+    });
+
+    describe('handleToolEnd with git commit', () => {
+      it('detects git commit and adds to activity log', () => {
+        sm.handleToolStart({
+          type: 'tool_start',
+          toolUseId: 't1',
+          toolName: 'Bash',
+          input: { command: 'git commit -m "feat: add feature"' },
+        });
+
+        sm.handleToolEnd({
+          type: 'tool_end',
+          toolUseId: 't1',
+          content: '[main abc1234] feat: add feature\n 1 file changed',
+          isError: false,
+        });
+
+        const log = sm.getState().activityLog;
+        expect(log).toHaveLength(3);
+        expect(log[2].type).toBe('commit');
+        const commitActivity = log[2] as CommitActivity;
+        expect(commitActivity.hash).toBe('abc1234');
+        expect(commitActivity.message).toBe('feat: add feature');
+      });
+
+      it('sets lastCommit when git commit detected', () => {
+        sm.handleToolStart({
+          type: 'tool_start',
+          toolUseId: 't1',
+          toolName: 'Bash',
+          input: { command: 'git commit -m "fix: bug fix"' },
+        });
+
+        sm.handleToolEnd({
+          type: 'tool_end',
+          toolUseId: 't1',
+          content: '[main def5678] fix: bug fix\n 2 files changed',
+          isError: false,
+        });
+
+        const lastCommit = sm.getState().lastCommit;
+        expect(lastCommit).toEqual({
+          hash: 'def5678',
+          message: 'fix: bug fix',
+        });
+      });
+
+      it('does not add commit activity when command errors', () => {
+        sm.handleToolStart({
+          type: 'tool_start',
+          toolUseId: 't1',
+          toolName: 'Bash',
+          input: { command: 'git commit -m "test"' },
+        });
+
+        sm.handleToolEnd({
+          type: 'tool_end',
+          toolUseId: 't1',
+          content: 'nothing to commit, working tree clean',
+          isError: true,
+        });
+
+        const log = sm.getState().activityLog;
+        expect(log.filter((a) => a.type === 'commit')).toHaveLength(0);
+        expect(sm.getState().lastCommit).toBeNull();
+      });
+
+      it('does not add commit activity for non-Bash tools', () => {
+        sm.handleToolStart({
+          type: 'tool_start',
+          toolUseId: 't1',
+          toolName: 'Read',
+          input: { file_path: '/path/to/file.ts' },
+        });
+
+        sm.handleToolEnd({
+          type: 'tool_end',
+          toolUseId: 't1',
+          content: '[main abc1234] fake commit output',
+          isError: false,
+        });
+
+        const log = sm.getState().activityLog;
+        expect(log.filter((a) => a.type === 'commit')).toHaveLength(0);
+      });
+
+      it('does not add commit activity for non-git commit commands', () => {
+        sm.handleToolStart({
+          type: 'tool_start',
+          toolUseId: 't1',
+          toolName: 'Bash',
+          input: { command: 'git status' },
+        });
+
+        sm.handleToolEnd({
+          type: 'tool_end',
+          toolUseId: 't1',
+          content: 'On branch main',
+          isError: false,
+        });
+
+        const log = sm.getState().activityLog;
+        expect(log.filter((a) => a.type === 'commit')).toHaveLength(0);
+      });
+
+      it('does not add commit activity when output does not match pattern', () => {
+        sm.handleToolStart({
+          type: 'tool_start',
+          toolUseId: 't1',
+          toolName: 'Bash',
+          input: { command: 'git commit --amend' },
+        });
+
+        sm.handleToolEnd({
+          type: 'tool_end',
+          toolUseId: 't1',
+          content: 'nothing to commit, working tree clean',
+          isError: false,
+        });
+
+        const log = sm.getState().activityLog;
+        expect(log.filter((a) => a.type === 'commit')).toHaveLength(0);
+      });
     });
   });
 });
