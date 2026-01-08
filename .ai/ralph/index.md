@@ -56,3 +56,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 18 passing
 - notes: Displays single tool with spinner/checkmark/error icon, category verb, and duration
 - next: Create ToolList.tsx component
+
+## 7bc8921 — Add ToolList Ink component
+- files: src/components/ToolList.tsx, tests/ToolList.test.tsx
+- tests: 19 passing
+- notes: Coalesced tool list; shows completed groups with count/duration, active tools with spinners
+- next: Create StatusBar.tsx component

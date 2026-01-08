@@ -64,3 +64,12 @@
   - Tests: 18 passing
   - Commit: 8455922 feat(ui): add ToolItem Ink component
 
+✅ 2026-01-08: Created ToolList Ink component
+  - Created src/components/ToolList.tsx - coalesced tool display
+  - Shows completed groups: "✓ Read 3 files (1.2s)"
+  - Shows active tools individually with spinner
+  - Error icon when group contains errors
+  - Proper noun pluralization (file/files, command/commands)
+  - Tests: 19 passing
+  - Commit: 7bc8921 feat(ui): add ToolList Ink component
+
