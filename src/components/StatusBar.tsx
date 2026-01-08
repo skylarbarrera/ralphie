@@ -1,12 +1,15 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { Phase } from '../lib/state-machine.js';
+import type { LastCommit } from '../lib/types.js';
 import { formatElapsedTime } from './IterationHeader.js';
+import { ELEMENT_COLORS } from '../lib/colors.js';
 
 export interface StatusBarProps {
   phase: Phase;
   elapsedSeconds: number;
   summary?: string;
+  lastCommit?: LastCommit | null;
 }
 
 const PHASE_LABELS: Record<Phase, string> = {
@@ -22,7 +25,12 @@ export function getPhaseLabel(phase: Phase): string {
   return PHASE_LABELS[phase];
 }
 
-export function StatusBar({ phase, elapsedSeconds, summary }: StatusBarProps): React.ReactElement {
+export function formatCommitInfo(commit: LastCommit): string {
+  const shortHash = commit.hash.slice(0, 7);
+  return `${shortHash} - ${commit.message}`;
+}
+
+export function StatusBar({ phase, elapsedSeconds, summary, lastCommit }: StatusBarProps): React.ReactElement {
   const phaseLabel = getPhaseLabel(phase);
   const elapsed = formatElapsedTime(elapsedSeconds);
   const displayText = summary ?? `${phaseLabel} (${elapsed})`;
@@ -30,12 +38,22 @@ export function StatusBar({ phase, elapsedSeconds, summary }: StatusBarProps): R
   const contentLength = displayText.length + 4;
   const dashCount = Math.max(4, minWidth - contentLength);
   const dashes = '─'.repeat(dashCount);
+  const textColor = phase === 'done' ? ELEMENT_COLORS.success : ELEMENT_COLORS.text;
 
   return (
-    <Box>
-      <Text color="cyan">└─ </Text>
-      <Text bold color={phase === 'done' ? 'green' : 'white'}>{displayText}</Text>
-      <Text color="cyan"> {dashes}</Text>
+    <Box flexDirection="column">
+      {lastCommit && (
+        <Box>
+          <Text color={ELEMENT_COLORS.border}>│ </Text>
+          <Text color={ELEMENT_COLORS.success}>✓ </Text>
+          <Text color={ELEMENT_COLORS.muted}>{formatCommitInfo(lastCommit)}</Text>
+        </Box>
+      )}
+      <Box>
+        <Text color={ELEMENT_COLORS.border}>└─ </Text>
+        <Text bold color={textColor}>{displayText}</Text>
+        <Text color={ELEMENT_COLORS.border}> {dashes}</Text>
+      </Box>
     </Box>
   );
 }

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
-import { StatusBar, getPhaseLabel } from '../src/components/StatusBar.js';
+import { StatusBar, getPhaseLabel, formatCommitInfo } from '../src/components/StatusBar.js';
+import type { LastCommit } from '../src/lib/types.js';
 
 describe('StatusBar', () => {
   describe('getPhaseLabel', () => {
@@ -132,6 +133,96 @@ describe('StatusBar', () => {
         expect(output).toContain('└─');
         expect(output).toMatch(/─{4,}/);
       }
+    });
+  });
+
+  describe('formatCommitInfo', () => {
+    it('formats commit with short hash and message', () => {
+      const commit: LastCommit = { hash: 'abc1234567890', message: 'feat: add new feature' };
+      expect(formatCommitInfo(commit)).toBe('abc1234 - feat: add new feature');
+    });
+
+    it('handles 7-character hash correctly', () => {
+      const commit: LastCommit = { hash: 'abc1234', message: 'fix: bug fix' };
+      expect(formatCommitInfo(commit)).toBe('abc1234 - fix: bug fix');
+    });
+
+    it('handles long commit messages', () => {
+      const commit: LastCommit = { hash: 'def5678', message: 'refactor: very long commit message describing changes' };
+      expect(formatCommitInfo(commit)).toBe('def5678 - refactor: very long commit message describing changes');
+    });
+  });
+
+  describe('commit info display', () => {
+    it('displays commit info when lastCommit is provided', () => {
+      const commit: LastCommit = { hash: 'abc1234567', message: 'feat(auth): add JWT' };
+      const { lastFrame } = render(
+        <StatusBar phase="done" elapsedSeconds={60} lastCommit={commit} />
+      );
+      const output = lastFrame();
+      expect(output).toContain('abc1234');
+      expect(output).toContain('feat(auth): add JWT');
+      expect(output).toContain('✓');
+    });
+
+    it('does not display commit info when lastCommit is null', () => {
+      const { lastFrame } = render(
+        <StatusBar phase="done" elapsedSeconds={60} lastCommit={null} />
+      );
+      const output = lastFrame();
+      expect(output).not.toContain('abc1234');
+      expect(output).toContain('Done');
+    });
+
+    it('does not display commit info when lastCommit is undefined', () => {
+      const { lastFrame } = render(
+        <StatusBar phase="done" elapsedSeconds={60} />
+      );
+      const output = lastFrame();
+      expect(output).toContain('└─');
+      expect(output).toContain('Done');
+    });
+
+    it('displays commit info with border character', () => {
+      const commit: LastCommit = { hash: 'xyz9876', message: 'test: add tests' };
+      const { lastFrame } = render(
+        <StatusBar phase="done" elapsedSeconds={30} lastCommit={commit} />
+      );
+      const output = lastFrame();
+      expect(output).toContain('│');
+    });
+
+    it('displays commit alongside phase info', () => {
+      const commit: LastCommit = { hash: 'f1e2d3c', message: 'docs: update readme' };
+      const { lastFrame } = render(
+        <StatusBar phase="done" elapsedSeconds={120} lastCommit={commit} />
+      );
+      const output = lastFrame();
+      expect(output).toContain('f1e2d3c');
+      expect(output).toContain('docs: update readme');
+      expect(output).toContain('Done');
+      expect(output).toContain('(2:00)');
+    });
+  });
+
+  describe('ELEMENT_COLORS integration', () => {
+    it('uses consistent colors across all phases', () => {
+      const phases = ['idle', 'reading', 'editing', 'running', 'thinking', 'done'] as const;
+      for (const phase of phases) {
+        const { lastFrame } = render(<StatusBar phase={phase} elapsedSeconds={0} />);
+        const output = lastFrame();
+        expect(output).toBeDefined();
+        expect(output).toContain('└─');
+      }
+    });
+
+    it('renders commit with success checkmark', () => {
+      const commit: LastCommit = { hash: '1234567', message: 'test' };
+      const { lastFrame } = render(
+        <StatusBar phase="done" elapsedSeconds={0} lastCommit={commit} />
+      );
+      const output = lastFrame();
+      expect(output).toContain('✓');
     });
   });
 });
