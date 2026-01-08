@@ -241,3 +241,11 @@
   - Tests: 445 passing (6 new tests for pending state and pulse effect)
   - Commit: 6b946d5 feat(ui): add pulse effect to TaskTitle for pending state
 
+✅ 2026-01-08: Updated StatusBar with commit info and ELEMENT_COLORS (Component Updates - Styling)
+  - Imported and applied ELEMENT_COLORS from colors module for consistent styling
+  - Added lastCommit prop to display git commit hash and message
+  - Added formatCommitInfo() helper to format commits as "short_hash - message"
+  - Displays commit info above status bar with checkmark icon and border
+  - Tests: 455 passing (10 new tests for commit display and color integration)
+  - Commit: b5187f5 feat(ui): add commit info display and ELEMENT_COLORS to StatusBar
+
