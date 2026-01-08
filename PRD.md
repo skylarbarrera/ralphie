@@ -55,9 +55,9 @@ Build a TypeScript CLI that wraps `claude` to provide Claude Code-style terminal
 - [x] Icons: ◐ read, ✎ write, ⚡ command, ○ meta, ✓ done, ✗ error
 
 ### Core - JSONL Logger
-- [ ] Create `src/lib/logger.ts` - Tee raw JSONL to disk
-- [ ] Write to `./runs/{ISO-timestamp}.jsonl`
-- [ ] Create runs directory if needed
+- [x] Create `src/lib/logger.ts` - Tee raw JSONL to disk
+- [x] Write to `./runs/{ISO-timestamp}.jsonl`
+- [x] Create runs directory if needed
 
 ### Ink Components
 - [ ] Create `src/components/IterationHeader.tsx` - `┌─ Iteration 1/10 ──── 0:42 elapsed`

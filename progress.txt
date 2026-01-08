@@ -30,3 +30,12 @@
   - Tests: 30 passing (100% coverage)
   - Commit: 802598d feat(tools): add tool-categories module for configurable tool mapping
 
+✅ 2026-01-08: Added JSONL logger for raw output tee to disk
+  - Created src/lib/logger.ts with JsonlLogger class
+  - Writes to ./runs/{ISO-timestamp}.jsonl files
+  - Auto-creates runs directory if needed
+  - Supports raw line logging (log) and object logging (logObject)
+  - Gracefully handles close and circular reference errors
+  - Tests: 18 passing (100% coverage)
+  - Commit: e14a41b feat(logger): add JSONL logger for raw output tee to disk
+

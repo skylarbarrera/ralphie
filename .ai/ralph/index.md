@@ -32,3 +32,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 30 passing (100% coverage)
 - notes: Icons (◐✎⚡○✓✗), verbs, display helpers; refactored state-machine to use module
 - next: Create JSONL logger for raw output tee to disk
+
+## e14a41b — Add JSONL logger for raw output tee to disk
+- files: src/lib/logger.ts, tests/logger.test.ts
+- tests: 18 passing (100% coverage)
+- notes: Creates ./runs/{ISO-timestamp}.jsonl files, auto-creates directory, handles objects and raw lines
+- next: Create Ink components for terminal UI
