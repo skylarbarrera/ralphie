@@ -1,30 +1,13 @@
 import React from 'react';
-import { Box, Text } from 'ink';
-import type {
-  ActivityItem,
-  CommitActivity,
-} from '../lib/types.js';
-import { ELEMENT_COLORS } from '../lib/colors.js';
+import { Box } from 'ink';
+import type { ActivityItem } from '../lib/types.js';
 import { ThoughtItem } from './ThoughtItem.js';
 import { ToolStartItem, ToolCompleteItem } from './ToolActivityItem.js';
+import { CommitItem } from './CommitItem.js';
 
 export interface ActivityFeedProps {
   activityLog: ActivityItem[];
   maxItems?: number;
-}
-
-function CommitItem({ item }: { item: CommitActivity }): React.ReactElement {
-  const shortHash = item.hash.slice(0, 7);
-
-  return (
-    <Box>
-      <Text color={ELEMENT_COLORS.border}>│ </Text>
-      <Text color={ELEMENT_COLORS.success}>✓ </Text>
-      <Text color={ELEMENT_COLORS.success}>{shortHash}</Text>
-      <Text color={ELEMENT_COLORS.muted}> - </Text>
-      <Text color={ELEMENT_COLORS.text}>{item.message}</Text>
-    </Box>
-  );
 }
 
 function renderActivityItem(item: ActivityItem): React.ReactElement {
