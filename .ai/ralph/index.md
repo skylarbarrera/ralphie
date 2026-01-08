@@ -38,3 +38,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 18 passing (100% coverage)
 - notes: Creates ./runs/{ISO-timestamp}.jsonl files, auto-creates directory, handles objects and raw lines
 - next: Create Ink components for terminal UI
+
+## 3397c6f — Add IterationHeader Ink component
+- files: src/components/IterationHeader.tsx, tests/IterationHeader.test.tsx
+- tests: 13 passing
+- notes: First UI component; displays `┌─ Iteration 1/10 ──── 0:42 elapsed`; formatElapsedTime helper
+- next: Create TaskTitle.tsx component

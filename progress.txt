@@ -39,3 +39,11 @@
   - Tests: 18 passing (100% coverage)
   - Commit: e14a41b feat(logger): add JSONL logger for raw output tee to disk
 
+✅ 2026-01-08: Created IterationHeader Ink component
+  - Created src/components/IterationHeader.tsx - first terminal UI component
+  - Displays iteration progress: `┌─ Iteration 1/10 ──── 0:42 elapsed`
+  - formatElapsedTime helper handles seconds, minutes:seconds, hours:minutes:seconds
+  - Added ink-testing-library for component testing
+  - Tests: 13 passing
+  - Commit: 3397c6f feat(ui): add IterationHeader Ink component
+
