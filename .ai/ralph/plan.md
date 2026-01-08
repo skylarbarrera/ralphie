@@ -1,44 +1,54 @@
 ## Goal
-Create ToolList.tsx - Ink component that displays a coalesced list of tools, showing active tools with spinners and completed tool groups with summaries.
+Create StatusBar.tsx - Ink component that displays the bottom status bar with current phase and summary.
 
 ## Files
-- src/components/ToolList.tsx - new component
-- tests/ToolList.test.tsx - unit tests
+- src/components/StatusBar.tsx - new component
+- tests/StatusBar.test.tsx - unit tests
 
 ## Design
-The ToolList component will:
-1. Accept `toolGroups` (completed tool groups) and `activeTools` (currently running)
-2. Display completed groups in coalesced format: `✓ Read 3 files (0.8s)`
-3. Display active tools individually with spinners
-4. Handle edge cases: empty lists, mixed states
+The StatusBar component will:
+1. Display a bottom border matching the header style
+2. Show the current phase (idle, reading, editing, running, thinking, done)
+3. Show elapsed time
+4. Optionally show a summary message
 
 Props interface:
 ```typescript
-interface ToolListProps {
-  toolGroups: ToolGroup[];      // from state-machine
-  activeTools: ActiveTool[];    // from state-machine
+interface StatusBarProps {
+  phase: Phase;
+  elapsedSeconds: number;
+  summary?: string;  // optional summary text
 }
 ```
 
-Display format:
-- Completed group with 1 tool: `│ ✓ Read file.ts (0.8s)`
-- Completed group with N tools: `│ ✓ Read 3 files (1.2s)`
-- Active tool: `│ ◐ Reading file.ts` (with spinner)
+Display format (from PRD):
+```
+└─ Done (2m14s) ─────────────────────────────────────
+```
+
+Phase display mapping:
+- idle → "Waiting..."
+- reading → "Reading..."
+- editing → "Editing..."
+- running → "Running..."
+- thinking → "Thinking..."
+- done → "Done"
 
 ## Tests
-- Renders empty state (no tools)
-- Renders single completed tool
-- Renders coalesced completed group (multiple tools)
-- Renders active tool with spinner
-- Renders mixed state (completed groups + active tools)
-- Renders error state tools correctly
-- Shows correct category verbs (Reading, Editing, Running, Processing)
-- Shows correct duration formatting
+- Renders idle phase correctly
+- Renders reading phase correctly
+- Renders editing phase correctly
+- Renders running phase correctly
+- Renders thinking phase correctly
+- Renders done phase with elapsed time
+- Renders custom summary when provided
+- Formats elapsed time correctly (uses existing formatElapsedTime)
+- Renders with correct colors/styling
 
 ## Exit Criteria
-- Component renders all tool states correctly
-- Tool groups are coalesced with count and total duration
-- Active tools show spinners
+- Component renders all phases correctly
+- Elapsed time is formatted properly
+- Visual style matches IterationHeader (└─ pattern)
 - Tests pass with good coverage
 - No TypeScript errors
 - Changes committed
