@@ -46,6 +46,8 @@ function createMockState(overrides: Partial<ClaudeStreamState> = {}): ClaudeStre
     result: null,
     error: null,
     isRunning: false,
+    activityLog: [],
+    lastCommit: null,
     ...overrides,
   };
 }
