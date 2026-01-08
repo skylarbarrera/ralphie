@@ -122,3 +122,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 326 passing (23 new)
 - notes: COLORS, ELEMENT_COLORS, CATEGORY_COLORS, STATE_COLORS; helper functions for status/category/state colors
 - next: Create usePulse hook for pulsing animations
+
+## 3f17c24 — Add usePulse hook for pulsing animations
+- files: src/hooks/usePulse.ts, tests/usePulse.test.tsx
+- tests: 341 passing (15 new)
+- notes: Toggle boolean on configurable interval; supports enabled option; cleans up on unmount
+- next: Create ActivityFeed component for rolling activity display

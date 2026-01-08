@@ -172,3 +172,12 @@
   - Tests: 326 passing (23 new tests for colors module)
   - Commit: e7f6f27 feat(ui): add colors module with Claude Code color scheme
 
+✅ 2026-01-08: Created usePulse hook (New Utilities)
+  - Created src/hooks/usePulse.ts for pulsing animation effects
+  - Toggle boolean on configurable interval (default 500ms)
+  - Supports enabled option to pause/resume pulsing
+  - Cleans up interval on unmount
+  - Returns true initially for immediate visual feedback
+  - Tests: 341 passing (15 new tests for usePulse hook)
+  - Commit: 3f17c24 feat(hooks): add usePulse hook for pulsing animations
+

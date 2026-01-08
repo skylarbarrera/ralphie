@@ -61,7 +61,7 @@ Enhance Ralph CLI with Claude Code-style activity feed, better pending states, a
 
 ### New Utilities
 - [x] Create `src/lib/colors.ts` with Claude Code color scheme (cyan, green, yellow, red, magenta)
-- [ ] Create `src/hooks/usePulse.ts` hook for pulsing animations (toggle boolean on interval)
+- [x] Create `src/hooks/usePulse.ts` hook for pulsing animations (toggle boolean on interval)
 
 ### New Components - Activity Feed
 - [ ] Create `src/components/ActivityFeed.tsx` - main container, renders last N items
