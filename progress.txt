@@ -259,5 +259,5 @@
   - Updated App.test.tsx with new activity feed and phase indicator tests
   - Added tests for lastCommit in callback and iteration results display
   - Tests: 464 passing (9 new tests for integration)
-  - Commit: pending
+  - Commit: 7de5578 feat(app): integrate ActivityFeed and PhaseIndicator into App
 

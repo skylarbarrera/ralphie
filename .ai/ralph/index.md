@@ -164,3 +164,15 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 445 passing (6 new)
 - notes: isPending prop enables usePulse; ELEMENT_COLORS for styling; icon pulses green/gray
 - next: Update StatusBar with commit info and Claude Code colors
+
+## b5187f5 — Add commit info display and ELEMENT_COLORS to StatusBar
+- files: src/components/StatusBar.tsx, tests/StatusBar.test.tsx
+- tests: 455 passing (10 new)
+- notes: lastCommit prop, formatCommitInfo helper, commit display above status bar
+- next: Integrate ActivityFeed and PhaseIndicator into App
+
+## 7de5578 — Integrate ActivityFeed and PhaseIndicator into App
+- files: src/App.tsx, tests/App.test.tsx, PRD.md, progress.txt
+- tests: 464 passing (9 new)
+- notes: Replaced ToolList with ActivityFeed; added PhaseIndicator; lastCommit in IterationResult
+- next: All PRD tasks complete!
