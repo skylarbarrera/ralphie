@@ -1,4 +1,11 @@
-import type { ToolStartEvent, ToolEndEvent, TextEvent, ResultEvent } from './types.js';
+import type {
+  ToolStartEvent,
+  ToolEndEvent,
+  TextEvent,
+  ResultEvent,
+  ActivityItem,
+  LastCommit,
+} from './types.js';
 import {
   type ToolCategory,
   getToolCategory,
@@ -25,6 +32,7 @@ export interface CompletedTool {
   durationMs: number;
   isError: boolean;
   input: Record<string, unknown>;
+  output?: string;
 }
 
 export interface ToolGroup {
@@ -54,6 +62,8 @@ export interface IterationState {
   toolGroups: ToolGroup[];
   stats: Stats;
   result: ResultEvent | null;
+  activityLog: ActivityItem[];
+  lastCommit: LastCommit | null;
 }
 
 function createInitialStats(): Stats {
@@ -81,6 +91,8 @@ function phaseFromCategory(category: ToolCategory): Phase {
   }
 }
 
+const MAX_ACTIVITY_LOG_SIZE = 50;
+
 export class StateMachine {
   private state: IterationState;
 
@@ -96,6 +108,8 @@ export class StateMachine {
       toolGroups: [],
       stats: createInitialStats(),
       result: null,
+      activityLog: [],
+      lastCommit: null,
     };
   }
 
@@ -107,9 +121,24 @@ export class StateMachine {
     return Date.now() - this.state.startTime;
   }
 
+  private addActivityItem(item: ActivityItem): void {
+    this.state.activityLog.push(item);
+    if (this.state.activityLog.length > MAX_ACTIVITY_LOG_SIZE) {
+      this.state.activityLog.shift();
+    }
+  }
+
   handleText(event: TextEvent): void {
+    const trimmedText = event.text.trim();
     if (this.state.taskText === null) {
-      this.state.taskText = event.text.trim().slice(0, 100);
+      this.state.taskText = trimmedText.slice(0, 100);
+    }
+    if (trimmedText) {
+      this.addActivityItem({
+        type: 'thought',
+        timestamp: Date.now(),
+        text: trimmedText,
+      });
     }
     if (this.state.phase === 'idle') {
       this.state.phase = 'thinking';
@@ -118,6 +147,7 @@ export class StateMachine {
 
   handleToolStart(event: ToolStartEvent): void {
     const category = getToolCategory(event.toolName);
+    const displayName = getToolDisplayName(event.toolName, event.input);
     const activeTool: ActiveTool = {
       id: event.toolUseId,
       name: event.toolName,
@@ -129,6 +159,14 @@ export class StateMachine {
     this.state.activeTools.set(event.toolUseId, activeTool);
     this.state.stats.toolsStarted++;
     this.state.phase = phaseFromCategory(category);
+
+    this.addActivityItem({
+      type: 'tool_start',
+      timestamp: Date.now(),
+      toolUseId: event.toolUseId,
+      toolName: event.toolName,
+      displayName,
+    });
   }
 
   handleToolEnd(event: ToolEndEvent): void {
@@ -137,13 +175,20 @@ export class StateMachine {
 
     this.state.activeTools.delete(event.toolUseId);
 
+    const durationMs = Date.now() - activeTool.startTime;
+    const displayName = getToolDisplayName(activeTool.name, activeTool.input);
+    const output = typeof event.content === 'string'
+      ? event.content
+      : event.content.map((c) => c.text ?? '').join('');
+
     const completedTool: CompletedTool = {
       id: activeTool.id,
       name: activeTool.name,
       category: activeTool.category,
-      durationMs: Date.now() - activeTool.startTime,
+      durationMs,
       isError: event.isError,
       input: activeTool.input,
+      output,
     };
 
     this.state.completedTools.push(completedTool);
@@ -170,6 +215,16 @@ export class StateMachine {
 
     this.updateToolGroups(completedTool);
     this.updatePhaseAfterToolEnd();
+
+    this.addActivityItem({
+      type: 'tool_complete',
+      timestamp: Date.now(),
+      toolUseId: activeTool.id,
+      toolName: activeTool.name,
+      displayName,
+      durationMs,
+      isError: event.isError,
+    });
   }
 
   handleResult(event: ResultEvent): void {
@@ -269,6 +324,8 @@ export class StateMachine {
       toolGroups: [],
       stats: createInitialStats(),
       result: null,
+      activityLog: [],
+      lastCommit: null,
     };
   }
 }

@@ -97,3 +97,47 @@ export type ParserEvent =
   | TextEvent
   | ResultEvent
   | ErrorEvent;
+
+export type ActivityType = 'thought' | 'tool_start' | 'tool_complete' | 'commit';
+
+export interface ThoughtActivity {
+  type: 'thought';
+  timestamp: number;
+  text: string;
+}
+
+export interface ToolStartActivity {
+  type: 'tool_start';
+  timestamp: number;
+  toolUseId: string;
+  toolName: string;
+  displayName: string;
+}
+
+export interface ToolCompleteActivity {
+  type: 'tool_complete';
+  timestamp: number;
+  toolUseId: string;
+  toolName: string;
+  displayName: string;
+  durationMs: number;
+  isError: boolean;
+}
+
+export interface CommitActivity {
+  type: 'commit';
+  timestamp: number;
+  hash: string;
+  message: string;
+}
+
+export type ActivityItem =
+  | ThoughtActivity
+  | ToolStartActivity
+  | ToolCompleteActivity
+  | CommitActivity;
+
+export interface LastCommit {
+  hash: string;
+  message: string;
+}

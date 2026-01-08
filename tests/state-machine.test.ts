@@ -5,7 +5,15 @@ import {
   type Phase,
   type ToolCategory,
 } from '../src/lib/state-machine.js';
-import type { ToolStartEvent, ToolEndEvent, TextEvent, ResultEvent } from '../src/lib/types.js';
+import type {
+  ToolStartEvent,
+  ToolEndEvent,
+  TextEvent,
+  ResultEvent,
+  ThoughtActivity,
+  ToolStartActivity,
+  ToolCompleteActivity,
+} from '../src/lib/types.js';
 
 describe('StateMachine', () => {
   let sm: StateMachine;
@@ -26,6 +34,8 @@ describe('StateMachine', () => {
       expect(state.completedTools).toHaveLength(0);
       expect(state.toolGroups).toHaveLength(0);
       expect(state.result).toBeNull();
+      expect(state.activityLog).toHaveLength(0);
+      expect(state.lastCommit).toBeNull();
     });
 
     it('starts with zero stats', () => {
@@ -77,6 +87,34 @@ describe('StateMachine', () => {
       expect(sm.getState().phase).toBe('idle');
       sm.handleText({ type: 'text', text: 'Hello' });
       expect(sm.getState().phase).toBe('thinking');
+    });
+
+    it('adds thought to activity log', () => {
+      sm.handleText({ type: 'text', text: 'Working on task' });
+
+      const log = sm.getState().activityLog;
+      expect(log).toHaveLength(1);
+      expect(log[0].type).toBe('thought');
+      const thought = log[0] as ThoughtActivity;
+      expect(thought.text).toBe('Working on task');
+      expect(thought.timestamp).toBeGreaterThan(0);
+    });
+
+    it('adds multiple thoughts to activity log', () => {
+      sm.handleText({ type: 'text', text: 'First thought' });
+      sm.handleText({ type: 'text', text: 'Second thought' });
+
+      const log = sm.getState().activityLog;
+      expect(log).toHaveLength(2);
+      expect((log[0] as ThoughtActivity).text).toBe('First thought');
+      expect((log[1] as ThoughtActivity).text).toBe('Second thought');
+    });
+
+    it('does not add empty text to activity log', () => {
+      sm.handleText({ type: 'text', text: '   ' });
+
+      const log = sm.getState().activityLog;
+      expect(log).toHaveLength(0);
     });
   });
 
@@ -146,6 +184,24 @@ describe('StateMachine', () => {
         sm.handleToolStart({ type: 'tool_start', toolUseId: 't', toolName: name, input: {} });
         expect(sm.getState().activeTools.get('t')?.category).toBe(expected);
       }
+    });
+
+    it('adds tool_start to activity log', () => {
+      sm.handleToolStart({
+        type: 'tool_start',
+        toolUseId: 'tool-1',
+        toolName: 'Read',
+        input: { file_path: '/path/to/file.ts' },
+      });
+
+      const log = sm.getState().activityLog;
+      expect(log).toHaveLength(1);
+      expect(log[0].type).toBe('tool_start');
+      const activity = log[0] as ToolStartActivity;
+      expect(activity.toolUseId).toBe('tool-1');
+      expect(activity.toolName).toBe('Read');
+      expect(activity.displayName).toBe('file.ts');
+      expect(activity.timestamp).toBeGreaterThan(0);
     });
   });
 
@@ -221,6 +277,48 @@ describe('StateMachine', () => {
       sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
 
       expect(sm.getState().phase).toBe('running');
+    });
+
+    it('adds tool_complete to activity log', () => {
+      sm.handleToolEnd({
+        type: 'tool_end',
+        toolUseId: 't1',
+        content: 'file contents here',
+        isError: false,
+      });
+
+      const log = sm.getState().activityLog;
+      expect(log).toHaveLength(2);
+      expect(log[1].type).toBe('tool_complete');
+      const activity = log[1] as ToolCompleteActivity;
+      expect(activity.toolUseId).toBe('t1');
+      expect(activity.toolName).toBe('Read');
+      expect(activity.isError).toBe(false);
+      expect(activity.durationMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('stores output content as string', () => {
+      sm.handleToolEnd({
+        type: 'tool_end',
+        toolUseId: 't1',
+        content: 'file contents here',
+        isError: false,
+      });
+
+      const completed = sm.getState().completedTools[0];
+      expect(completed.output).toBe('file contents here');
+    });
+
+    it('stores output content from array', () => {
+      sm.handleToolEnd({
+        type: 'tool_end',
+        toolUseId: 't1',
+        content: [{ type: 'text', text: 'part1' }, { type: 'text', text: 'part2' }],
+        isError: false,
+      });
+
+      const completed = sm.getState().completedTools[0];
+      expect(completed.output).toBe('part1part2');
     });
   });
 
@@ -496,6 +594,16 @@ describe('StateMachine', () => {
 
       vi.useRealTimers();
     });
+
+    it('resets activityLog and lastCommit', () => {
+      sm.handleText({ type: 'text', text: 'Task' });
+      expect(sm.getState().activityLog.length).toBeGreaterThan(0);
+
+      sm.reset();
+
+      expect(sm.getState().activityLog).toHaveLength(0);
+      expect(sm.getState().lastCommit).toBeNull();
+    });
   });
 
   describe('phase priority', () => {
@@ -518,6 +626,19 @@ describe('StateMachine', () => {
 
       sm.handleToolEnd({ type: 'tool_end', toolUseId: 't1', content: '', isError: false });
       expect(sm.getState().phase).toBe('thinking');
+    });
+  });
+
+  describe('activity log cap', () => {
+    it('caps activity log at 50 items', () => {
+      for (let i = 0; i < 60; i++) {
+        sm.handleText({ type: 'text', text: `Thought ${i}` });
+      }
+
+      const log = sm.getState().activityLog;
+      expect(log).toHaveLength(50);
+      expect((log[0] as ThoughtActivity).text).toBe('Thought 10');
+      expect((log[49] as ThoughtActivity).text).toBe('Thought 59');
     });
   });
 });
