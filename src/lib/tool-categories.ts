@@ -61,7 +61,8 @@ export interface ToolInput {
   [key: string]: unknown;
 }
 
-export function getToolDisplayName(toolName: string, input: ToolInput): string {
+export function getToolDisplayName(toolName: string, input?: ToolInput): string {
+  if (!input) return toolName;
   if (toolName === 'Read' && typeof input.file_path === 'string') {
     return input.file_path.split('/').pop() ?? toolName;
   }

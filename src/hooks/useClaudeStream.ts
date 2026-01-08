@@ -165,6 +165,7 @@ export function useClaudeStream(options: UseClaudeStreamOptions): ClaudeStreamSt
       '--dangerously-skip-permissions',
       '--output-format',
       'stream-json',
+      '--verbose',
       '-p',
       prompt,
     ];

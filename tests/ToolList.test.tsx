@@ -19,7 +19,7 @@ describe('ToolList', () => {
       const groups: ToolGroup[] = [
         {
           category: 'read',
-          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 800, isError: false }],
+          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 800, isError: false, input: { file_path: '/test.ts' } }],
           totalDurationMs: 800,
         },
       ];
@@ -37,9 +37,9 @@ describe('ToolList', () => {
         {
           category: 'read',
           tools: [
-            { id: '1', name: 'Read', category: 'read', durationMs: 400, isError: false },
-            { id: '2', name: 'Read', category: 'read', durationMs: 300, isError: false },
-            { id: '3', name: 'Read', category: 'read', durationMs: 500, isError: false },
+            { id: '1', name: 'Read', category: 'read', durationMs: 400, isError: false, input: {} },
+            { id: '2', name: 'Read', category: 'read', durationMs: 300, isError: false, input: {} },
+            { id: '3', name: 'Read', category: 'read', durationMs: 500, isError: false, input: {} },
           ],
           totalDurationMs: 1200,
         },
@@ -57,8 +57,8 @@ describe('ToolList', () => {
         {
           category: 'write',
           tools: [
-            { id: '1', name: 'Edit', category: 'write', durationMs: 600, isError: false },
-            { id: '2', name: 'Edit', category: 'write', durationMs: 600, isError: false },
+            { id: '1', name: 'Edit', category: 'write', durationMs: 600, isError: false, input: {} },
+            { id: '2', name: 'Edit', category: 'write', durationMs: 600, isError: false, input: {} },
           ],
           totalDurationMs: 1200,
         },
@@ -75,7 +75,7 @@ describe('ToolList', () => {
       const groups: ToolGroup[] = [
         {
           category: 'command',
-          tools: [{ id: '1', name: 'Bash', category: 'command', durationMs: 4100, isError: false }],
+          tools: [{ id: '1', name: 'Bash', category: 'command', durationMs: 4100, isError: false, input: { command: 'npm test' } }],
           totalDurationMs: 4100,
         },
       ];
@@ -92,8 +92,8 @@ describe('ToolList', () => {
         {
           category: 'meta',
           tools: [
-            { id: '1', name: 'TodoWrite', category: 'meta', durationMs: 100, isError: false },
-            { id: '2', name: 'Task', category: 'meta', durationMs: 200, isError: false },
+            { id: '1', name: 'TodoWrite', category: 'meta', durationMs: 100, isError: false, input: {} },
+            { id: '2', name: 'Task', category: 'meta', durationMs: 200, isError: false, input: {} },
           ],
           totalDurationMs: 300,
         },
@@ -110,12 +110,12 @@ describe('ToolList', () => {
       const groups: ToolGroup[] = [
         {
           category: 'read',
-          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 500, isError: false }],
+          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 500, isError: false, input: { file_path: '/a.ts' } }],
           totalDurationMs: 500,
         },
         {
           category: 'write',
-          tools: [{ id: '2', name: 'Edit', category: 'write', durationMs: 600, isError: false }],
+          tools: [{ id: '2', name: 'Edit', category: 'write', durationMs: 600, isError: false, input: { file_path: '/b.ts' } }],
           totalDurationMs: 600,
         },
       ];
@@ -131,8 +131,8 @@ describe('ToolList', () => {
         {
           category: 'read',
           tools: [
-            { id: '1', name: 'Read', category: 'read', durationMs: 500, isError: false },
-            { id: '2', name: 'Read', category: 'read', durationMs: 200, isError: true },
+            { id: '1', name: 'Read', category: 'read', durationMs: 500, isError: false, input: {} },
+            { id: '2', name: 'Read', category: 'read', durationMs: 200, isError: true, input: {} },
           ],
           totalDurationMs: 700,
         },
@@ -245,7 +245,7 @@ describe('ToolList', () => {
       const groups: ToolGroup[] = [
         {
           category: 'read',
-          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 800, isError: false }],
+          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 800, isError: false, input: { file_path: '/test.ts' } }],
           totalDurationMs: 800,
         },
       ];
@@ -273,14 +273,14 @@ describe('ToolList', () => {
         {
           category: 'read',
           tools: [
-            { id: '1', name: 'Read', category: 'read', durationMs: 300, isError: false },
-            { id: '2', name: 'Glob', category: 'read', durationMs: 200, isError: false },
+            { id: '1', name: 'Read', category: 'read', durationMs: 300, isError: false, input: {} },
+            { id: '2', name: 'Glob', category: 'read', durationMs: 200, isError: false, input: {} },
           ],
           totalDurationMs: 500,
         },
         {
           category: 'write',
-          tools: [{ id: '3', name: 'Edit', category: 'write', durationMs: 400, isError: false }],
+          tools: [{ id: '3', name: 'Edit', category: 'write', durationMs: 400, isError: false, input: { file_path: '/x.ts' } }],
           totalDurationMs: 400,
         },
       ];
@@ -310,7 +310,7 @@ describe('ToolList', () => {
       const groups: ToolGroup[] = [
         {
           category: 'read',
-          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 100, isError: false }],
+          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 100, isError: false, input: { file_path: '/test.ts' } }],
           totalDurationMs: 100,
         },
       ];
@@ -339,7 +339,7 @@ describe('ToolList', () => {
       const groups: ToolGroup[] = [
         {
           category: 'read',
-          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 100, isError: false }],
+          tools: [{ id: '1', name: 'Read', category: 'read', durationMs: 100, isError: false, input: { file_path: '/test.ts' } }],
           totalDurationMs: 100,
         },
       ];
@@ -353,7 +353,7 @@ describe('ToolList', () => {
       const groups: ToolGroup[] = [
         {
           category: 'command',
-          tools: [{ id: '1', name: 'Bash', category: 'command', durationMs: 100, isError: false }],
+          tools: [{ id: '1', name: 'Bash', category: 'command', durationMs: 100, isError: false, input: { command: 'ls' } }],
           totalDurationMs: 100,
         },
       ];
@@ -368,8 +368,8 @@ describe('ToolList', () => {
         {
           category: 'command',
           tools: [
-            { id: '1', name: 'Bash', category: 'command', durationMs: 100, isError: false },
-            { id: '2', name: 'Bash', category: 'command', durationMs: 100, isError: false },
+            { id: '1', name: 'Bash', category: 'command', durationMs: 100, isError: false, input: {} },
+            { id: '2', name: 'Bash', category: 'command', durationMs: 100, isError: false, input: {} },
           ],
           totalDurationMs: 200,
         },

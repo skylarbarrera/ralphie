@@ -24,6 +24,7 @@ export interface CompletedTool {
   category: ToolCategory;
   durationMs: number;
   isError: boolean;
+  input: Record<string, unknown>;
 }
 
 export interface ToolGroup {
@@ -142,6 +143,7 @@ export class StateMachine {
       category: activeTool.category,
       durationMs: Date.now() - activeTool.startTime,
       isError: event.isError,
+      input: activeTool.input,
     };
 
     this.state.completedTools.push(completedTool);

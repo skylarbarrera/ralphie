@@ -14,9 +14,16 @@ export class JsonlLogger {
 
   constructor(options: LoggerOptions = {}) {
     const runsDir = options.runsDir ?? './runs';
-    const filename = options.filename ?? this.generateFilename();
-    this.filepath = join(runsDir, filename);
-    this.ensureDirectory(runsDir);
+
+    if (options.filename && (options.filename.includes('/') || options.filename.includes('\\'))) {
+      this.filepath = options.filename;
+      this.ensureDirectory(dirname(options.filename));
+    } else {
+      const filename = options.filename ?? this.generateFilename();
+      this.filepath = join(runsDir, filename);
+      this.ensureDirectory(runsDir);
+    }
+
     this.stream = createWriteStream(this.filepath, { flags: 'a' });
   }
 

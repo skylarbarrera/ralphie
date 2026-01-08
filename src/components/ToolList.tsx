@@ -60,7 +60,7 @@ function CompletedGroup({ group }: { group: ToolGroup }): React.ReactElement {
 
   const displayText =
     count === 1
-      ? `${verb} ${getToolDisplayName(tools[0].name, {})} (${duration})`
+      ? `${verb} ${getToolDisplayName(tools[0].name, tools[0].input)} (${duration})`
       : `${verb} ${count} ${noun} (${duration})`;
 
   return (

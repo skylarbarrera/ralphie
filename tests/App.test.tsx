@@ -160,7 +160,7 @@ describe('App', () => {
         {
           category: 'read',
           tools: [
-            { id: '1', name: 'Read', category: 'read', durationMs: 800, isError: false },
+            { id: '1', name: 'Read', category: 'read', durationMs: 800, isError: false, input: { file_path: '/test.ts' } },
           ],
           totalDurationMs: 800,
         },
@@ -178,15 +178,15 @@ describe('App', () => {
         {
           category: 'read',
           tools: [
-            { id: '1', name: 'Read', category: 'read', durationMs: 800, isError: false },
-            { id: '2', name: 'Read', category: 'read', durationMs: 400, isError: false },
+            { id: '1', name: 'Read', category: 'read', durationMs: 800, isError: false, input: {} },
+            { id: '2', name: 'Read', category: 'read', durationMs: 400, isError: false, input: {} },
           ],
           totalDurationMs: 1200,
         },
         {
           category: 'write',
           tools: [
-            { id: '3', name: 'Edit', category: 'write', durationMs: 600, isError: false },
+            { id: '3', name: 'Edit', category: 'write', durationMs: 600, isError: false, input: { file_path: '/x.ts' } },
           ],
           totalDurationMs: 600,
         },
@@ -268,8 +268,8 @@ describe('App', () => {
         {
           category: 'read',
           tools: [
-            { id: '1', name: 'Read', category: 'read', durationMs: 500, isError: false },
-            { id: '2', name: 'Glob', category: 'read', durationMs: 300, isError: false },
+            { id: '1', name: 'Read', category: 'read', durationMs: 500, isError: false, input: {} },
+            { id: '2', name: 'Glob', category: 'read', durationMs: 300, isError: false, input: {} },
           ],
           totalDurationMs: 800,
         },
