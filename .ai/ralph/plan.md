@@ -1,18 +1,20 @@
 ## Goal
-Create `src/lib/colors.ts` with Claude Code color scheme (cyan, green, yellow, red, magenta).
+Create usePulse React hook for pulsing animations in the terminal UI.
 
 ## Files
-- src/lib/colors.ts - new file with color constants and helpers
-- tests/colors.test.ts - unit tests for color module
+- src/hooks/usePulse.ts - new hook that toggles a boolean on an interval
+- tests/usePulse.test.ts - unit tests for the hook
 
 ## Tests
-- Test that all color constants are exported and have valid values
-- Test getStatusColor() returns correct colors for success/error/warning/pending states
-- Test getToolCategoryColor() returns correct colors for read/write/command/meta categories
-- Test colors are valid chalk-compatible values
+- Returns pulse boolean that toggles on interval
+- Default interval is configurable (e.g., 500ms)
+- Cleans up interval on unmount
+- Can be started/stopped via enabled option
+- Immediate initial state (no delay before first pulse)
 
 ## Exit Criteria
-- Color module exports all colors from PRD color scheme table
-- Helper functions for getting colors by status/category
-- All tests pass with 100% coverage
+- Hook works with default interval
+- Hook accepts custom interval
+- Hook accepts enabled flag to pause/resume
+- Tests pass with 100% coverage
 - Changes committed
