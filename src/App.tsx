@@ -5,6 +5,7 @@ import { TaskTitle } from './components/TaskTitle.js';
 import { ActivityFeed } from './components/ActivityFeed.js';
 import { PhaseIndicator } from './components/PhaseIndicator.js';
 import { StatusBar } from './components/StatusBar.js';
+import { CompletedIterationsList } from './components/CompletedIterationsList.js';
 import { useClaudeStream, type UseClaudeStreamOptions, type ClaudeStreamState } from './hooks/useClaudeStream.js';
 import type { Stats } from './lib/state-machine.js';
 import type { LastCommit } from './lib/types.js';
@@ -16,6 +17,8 @@ export interface IterationResult {
   error: Error | null;
   taskText: string | null;
   lastCommit: LastCommit | null;
+  costUsd: number | null;
+  usage: { inputTokens: number; outputTokens: number } | null;
 }
 
 export interface AppProps {
@@ -27,6 +30,7 @@ export interface AppProps {
   saveJsonl?: string | boolean;
   _mockState?: ClaudeStreamState;
   onIterationComplete?: (result: IterationResult) => void;
+  completedResults?: IterationResult[];
 }
 
 export function App({
@@ -38,6 +42,7 @@ export function App({
   saveJsonl,
   _mockState,
   onIterationComplete,
+  completedResults = [],
 }: AppProps): React.ReactElement {
   const streamOptions: UseClaudeStreamOptions = {
     prompt,
@@ -62,14 +67,17 @@ export function App({
         error: state.error,
         taskText: state.taskText,
         lastCommit: state.lastCommit,
+        costUsd: state.result?.totalCostUsd ?? null,
+        usage: state.result?.usage ?? null,
       });
     }
-  }, [state.phase, state.isRunning, iteration, state.elapsedMs, state.stats, state.error, state.taskText, state.lastCommit, onIterationComplete]);
+  }, [state.phase, state.isRunning, iteration, state.elapsedMs, state.stats, state.error, state.taskText, state.lastCommit, state.result, onIterationComplete]);
 
   const isPending = state.phase === 'idle' || !state.taskText;
 
   return (
     <Box flexDirection="column">
+      <CompletedIterationsList results={completedResults} />
       <IterationHeader
         current={iteration}
         total={totalIterations}
@@ -266,6 +274,7 @@ export function IterationRunner({
       saveJsonl={saveJsonl}
       onIterationComplete={handleIterationComplete}
       _mockState={_mockState}
+      completedResults={results}
     />
   );
 }

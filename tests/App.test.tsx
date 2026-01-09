@@ -344,6 +344,8 @@ describe('App', () => {
           error: null,
           taskText: 'Test task',
           lastCommit: null,
+          costUsd: null,
+          usage: null,
         });
       });
     });
@@ -375,6 +377,8 @@ describe('App', () => {
           error: null,
           taskText: 'Test task',
           lastCommit: { hash: 'abc1234567890', message: 'feat: add feature' },
+          costUsd: null,
+          usage: null,
         });
       });
     });
@@ -418,6 +422,8 @@ function createMockResult(overrides: Partial<IterationResult> = {}): IterationRe
     error: null,
     taskText: 'Test task',
     lastCommit: null,
+    costUsd: null,
+    usage: null,
     ...overrides,
   };
 }
