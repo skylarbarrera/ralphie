@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, Static } from 'ink';
 import type { IterationResult } from '../App.js';
 
 export interface CompletedIterationsListProps {
@@ -31,27 +31,28 @@ export function CompletedIterationsList({ results }: CompletedIterationsListProp
   if (results.length === 0) return null;
 
   return (
-    <Box flexDirection="column" marginBottom={1}>
-      <Box>
-        <Text color="cyan" bold>Completed:</Text>
-      </Box>
-      {results.map((result) => (
-        <Box key={result.iteration}>
-          <Text color={result.error ? 'red' : 'green'}>
-            {result.error ? '✗' : '✓'}
-          </Text>
-          <Text color="gray"> {result.iteration}. </Text>
-          <Text color="white">
-            {truncateText(result.taskText ?? 'Unknown task', 45)}
-          </Text>
-          <Text color="gray">
-            {' '}({formatDuration(result.durationMs)}, {formatCost(result.costUsd)})
-          </Text>
+    <Static items={results}>
+      {(result, index) => (
+        <Box key={result.iteration} flexDirection="column">
+          {index === 0 && (
+            <Box>
+              <Text color="cyan" bold>Completed:</Text>
+            </Box>
+          )}
+          <Box>
+            <Text color={result.error ? 'red' : 'green'}>
+              {result.error ? '✗' : '✓'}
+            </Text>
+            <Text color="gray"> {result.iteration}. </Text>
+            <Text color="white">
+              {truncateText(result.taskText ?? 'Unknown task', 45)}
+            </Text>
+            <Text color="gray">
+              {' '}({formatDuration(result.durationMs)}, {formatCost(result.costUsd)})
+            </Text>
+          </Box>
         </Box>
-      ))}
-      <Box>
-        <Text color="cyan">{'─'.repeat(60)}</Text>
-      </Box>
-    </Box>
+      )}
+    </Static>
   );
 }

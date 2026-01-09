@@ -129,10 +129,11 @@ describe('CompletedIterationsList', () => {
       expect(output).toContain('Third task');
     });
 
-    it('shows separator line after results', () => {
+    it('renders using Static component for stable output', () => {
       const results = [createMockResult()];
       const { lastFrame } = render(<CompletedIterationsList results={results} />);
-      expect(lastFrame()).toContain('─');
+      expect(lastFrame()).toContain('Completed:');
+      expect(lastFrame()).toContain('✓');
     });
   });
 
