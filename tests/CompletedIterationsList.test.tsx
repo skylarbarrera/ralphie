@@ -22,6 +22,8 @@ function createMockResult(overrides: Partial<IterationResult> = {}): IterationRe
     lastCommit: null,
     costUsd: null,
     usage: null,
+    taskNumber: null,
+    phaseName: null,
     ...overrides,
   };
 }
@@ -168,6 +170,33 @@ describe('CompletedIterationsList', () => {
       const results = [createMockResult({ taskText: null })];
       const { lastFrame } = render(<CompletedIterationsList results={results} />);
       expect(lastFrame()).toContain('Unknown task');
+    });
+  });
+
+  describe('phase info', () => {
+    it('shows task number instead of iteration when available', () => {
+      const results = [createMockResult({ iteration: 1, taskNumber: '1.2' })];
+      const { lastFrame } = render(<CompletedIterationsList results={results} />);
+      expect(lastFrame()).toContain('1.2.');
+      expect(lastFrame()).not.toMatch(/\s1\.\s/);
+    });
+
+    it('shows phase name in brackets when available', () => {
+      const results = [createMockResult({ phaseName: 'Setup & Foundation' })];
+      const { lastFrame } = render(<CompletedIterationsList results={results} />);
+      expect(lastFrame()).toContain('[Setup & Foundation]');
+    });
+
+    it('does not show phase brackets when phaseName is null', () => {
+      const results = [createMockResult({ phaseName: null })];
+      const { lastFrame } = render(<CompletedIterationsList results={results} />);
+      expect(lastFrame()).not.toContain('[');
+    });
+
+    it('falls back to iteration number when taskNumber is null', () => {
+      const results = [createMockResult({ iteration: 3, taskNumber: null })];
+      const { lastFrame } = render(<CompletedIterationsList results={results} />);
+      expect(lastFrame()).toContain('3.');
     });
   });
 });

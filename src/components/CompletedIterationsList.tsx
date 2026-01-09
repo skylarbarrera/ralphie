@@ -50,9 +50,12 @@ export function CompletedIterationsList({ results }: CompletedIterationsListProp
             <Text color={result.error ? 'red' : 'green'}>
               {result.error ? '✗' : '✓'}
             </Text>
-            <Text color="gray"> {result.iteration}. </Text>
+            <Text color="cyan"> {result.taskNumber ?? result.iteration}. </Text>
+            {result.phaseName && (
+              <Text color="yellow">[{result.phaseName}] </Text>
+            )}
             <Text color="white">
-              {truncateText(result.taskText ?? 'Unknown task', 45)}
+              {truncateText(result.taskText ?? 'Unknown task', result.phaseName ? 30 : 45)}
             </Text>
             <Text color="gray">
               {' '}({formatDuration(result.durationMs)}, {formatTokens(result.usage)}{result.usage ? ', ' : ''}{formatCost(result.costUsd)})

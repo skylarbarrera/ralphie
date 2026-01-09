@@ -346,6 +346,8 @@ describe('App', () => {
           lastCommit: null,
           costUsd: null,
           usage: null,
+          taskNumber: null,
+          phaseName: null,
         });
       });
     });
@@ -379,6 +381,8 @@ describe('App', () => {
           lastCommit: { hash: 'abc1234567890', message: 'feat: add feature' },
           costUsd: null,
           usage: null,
+          taskNumber: null,
+          phaseName: null,
         });
       });
     });
@@ -424,6 +428,8 @@ function createMockResult(overrides: Partial<IterationResult> = {}): IterationRe
     lastCommit: null,
     costUsd: null,
     usage: null,
+    taskNumber: null,
+    phaseName: null,
     ...overrides,
   };
 }

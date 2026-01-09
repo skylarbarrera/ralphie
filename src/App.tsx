@@ -9,6 +9,7 @@ import { CompletedIterationsList } from './components/CompletedIterationsList.js
 import { useClaudeStream, type UseClaudeStreamOptions, type ClaudeStreamState } from './hooks/useClaudeStream.js';
 import type { Stats } from './lib/state-machine.js';
 import type { LastCommit } from './lib/types.js';
+import { loadSpecFromDir, getTaskForIteration, type SpecStructure } from './lib/spec-parser.js';
 
 export interface IterationResult {
   iteration: number;
@@ -19,6 +20,8 @@ export interface IterationResult {
   lastCommit: LastCommit | null;
   costUsd: number | null;
   usage: { inputTokens: number; outputTokens: number } | null;
+  taskNumber: string | null;
+  phaseName: string | null;
 }
 
 export interface AppProps {
@@ -31,6 +34,8 @@ export interface AppProps {
   _mockState?: ClaudeStreamState;
   onIterationComplete?: (result: IterationResult) => void;
   completedResults?: IterationResult[];
+  taskNumber?: string | null;
+  phaseName?: string | null;
 }
 
 export function App({
@@ -43,6 +48,8 @@ export function App({
   _mockState,
   onIterationComplete,
   completedResults = [],
+  taskNumber = null,
+  phaseName = null,
 }: AppProps): React.ReactElement {
   const streamOptions: UseClaudeStreamOptions = {
     prompt,
@@ -69,9 +76,11 @@ export function App({
         lastCommit: state.lastCommit,
         costUsd: state.result?.totalCostUsd ?? null,
         usage: state.result?.usage ?? null,
+        taskNumber,
+        phaseName,
       });
     }
-  }, [state.phase, state.isRunning, iteration, state.elapsedMs, state.stats, state.error, state.taskText, state.lastCommit, state.result, onIterationComplete]);
+  }, [state.phase, state.isRunning, iteration, state.elapsedMs, state.stats, state.error, state.taskText, state.lastCommit, state.result, onIterationComplete, taskNumber, phaseName]);
 
   const isPending = state.phase === 'idle' || !state.taskText;
 
@@ -166,6 +175,13 @@ export function IterationRunner({
   const [results, setResults] = useState<IterationResult[]>(_mockResults ?? []);
   const [isComplete, setIsComplete] = useState(_mockIsComplete ?? false);
   const [iterationKey, setIterationKey] = useState(0);
+  const [spec, setSpec] = useState<SpecStructure | null>(null);
+
+  useEffect(() => {
+    const targetDir = cwd ?? process.cwd();
+    const loadedSpec = loadSpecFromDir(targetDir);
+    setSpec(loadedSpec);
+  }, [cwd]);
 
   const handleIterationComplete = useCallback((result: IterationResult) => {
     setResults((prev) => [...prev, result]);
@@ -263,6 +279,8 @@ export function IterationRunner({
     );
   }
 
+  const currentTask = spec ? getTaskForIteration(spec, currentIteration) : null;
+
   return (
     <App
       key={iterationKey}
@@ -275,6 +293,8 @@ export function IterationRunner({
       onIterationComplete={handleIterationComplete}
       _mockState={_mockState}
       completedResults={results}
+      taskNumber={currentTask?.taskNumber ?? null}
+      phaseName={currentTask?.phaseName ?? null}
     />
   );
 }
