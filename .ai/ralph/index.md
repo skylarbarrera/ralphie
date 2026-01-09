@@ -172,7 +172,7 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - next: Integrate ActivityFeed and PhaseIndicator into App
 
 ## 7de5578 — Integrate ActivityFeed and PhaseIndicator into App
-- files: src/App.tsx, tests/App.test.tsx, PRD.md, progress.txt
+- files: src/App.tsx, tests/App.test.tsx, SPEC.md, STATE.txt
 - tests: 464 passing (9 new)
 - notes: Replaced ToolList with ActivityFeed; added PhaseIndicator; lastCommit in IterationResult
-- next: All PRD tasks complete!
+- next: All SPEC tasks complete!

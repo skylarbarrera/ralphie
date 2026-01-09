@@ -1,11 +1,14 @@
 {
   "name": "ralph",
-  "version": "0.1.0",
-  "description": "TypeScript CLI that wraps claude to provide real-time progress updates",
+  "version": "0.2.0",
+  "description": "Autonomous AI coding loops - run Claude on autopilot",
   "type": "module",
   "main": "src/cli.tsx",
+  "bin": {
+    "ralph": "./bin/ralph"
+  },
   "scripts": {
-    "ralph": "tsx src/cli.tsx",
+    "ralph": "tsx src/cli.tsx run",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

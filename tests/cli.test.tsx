@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { parseArgs, resolvePrompt, DEFAULT_PROMPT, type CliOptions } from '../src/cli.js';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { resolvePrompt, DEFAULT_PROMPT, type CliOptions } from '../src/cli.js';
 import { existsSync, readFileSync } from 'fs';
 
 vi.mock('fs', () => ({
@@ -8,88 +8,6 @@ vi.mock('fs', () => ({
 }));
 
 describe('cli', () => {
-  describe('parseArgs', () => {
-    it('parses default values', () => {
-      const options = parseArgs(['node', 'cli.tsx']);
-
-      expect(options.iterations).toBe(1);
-      expect(options.prompt).toBeUndefined();
-      expect(options.promptFile).toBeUndefined();
-      expect(options.cwd).toBe(process.cwd());
-      expect(options.timeoutIdle).toBe(120);
-      expect(options.saveJsonl).toBeUndefined();
-      expect(options.quiet).toBe(false);
-      expect(options.title).toBeUndefined();
-    });
-
-    it('parses -n/--iterations option', () => {
-      const short = parseArgs(['node', 'cli.tsx', '-n', '5']);
-      expect(short.iterations).toBe(5);
-
-      const long = parseArgs(['node', 'cli.tsx', '--iterations', '10']);
-      expect(long.iterations).toBe(10);
-    });
-
-    it('parses -p/--prompt option', () => {
-      const short = parseArgs(['node', 'cli.tsx', '-p', 'Do something']);
-      expect(short.prompt).toBe('Do something');
-
-      const long = parseArgs(['node', 'cli.tsx', '--prompt', 'Do another thing']);
-      expect(long.prompt).toBe('Do another thing');
-    });
-
-    it('parses --prompt-file option', () => {
-      const options = parseArgs(['node', 'cli.tsx', '--prompt-file', './my-prompt.txt']);
-      expect(options.promptFile).toBe('./my-prompt.txt');
-    });
-
-    it('parses --cwd option', () => {
-      const options = parseArgs(['node', 'cli.tsx', '--cwd', '/path/to/repo']);
-      expect(options.cwd).toBe('/path/to/repo');
-    });
-
-    it('parses --timeout-idle option', () => {
-      const options = parseArgs(['node', 'cli.tsx', '--timeout-idle', '300']);
-      expect(options.timeoutIdle).toBe(300);
-    });
-
-    it('parses --save-jsonl option', () => {
-      const options = parseArgs(['node', 'cli.tsx', '--save-jsonl', './debug.jsonl']);
-      expect(options.saveJsonl).toBe('./debug.jsonl');
-    });
-
-    it('parses --quiet option', () => {
-      const options = parseArgs(['node', 'cli.tsx', '--quiet']);
-      expect(options.quiet).toBe(true);
-    });
-
-    it('parses --title option', () => {
-      const options = parseArgs(['node', 'cli.tsx', '--title', 'My Custom Title']);
-      expect(options.title).toBe('My Custom Title');
-    });
-
-    it('parses multiple options together', () => {
-      const options = parseArgs([
-        'node', 'cli.tsx',
-        '-n', '3',
-        '-p', 'Run tests',
-        '--cwd', '/home/user/project',
-        '--timeout-idle', '60',
-        '--save-jsonl', './log.jsonl',
-        '--quiet',
-        '--title', 'Test Run',
-      ]);
-
-      expect(options.iterations).toBe(3);
-      expect(options.prompt).toBe('Run tests');
-      expect(options.cwd).toBe('/home/user/project');
-      expect(options.timeoutIdle).toBe(60);
-      expect(options.saveJsonl).toBe('./log.jsonl');
-      expect(options.quiet).toBe(true);
-      expect(options.title).toBe('Test Run');
-    });
-  });
-
   describe('resolvePrompt', () => {
     beforeEach(() => {
       vi.mocked(existsSync).mockReset();
@@ -99,6 +17,7 @@ describe('cli', () => {
     it('returns prompt option when provided', () => {
       const options: CliOptions = {
         iterations: 1,
+        all: false,
         prompt: 'Custom prompt text',
         cwd: '/test',
         timeoutIdle: 120,
@@ -114,6 +33,7 @@ describe('cli', () => {
 
       const options: CliOptions = {
         iterations: 1,
+        all: false,
         promptFile: './prompt.txt',
         cwd: '/test',
         timeoutIdle: 120,
@@ -130,6 +50,7 @@ describe('cli', () => {
 
       const options: CliOptions = {
         iterations: 1,
+        all: false,
         promptFile: './missing.txt',
         cwd: '/test',
         timeoutIdle: 120,
@@ -142,6 +63,7 @@ describe('cli', () => {
     it('returns DEFAULT_PROMPT when no prompt options are provided', () => {
       const options: CliOptions = {
         iterations: 1,
+        all: false,
         cwd: '/test',
         timeoutIdle: 120,
         quiet: false,
@@ -156,6 +78,7 @@ describe('cli', () => {
 
       const options: CliOptions = {
         iterations: 1,
+        all: false,
         prompt: 'Direct prompt',
         promptFile: './prompt.txt',
         cwd: '/test',
@@ -171,14 +94,14 @@ describe('cli', () => {
   describe('DEFAULT_PROMPT', () => {
     it('contains Ralph loop instructions', () => {
       expect(DEFAULT_PROMPT).toContain('Ralph');
-      expect(DEFAULT_PROMPT).toContain('PRD.md');
-      expect(DEFAULT_PROMPT).toContain('progress.txt');
+      expect(DEFAULT_PROMPT).toContain('SPEC.md');
+      expect(DEFAULT_PROMPT).toContain('STATE.txt');
       expect(DEFAULT_PROMPT).toContain('task');
       expect(DEFAULT_PROMPT.toLowerCase()).toContain('commit');
     });
 
     it('instructs to work on one task per iteration', () => {
-      expect(DEFAULT_PROMPT).toContain('ONE task per iteration');
+      expect(DEFAULT_PROMPT).toContain('ONE TASK PER ITERATION');
     });
   });
 });

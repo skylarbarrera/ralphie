@@ -1,29 +1,27 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 import React from 'react';
 import { render } from 'ink';
 import { Command } from 'commander';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { IterationRunner } from './App.js';
+import { runInit } from './commands/init.js';
+import { validateProject } from './commands/run.js';
 
 export const DEFAULT_PROMPT = `You are Ralph, an autonomous coding assistant running in a loop.
 
-Read PRD.md and progress.txt to understand the project and what has been completed.
-Find the next incomplete task from the PRD checklist.
-Implement the task fully:
-- Write the code
-- Write tests
-- Ensure tests pass
-- Commit your changes with a clear message
+1. Read SPEC.md and find the next incomplete task (check STATE.txt if unsure what's done).
+2. Write plan to .ai/ralph/plan.md (goal, files, tests, exit criteria).
+3. Implement the task with tests.
+4. Run tests and type checks.
+5. Commit your changes with a clear message.
+6. Update .ai/ralph/index.md, SPEC.md, and STATE.txt.
 
-After completing the task:
-- Update progress.txt with what you accomplished
-- Mark the task complete in PRD.md
+ONE TASK PER ITERATION (a batched checkbox counts as one task).`;
 
-Work on ONE task per iteration. Be thorough and systematic.`;
-
-export interface CliOptions {
+export interface RunOptions {
   iterations: number;
+  all: boolean;
   prompt?: string;
   promptFile?: string;
   cwd: string;
@@ -33,38 +31,11 @@ export interface CliOptions {
   title?: string;
 }
 
-export function parseArgs(argv: string[]): CliOptions {
-  const program = new Command();
+export type CliOptions = RunOptions;
 
-  program
-    .name('ralph')
-    .description('CLI wrapper for Claude with real-time progress display')
-    .version('0.1.0')
-    .option('-n, --iterations <number>', 'Number of iterations to run', '1')
-    .option('-p, --prompt <text>', 'Prompt to send to Claude')
-    .option('--prompt-file <path>', 'Read prompt from file')
-    .option('--cwd <path>', 'Working directory for Claude', process.cwd())
-    .option('--timeout-idle <seconds>', 'Kill process after N seconds of no output', '120')
-    .option('--save-jsonl <path>', 'Save raw JSONL output to file')
-    .option('--quiet', 'Suppress output (just run iterations)', false)
-    .option('--title <text>', 'Override task title display');
+export const MAX_ALL_ITERATIONS = 100;
 
-  program.parse(argv);
-  const opts = program.opts();
-
-  return {
-    iterations: parseInt(opts.iterations, 10),
-    prompt: opts.prompt,
-    promptFile: opts.promptFile,
-    cwd: opts.cwd,
-    timeoutIdle: parseInt(opts.timeoutIdle, 10),
-    saveJsonl: opts.saveJsonl,
-    quiet: opts.quiet,
-    title: opts.title,
-  };
-}
-
-export function resolvePrompt(options: CliOptions): string {
+export function resolvePrompt(options: RunOptions): string {
   if (options.prompt) {
     return options.prompt;
   }
@@ -80,7 +51,17 @@ export function resolvePrompt(options: CliOptions): string {
   return DEFAULT_PROMPT;
 }
 
-export function run(options: CliOptions): void {
+export function executeRun(options: RunOptions): void {
+  const validation = validateProject(options.cwd);
+
+  if (!validation.valid) {
+    console.error('Cannot run Ralph:');
+    for (const error of validation.errors) {
+      console.error(`  - ${error}`);
+    }
+    process.exit(1);
+  }
+
   const prompt = resolvePrompt(options);
   const idleTimeoutMs = options.timeoutIdle * 1000;
 
@@ -107,10 +88,110 @@ export function run(options: CliOptions): void {
   });
 }
 
-const isMainModule = process.argv[1]?.endsWith('cli.tsx') ||
-                     process.argv[1]?.endsWith('cli.js');
+function main(): void {
+  const program = new Command();
 
-if (isMainModule) {
-  const options = parseArgs(process.argv);
-  run(options);
+  program
+    .name('ralph')
+    .description('Autonomous AI coding loops')
+    .version('0.2.0');
+
+  program
+    .command('init')
+    .description('Initialize Ralph in the current directory')
+    .argument('[directory]', 'Target directory', process.cwd())
+    .action((directory: string) => {
+      const targetDir = resolve(directory);
+      console.log(`Initializing Ralph in ${targetDir}...\n`);
+
+      try {
+        const result = runInit(targetDir);
+
+        if (result.created.length > 0) {
+          console.log('Created:');
+          for (const file of result.created) {
+            console.log(`  + ${file}`);
+          }
+        }
+
+        if (result.skipped.length > 0) {
+          console.log('\nSkipped (already exist):');
+          for (const file of result.skipped) {
+            console.log(`  - ${file}`);
+          }
+        }
+
+        console.log('\nRalph initialized! Next steps:');
+        console.log('  1. Create SPEC.md with your project tasks');
+        console.log('  2. Run: ralph run');
+      } catch (error) {
+        console.error('Error:', error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command('run')
+    .description('Run Ralph iterations')
+    .option('-n, --iterations <number>', 'Number of iterations to run', '1')
+    .option('-a, --all', 'Run until all PRD tasks are complete (max 100 iterations)')
+    .option('-p, --prompt <text>', 'Prompt to send to Claude')
+    .option('--prompt-file <path>', 'Read prompt from file')
+    .option('--cwd <path>', 'Working directory for Claude', process.cwd())
+    .option('--timeout-idle <seconds>', 'Kill process after N seconds of no output', '120')
+    .option('--save-jsonl <path>', 'Save raw JSONL output to file')
+    .option('--quiet', 'Suppress output (just run iterations)', false)
+    .option('--title <text>', 'Override task title display')
+    .action((opts) => {
+      let iterations = parseInt(opts.iterations, 10);
+      const all = opts.all ?? false;
+
+      if (all) {
+        iterations = MAX_ALL_ITERATIONS;
+        console.log(`Running until PRD complete (max ${MAX_ALL_ITERATIONS} iterations)...\n`);
+      }
+
+      const options: RunOptions = {
+        iterations,
+        all,
+        prompt: opts.prompt,
+        promptFile: opts.promptFile,
+        cwd: resolve(opts.cwd),
+        timeoutIdle: parseInt(opts.timeoutIdle, 10),
+        saveJsonl: opts.saveJsonl,
+        quiet: opts.quiet,
+        title: opts.title,
+      };
+
+      executeRun(options);
+    });
+
+  program
+    .command('validate')
+    .description('Check if current directory is ready for Ralph')
+    .option('--cwd <path>', 'Working directory to check', process.cwd())
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      const result = validateProject(cwd);
+
+      if (result.valid) {
+        console.log('Project is ready for Ralph!');
+      } else {
+        console.log('Issues found:');
+        for (const error of result.errors) {
+          console.log(`  - ${error}`);
+        }
+        process.exit(1);
+      }
+    });
+
+  if (process.argv.length === 2) {
+    program.help();
+  }
+
+  program.parse(process.argv);
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  main();
 }

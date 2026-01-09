@@ -2,37 +2,34 @@
 set -e
 
 # Test Coverage Loop
-# This loop continuously improves test coverage until a target is met.
-# Customize: Change the coverage tool and target percentage for your project.
+# ====================
+# Runs Ralph to improve test coverage until a target is met.
+#
+# Usage:
+#   ./examples/test-coverage-loop.sh 20       # Run 20 iterations, default 80% target
+#   ./examples/test-coverage-loop.sh 20 90    # Run 20 iterations, 90% target
+#
+# What it does:
+#   - Finds files with low test coverage
+#   - Writes tests for uncovered code
+#   - Stops when target coverage is reached
 
-if [ -z "$1" ]; then
-  echo "Usage: $0 <iterations> [target_coverage]"
-  echo "Example: $0 20 80"
-  exit 1
-fi
+ITERATIONS=${1:-10}
+TARGET=${2:-80}
 
-TARGET_COVERAGE=${2:-80}  # Default to 80% coverage if not specified
+echo "Running test coverage loop"
+echo "  Iterations: $ITERATIONS"
+echo "  Target: ${TARGET}%"
+echo ""
 
-for ((i=1; i<=$1; i++)); do
-  result=$(claude --permission-mode acceptEdits -p "@.ai/ralph/index.md \\
-  1. Read last 3 entries from index.md for context. \\
-  2. Run coverage analysis (e.g., jest --coverage, pytest --cov, go test -cover). \\
-  3. Find the file with lowest coverage or most uncovered lines. \\
-  4. Write plan to .ai/ralph/plan.md (which file, which functions, test scenarios). \\
-  5. Write tests for uncovered code paths. \\
-  6. Run tests to verify they pass. \\
-  7. Commit your changes with clear message. \\
-  8. Append summary to .ai/ralph/index.md (format: ## SHA — task). \\
-  9. Check if coverage target of ${TARGET_COVERAGE}% is met. \\
-  ONLY ADD TESTS FOR ONE FILE OR FUNCTION AT A TIME. \\
-  If coverage target is met, output <promise>COMPLETE</promise>.")
+ralph run -n "$ITERATIONS" -p "You are improving test coverage.
 
-  echo "$result"
+1. Run the test coverage tool (jest --coverage, pytest --cov, etc.)
+2. Find the file or function with the lowest coverage
+3. Write tests for uncovered code paths
+4. Run tests to verify they pass
+5. Commit with message: test: add coverage for <file>
 
-  if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
-    echo "Coverage target of ${TARGET_COVERAGE}% achieved after $i iterations."
-    exit 0
-  fi
-done
-
-echo "Completed $1 iterations. Check current coverage and run again if needed."
+Target: ${TARGET}% coverage.
+Only add tests for ONE file at a time.
+When coverage reaches ${TARGET}%, output <promise>COMPLETE</promise>."

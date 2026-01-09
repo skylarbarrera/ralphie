@@ -216,8 +216,8 @@ describe('ActivityFeed', () => {
     it('renders all activity types in sequence', () => {
       const activities: ActivityItem[] = [
         { type: 'thought', timestamp: 1000, text: 'Analyzing the task' },
-        { type: 'tool_start', timestamp: 2000, toolUseId: '1', toolName: 'Read', displayName: 'Reading PRD.md' },
-        { type: 'tool_complete', timestamp: 3000, toolUseId: '1', toolName: 'Read', displayName: 'Read PRD.md', durationMs: 800, isError: false },
+        { type: 'tool_start', timestamp: 2000, toolUseId: '1', toolName: 'Read', displayName: 'Reading SPEC.md' },
+        { type: 'tool_complete', timestamp: 3000, toolUseId: '1', toolName: 'Read', displayName: 'Read SPEC.md', durationMs: 800, isError: false },
         { type: 'commit', timestamp: 4000, hash: 'abc1234', message: 'Initial commit' },
       ];
 
@@ -225,9 +225,9 @@ describe('ActivityFeed', () => {
       const output = lastFrame();
       expect(output).toContain('●');
       expect(output).toContain('Analyzing the task');
-      expect(output).toContain('Reading PRD.md');
+      expect(output).toContain('Reading SPEC.md');
       expect(output).toContain('✓');
-      expect(output).toContain('Read PRD.md');
+      expect(output).toContain('Read SPEC.md');
       expect(output).toContain('abc1234');
       expect(output).toContain('Initial commit');
     });

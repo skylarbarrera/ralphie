@@ -2,57 +2,55 @@
 set -e
 
 # PR Review Loop
-# After each task, create a branch, commit, and open a PR for review.
-# Useful for teams or when you want manual approval before merging to main.
+# ================
+# Runs Ralph to work through SPEC tasks, creating a PR for each one.
+# Useful for teams that want code review before merging.
+#
+# Usage:
+#   ./examples/pr-review-loop.sh 10         # Run 10 iterations
+#
+# What it does:
+#   - Creates a branch for each task
+#   - Implements the task
+#   - Opens a GitHub PR for review
+#   - Returns to main branch
+#
+# Requirements:
+#   - GitHub CLI (gh) must be installed: https://cli.github.com
+#   - Repository must have a GitHub remote
 
-if [ -z "$1" ]; then
-  echo "Usage: $0 <iterations>"
-  echo "Example: $0 10"
-  exit 1
-fi
+ITERATIONS=${1:-10}
 
-# Check if gh CLI is installed
+# Check requirements
 if ! command -v gh &> /dev/null; then
-  echo "Error: GitHub CLI (gh) is not installed."
-  echo "Install: https://cli.github.com/"
+  echo "Error: GitHub CLI (gh) is required"
+  echo "Install: https://cli.github.com"
   exit 1
 fi
 
-# Check if we're in a git repo with remote
 if ! git remote get-url origin &> /dev/null; then
-  echo "Error: No git remote 'origin' found."
-  echo "Add a remote: git remote add origin <url>"
+  echo "Error: No git remote 'origin' found"
+  echo "Add one: git remote add origin <url>"
   exit 1
 fi
 
 MAIN_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
-for ((i=1; i<=$1; i++)); do
-  result=$(claude --permission-mode acceptEdits -p "@PRD.md @progress.txt @.ai/ralph/index.md \\
-  1. Read PRD, progress, and last 3 entries from index.md. \\
-  2. Find next incomplete task. \\
-  3. Write plan to .ai/ralph/plan.md (goal, files, tests, exit criteria). \\
-  4. Create feature branch: git checkout -b feature/task-$i \\
-  5. Implement the task according to plan. \\
-  6. Run tests and linting. \\
-  7. Commit changes with clear conventional commit message. \\
-  8. Append summary to .ai/ralph/index.md (format: ## SHA — task). \\
-  9. Push branch: git push -u origin feature/task-$i \\
-  10. Create PR: gh pr create --title 'Task: <description>' --body '<details>' \\
-  11. Update progress.txt with task completion and PR link. \\
-  12. Switch back to main: git checkout ${MAIN_BRANCH} \\
-  ONLY WORK ON A SINGLE TASK. \\
-  If the PRD is complete, output <promise>COMPLETE</promise>.")
+echo "Running PR review loop"
+echo "  Iterations: $ITERATIONS"
+echo "  Main branch: $MAIN_BRANCH"
+echo ""
 
-  echo "$result"
+ralph run -n "$ITERATIONS" -p "You are implementing SPEC tasks with PRs for review.
 
-  if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
-    echo "PRD complete after $i iterations. All PRs created."
-    exit 0
-  fi
+1. Read SPEC.md and find the next incomplete task
+2. Create a feature branch: git checkout -b feature/<task-name>
+3. Implement the task with tests
+4. Commit with a clear message
+5. Push: git push -u origin HEAD
+6. Create PR: gh pr create --title '<task>' --body '<summary>'
+7. Switch back: git checkout ${MAIN_BRANCH}
+8. Update STATE.txt with the PR link
 
-  # Small delay to avoid rate limiting
-  sleep 2
-done
-
-echo "Completed $1 iterations. Check open PRs: gh pr list"
+Only do ONE task per iteration.
+When SPEC is complete, output <promise>COMPLETE</promise>."

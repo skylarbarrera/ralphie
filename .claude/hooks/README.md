@@ -129,7 +129,7 @@ Hooks automatically run during Ralph execution:
 
 ```bash
 # Hooks run on every commit made by Ralph
-./afk-ralph.sh 20
+npm run ralph -- -n 20
 
 # If a hook fails, Ralph stops and reports the error
 # Fix the issue, then resume the loop
@@ -139,9 +139,9 @@ Hooks automatically run during Ralph execution:
 
 ```bash
 # Skip hooks for a single run
-SKIP_HOOKS=1 ./afk-ralph.sh 10
+SKIP_HOOKS=1 npm run ralph -- -n 10
 
-# Or modify the script to add --no-verify to git commits
+# Or use --no-verify in git commits
 git commit --no-verify -m "message"
 ```
 
