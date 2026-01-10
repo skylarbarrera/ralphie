@@ -84,15 +84,15 @@ describe('spec-parser', () => {
       expect(result?.tasks[8].phaseName).toBe('Polish');
     });
 
-    it('uses fallback phase name when heading missing', () => {
-      const specWithoutHeading = `## Summary: 2 Iterations
+    it('uses section name as phase name when not Phase heading', () => {
+      const specWithSection = `## Features
 
-| Phase | Tasks | Iterations |
-|-------|-------|------------|
-| Phase 1 | 1.1, 1.2 | 2 |
+- [ ] Add login
+- [ ] Add logout
 `;
-      const result = parseSpecContent(specWithoutHeading);
-      expect(result?.tasks[0].phaseName).toBe('Phase 1');
+      const result = parseSpecContent(specWithSection);
+      expect(result?.tasks[0].phaseName).toBe('Features');
+      expect(result?.tasks[0].taskText).toBe('Add login');
     });
   });
 
@@ -100,10 +100,10 @@ describe('spec-parser', () => {
     const spec: SpecStructure = {
       totalIterations: 4,
       tasks: [
-        { taskNumber: '1.1', phaseNumber: 1, phaseName: 'Setup' },
-        { taskNumber: '1.2', phaseNumber: 1, phaseName: 'Setup' },
-        { taskNumber: '2.1', phaseNumber: 2, phaseName: 'Build' },
-        { taskNumber: '2.2', phaseNumber: 2, phaseName: 'Build' },
+        { taskNumber: '1.1', phaseNumber: 1, phaseName: 'Setup', taskText: 'Task 1.1' },
+        { taskNumber: '1.2', phaseNumber: 1, phaseName: 'Setup', taskText: 'Task 1.2' },
+        { taskNumber: '2.1', phaseNumber: 2, phaseName: 'Build', taskText: 'Task 2.1' },
+        { taskNumber: '2.2', phaseNumber: 2, phaseName: 'Build', taskText: 'Task 2.2' },
       ],
     };
 

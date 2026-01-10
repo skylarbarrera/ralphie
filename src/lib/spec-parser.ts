@@ -5,6 +5,7 @@ export interface TaskInfo {
   taskNumber: string;
   phaseNumber: number;
   phaseName: string;
+  taskText: string;
 }
 
 export interface SpecStructure {
@@ -23,32 +24,57 @@ export function parseSpec(specPath: string): SpecStructure | null {
 
 export function parseSpecContent(content: string): SpecStructure | null {
   const tasks: TaskInfo[] = [];
-  const phaseNames: Map<number, string> = new Map();
 
-  // Parse phase headings: ## Phase 1: Setup & Foundation
-  const phaseHeadingRegex = /^##\s*Phase\s*(\d+):\s*(.+)$/gm;
-  let match;
-  while ((match = phaseHeadingRegex.exec(content)) !== null) {
-    const phaseNum = parseInt(match[1], 10);
-    const phaseName = match[2].trim();
-    phaseNames.set(phaseNum, phaseName);
-  }
+  const lines = content.split('\n');
 
-  // Parse summary table to get task order
-  // | Phase 1 | 1.1, 1.2, 1.3, 1.4 | 4 |
-  const tableRowRegex = /^\|\s*Phase\s*(\d+)\s*\|\s*([^|]+)\s*\|\s*\d+\s*\|/gm;
-  while ((match = tableRowRegex.exec(content)) !== null) {
-    const phaseNum = parseInt(match[1], 10);
-    const taskList = match[2].trim();
-    const phaseName = phaseNames.get(phaseNum) ?? `Phase ${phaseNum}`;
+  let currentPhaseNumber = 0;
+  let currentPhaseName = 'Tasks';
+  let taskCounter = 0;
 
-    // Parse task numbers: "1.1, 1.2, 1.3"
-    const taskNumbers = taskList.split(',').map((t) => t.trim()).filter(Boolean);
-    for (const taskNumber of taskNumbers) {
+  for (const line of lines) {
+    // Check for Phase headings: "## Phase 1: Name" or "## Phase 1 - Name"
+    const phaseMatch = line.match(/^#{2,3}\s+Phase\s*(\d+)\s*[:\-]\s*(.+)$/i);
+    if (phaseMatch) {
+      currentPhaseNumber = parseInt(phaseMatch[1], 10);
+      currentPhaseName = phaseMatch[2].trim();
+      continue;
+    }
+
+    // Check for other section headings (## or ###) - use as phase name
+    const sectionMatch = line.match(/^#{2,3}\s+(.+)$/);
+    if (sectionMatch) {
+      const sectionTitle = sectionMatch[1].trim();
+      if (!sectionTitle.toLowerCase().includes('summary')) {
+        currentPhaseNumber++;
+        currentPhaseName = sectionTitle;
+      }
+      continue;
+    }
+
+    // Check for incomplete checkbox tasks: - [ ] task text
+    const checkboxMatch = line.match(/^-\s*\[\s*\]\s+(.+)$/);
+    if (checkboxMatch) {
+      taskCounter++;
+      const fullTaskText = checkboxMatch[1].trim();
+
+      // Try to extract task number from text: "1.1 Create project" or "1.1: Create project"
+      const taskNumMatch = fullTaskText.match(/^(\d+\.\d+)\s*:?\s*(.*)$/);
+      let taskNumber: string;
+      let taskText: string;
+
+      if (taskNumMatch) {
+        taskNumber = taskNumMatch[1];
+        taskText = taskNumMatch[2] || fullTaskText;
+      } else {
+        taskNumber = `${currentPhaseNumber}.${taskCounter}`;
+        taskText = fullTaskText;
+      }
+
       tasks.push({
         taskNumber,
-        phaseNumber: phaseNum,
-        phaseName,
+        phaseNumber: currentPhaseNumber,
+        phaseName: currentPhaseName,
+        taskText,
       });
     }
   }

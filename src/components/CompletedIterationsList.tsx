@@ -55,7 +55,7 @@ export function CompletedIterationsList({ results }: CompletedIterationsListProp
               <Text color="yellow">[{result.phaseName}] </Text>
             )}
             <Text color="white">
-              {truncateText(result.taskText ?? 'Unknown task', result.phaseName ? 30 : 45)}
+              {truncateText(result.specTaskText ?? result.taskText ?? 'Unknown task', result.phaseName ? 30 : 45)}
             </Text>
             <Text color="gray">
               {' '}({formatDuration(result.durationMs)}, {formatTokens(result.usage)}{result.usage ? ', ' : ''}{formatCost(result.costUsd)})

@@ -17,6 +17,7 @@ export interface IterationResult {
   stats: Stats;
   error: Error | null;
   taskText: string | null;
+  specTaskText: string | null;
   lastCommit: LastCommit | null;
   costUsd: number | null;
   usage: { inputTokens: number; outputTokens: number } | null;
@@ -36,6 +37,7 @@ export interface AppProps {
   completedResults?: IterationResult[];
   taskNumber?: string | null;
   phaseName?: string | null;
+  specTaskText?: string | null;
 }
 
 export function App({
@@ -50,6 +52,7 @@ export function App({
   completedResults = [],
   taskNumber = null,
   phaseName = null,
+  specTaskText = null,
 }: AppProps): React.ReactElement {
   const streamOptions: UseClaudeStreamOptions = {
     prompt,
@@ -73,6 +76,7 @@ export function App({
         stats: state.stats,
         error: state.error,
         taskText: state.taskText,
+        specTaskText,
         lastCommit: state.lastCommit,
         costUsd: state.result?.totalCostUsd ?? null,
         usage: state.result?.usage ?? null,
@@ -80,7 +84,7 @@ export function App({
         phaseName,
       });
     }
-  }, [state.phase, state.isRunning, iteration, state.elapsedMs, state.stats, state.error, state.taskText, state.lastCommit, state.result, onIterationComplete, taskNumber, phaseName]);
+  }, [state.phase, state.isRunning, iteration, state.elapsedMs, state.stats, state.error, state.taskText, specTaskText, state.lastCommit, state.result, onIterationComplete, taskNumber, phaseName]);
 
   const isPending = state.phase === 'idle' || !state.taskText;
 
@@ -295,6 +299,7 @@ export function IterationRunner({
       completedResults={results}
       taskNumber={currentTask?.taskNumber ?? null}
       phaseName={currentTask?.phaseName ?? null}
+      specTaskText={currentTask?.taskText ?? null}
     />
   );
 }

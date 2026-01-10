@@ -19,6 +19,7 @@ function createMockResult(overrides: Partial<IterationResult> = {}): IterationRe
     },
     error: null,
     taskText: 'Test task',
+    specTaskText: null,
     lastCommit: null,
     costUsd: null,
     usage: null,
