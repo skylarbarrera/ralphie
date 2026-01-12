@@ -218,3 +218,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation)
 - notes: Added 4 sub-sections (when to explore, spawn parallel agents, what to explore, using results); example with 3 concurrent Task(Explore) calls; table of exploration prompts
 - next: Enhance Plan step (write plan.md with goal, files, tests, exit criteria)
+
+## 1125a3a — Enhance Plan step with detailed guidance for writing plan.md
+- files: .claude/skills/ralph-iterate/SKILL.md, .ai/ralph/plan.md
+- tests: N/A (documentation)
+- notes: Added 4 sub-sections (Write the Goal, List the Files, Define the Tests, Set Exit Criteria); good/bad goal examples; complete plan template; post-planning workflow
+- next: Enhance Implement step (code + tests, run npm test and type-check)
