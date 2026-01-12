@@ -230,3 +230,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation)
 - notes: Added 5 sub-sections (Write the Code, Write the Tests, Run Tests, Run Type Check, Handle Failures); TodoWrite status updates; implementation checklist; common type errors table
 - next: Enhance Review step (spawn Task agent for code review)
+
+## a4f96a6 — Enhance Review step with detailed code review guidance
+- files: .claude/skills/ralph-iterate/SKILL.md, .ai/ralph/plan.md
+- tests: N/A (documentation)
+- notes: Added 5 sub-sections (When to Review, Spawn Review Agent, Handle Review Feedback, Review Flow Example, Update TodoWrite); handling table for CRITICAL/SUGGESTIONS/APPROVED; re-review flow
+- next: Enhance Commit step (git commit, update index.md, check SPEC task)

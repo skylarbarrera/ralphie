@@ -327,3 +327,11 @@
   - Common type errors table with fixes
   - Commit: 9ba6886 docs(skill): enhance Implement step with detailed code and test guidance
 
+✅ 2026-01-12: Enhanced Review step with detailed code review guidance
+  - Added 5 sub-sections: When to Review, Spawn Review Agent, Handle Review Feedback, Review Flow Example, Update TodoWrite
+  - Detailed review agent prompt with 5-point checklist (bugs, tests, patterns, security, performance)
+  - Handling table for CRITICAL/SUGGESTIONS/APPROVED responses
+  - Re-review flow for addressing critical issues
+  - Visual review flow diagram showing decision points
+  - Commit: a4f96a6 docs(skill): enhance Review step with detailed code review guidance
+
