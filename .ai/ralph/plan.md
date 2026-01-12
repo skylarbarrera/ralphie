@@ -1,17 +1,16 @@
 ## Goal
-Refactor ralph.md to remove iteration protocol sections, keeping only Ralph intro + coding standards.
+Enhance SKILL.md with Claude Code Native Features overview, Creating SPECs section, Writing SPECs guidance, and Hooks Configuration.
 
 ## Files
-- templates/.claude/ralph.md - remove ~10 sections, add skill pointer
+- templates/.claude/skills/ralph-iterate/SKILL.md - add 4 sections
 
 ## Tests
 - N/A (documentation only)
-- Verify file is ~350 lines after refactor
 
 ## Exit Criteria
-- Ralph intro + Required Reading kept
-- Pointer to /ralph-iterate skill added
-- All iteration protocol sections removed
-- All coding standards sections kept
-- File is ~350 lines (down from ~830)
+- Claude Code Native Features overview added after frontmatter
+- Creating SPECs section with AskUserQuestion protocol added
+- Writing SPECs batching guidance added
+- Hooks Configuration section added
+- Brief reference to ralph.md for coding standards
 - Changes committed

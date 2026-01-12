@@ -54,12 +54,12 @@ templates/.claude/
 
 ## Phase 2: Enhance SKILL.md
 
-- [ ] Add "Claude Code Native Features" overview after the frontmatter
-- [ ] Add "Creating SPECs" section with full AskUserQuestion protocol
-- [ ] Add "Writing SPECs" section with batching guidance
-- [ ] Add "Hooks Configuration" section
-- [ ] Add brief reference: "Follow coding standards in ralph.md"
-- [ ] Verify SKILL.md is self-contained for running iterations
+- [x] Add "Claude Code Native Features" overview after the frontmatter
+- [x] Add "Creating SPECs" section with full AskUserQuestion protocol
+- [x] Add "Writing SPECs" section with batching guidance
+- [x] Add "Hooks Configuration" section
+- [x] Add brief reference: "Follow coding standards in ralph.md"
+- [x] Verify SKILL.md is self-contained for running iterations
 
 ## Phase 3: Single Source of Truth
 
