@@ -261,3 +261,10 @@
   - Tests: 464 passing (9 new tests for integration)
   - Commit: 7de5578 feat(app): integrate ActivityFeed and PhaseIndicator into App
 
+✅ 2026-01-12: Added AskUserQuestion protocol for SPEC creation
+  - Added "Creating SPECs (Interactive)" section to templates/.claude/ralph.md
+  - Defined 3 question batches: technical foundation, feature scope, quality gates
+  - Included example AskUserQuestion call with structured options
+  - Documented interview flow from questions to SPEC generation
+  - Commit: 12064c5 docs(ralph): add AskUserQuestion protocol for SPEC creation interviews
+

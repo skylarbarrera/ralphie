@@ -175,4 +175,10 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - files: src/App.tsx, tests/App.test.tsx, SPEC.md, STATE.txt
 - tests: 464 passing (9 new)
 - notes: Replaced ToolList with ActivityFeed; added PhaseIndicator; lastCommit in IterationResult
-- next: All SPEC tasks complete!
+- next: Add Claude Code native features to Ralph v3
+
+## 12064c5 — Add AskUserQuestion protocol for SPEC creation interviews
+- files: templates/.claude/ralph.md
+- tests: N/A (documentation only)
+- notes: Added "Creating SPECs (Interactive)" section with 3 question batches (technical foundation, feature scope, quality gates)
+- next: Add Task(Explore) protocol to Planning Phase section
