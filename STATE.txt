@@ -379,3 +379,9 @@
   - Placed after Required Reading, before detailed protocol sections
   - Commit: eb573dd docs(ralph): add Claude Code Native Features overview section
 
+✅ 2026-01-12: Added ralph-iterate skill to templates for init command
+  - Copied .claude/skills/ralph-iterate/SKILL.md to templates
+  - Init command already does recursive copying, no code changes needed
+  - Tests: 542 passing (no regressions)
+  - Commit: 8ec2754 feat(init): add ralph-iterate skill to templates
+

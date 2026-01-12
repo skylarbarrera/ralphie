@@ -37,7 +37,7 @@ Enhance Ralph to leverage Claude Code's native capabilities: AskUserQuestion for
 
 - [x] Update templates/.claude/ralph.md to sync with .claude/CLAUDE.md (they should match)
 - [x] Add "Claude Code Native Features" section to ralph.md explaining the integration
-- [ ] Update ralph init command to copy skill directory if it exists
+- [x] Update ralph init command to copy skill directory if it exists
 
 ## Phase 5: Testing and Validation
 

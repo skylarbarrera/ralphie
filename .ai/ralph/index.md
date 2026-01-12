@@ -272,3 +272,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation only)
 - notes: Table summarizing 5 integrations; workflow diagram showing features working together; placed after Required Reading
 - next: Update ralph init command to copy skill directory
+
+## 8ec2754 — Add ralph-iterate skill to templates
+- files: templates/.claude/skills/ralph-iterate/SKILL.md
+- tests: 542 passing (existing tests, no regressions)
+- notes: Copied SKILL.md to templates; init already does recursive copying so no code changes needed
+- next: Test AskUserQuestion flow manually

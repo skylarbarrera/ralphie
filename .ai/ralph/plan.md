@@ -1,14 +1,16 @@
 ## Goal
-Add a "Claude Code Native Features" section to ralph.md explaining how Ralph integrates with Claude Code's native capabilities.
+Update ralph init command to copy the skill directory (.claude/skills/ralph-iterate) if it exists in templates.
 
 ## Files
-- templates/.claude/ralph.md - add new section explaining the integration
+- src/commands/init.ts - add skill directory copying logic
+- tests for init command (if they exist)
 
 ## Tests
-- N/A (documentation only)
+- Verify skill directory is copied when it exists in templates
+- Verify init still works when skill directory doesn't exist
 
 ## Exit Criteria
-- New section explains the 5 key integrations (AskUserQuestion, Task(Explore), Code Review, TodoWrite, Hooks)
-- Section is placed appropriately (after Ralph-Specific Guidelines intro, before detailed protocols)
-- Content is concise and actionable
+- ralph init copies .claude/skills/ directory from templates
+- Existing init functionality unchanged
+- Tests pass
 - Changes committed
