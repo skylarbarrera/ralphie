@@ -1,121 +1,56 @@
-# Ralph Runner v2 - Product Requirements Document
+# Ralph v3 - Claude Code Native Features Integration
 
-Enhance Ralph CLI with Claude Code-style activity feed, better pending states, and improved visual styling.
+Enhance Ralph to leverage Claude Code's native capabilities: AskUserQuestion for SPEC interviews, Task agents for parallel exploration and code review, TodoWrite for sub-task tracking, a /ralph-iterate skill, and Stop hook validation.
 
 ## Project Goals
-- Replace grouped tool summary with rolling activity feed
-- Show Claude Code-style context (thoughts, file operations, commits)
-- Add pulsing/animated pending states
-- Display commit hash + message per iteration
-- Apply Claude Code visual style (cyan/green colors, bold accents)
+- Use AskUserQuestion tool for structured SPEC creation interviews
+- Spawn Task(Explore) agents for parallel codebase understanding
+- Add automatic code review via Task agent after implementation
+- Use TodoWrite for breaking down current task into sub-tasks
+- Create /ralph-iterate skill that encapsulates the iteration protocol
+- Add LLM-based Stop hook to validate iteration completion
 
-## Technical Requirements
-- TypeScript with tsx runner
-- Ink 4.x for terminal UI
-- ink-spinner for animated spinners
-- Existing dependencies (no new packages needed)
+## Phase 1: Update ralph.md with Native Tool Protocols
 
-## Display Example
+- [ ] Add AskUserQuestion protocol to "Creating SPECs" section in templates/.claude/ralph.md - define 3 question batches (technical foundation, feature scope, quality gates) with specific options
+- [ ] Add Task(Explore) protocol to "Planning Phase" section - spawn parallel exploration agents before implementation
+- [ ] Add code review protocol after "Task Completion Criteria" - spawn review agent before committing
+- [ ] Add TodoWrite protocol for sub-task tracking - use TodoWrite to break down current SPEC task into actionable sub-steps
 
-```
-┌─ Iteration 1/10 ──────────────────── 0:42 elapsed
-│
-│ ▶ "Implementing JWT authentication for the API..."
-│
-│ ● I'll implement JWT authentication for the API.
-│
-│ ● Reading project files...
-│   ✓ Read PRD.md
-│   ✓ Read progress.txt
-│
-│ ● Creating authentication module...
-│   ✓ Created src/auth.ts
-│   ⠋ Editing src/middleware.ts
-│
-│ ✓ a1b2c3d - feat(auth): add JWT authentication
-│
-└─ Running... (0:42) ───────────────────────────────
-```
+## Phase 2: Create /ralph-iterate Skill
 
-## Features
+- [ ] Create .claude/skills/ralph-iterate/SKILL.md with frontmatter (name, description, allowed-tools, context: fork)
+- [ ] Write skill body: Load Context step (read SPEC, index.md, use TodoWrite for sub-tasks)
+- [ ] Write skill body: Explore step (spawn parallel Task(Explore) agents for codebase understanding)
+- [ ] Write skill body: Plan step (write plan.md with goal, files, tests, exit criteria)
+- [ ] Write skill body: Implement step (code + tests, run npm test and type-check)
+- [ ] Write skill body: Review step (spawn Task agent for code review, address critical issues)
+- [ ] Write skill body: Commit step (git commit, update index.md, check SPEC task)
 
-### Data Layer - Activity Tracking
-- [x] Add `ActivityItem` type to `src/lib/types.ts` (thought, tool_start, tool_complete, commit)
-- [x] Add `output?: string` to `CompletedTool` interface in `src/lib/state-machine.ts`
-- [x] Add `activityLog: ActivityItem[]` to `IterationState`
-- [x] Add `lastCommit: { hash, message }` to `IterationState`
-- [x] Store tool output content in `handleToolEnd()`
-- [x] Add `addActivityItem()` helper (cap at 50 items)
-- [x] Add thoughts to activity log in `handleText()`
+## Phase 3: Add Stop Hook Validation
 
-### Data Layer - Git Commit Parsing
-- [x] Add `isGitCommitCommand()` method to detect git commit commands
-- [x] Add `parseGitCommitOutput()` method with regex `/^\[[\w/-]+\s+([a-f0-9]{7,40})\]\s+(.+)$/m`
-- [x] Parse and store commit hash + message when Bash runs git commit
-- [x] Add commit as activity item when detected
+- [ ] Create scripts/validate-iteration.md with LLM prompt for iteration validation (check: task implemented, tests pass, commit made, index.md updated)
+- [ ] Add hook configuration example to templates/.claude/settings.json.example for Stop hook with type: prompt
+- [ ] Document hook setup in templates/.claude/ralph.md under new "Hooks Configuration" section
 
-### Hook Updates
-- [x] Add `activityLog` to `ClaudeStreamState` in `src/hooks/useClaudeStream.ts`
-- [x] Add `lastCommit` to `ClaudeStreamState`
-- [x] Update `updateStateFromMachine()` to include new fields
+## Phase 4: Update Templates and Documentation
 
-### New Utilities
-- [x] Create `src/lib/colors.ts` with Claude Code color scheme (cyan, green, yellow, red, magenta)
-- [x] Create `src/hooks/usePulse.ts` hook for pulsing animations (toggle boolean on interval)
+- [ ] Update templates/.claude/ralph.md to sync with .claude/CLAUDE.md (they should match)
+- [ ] Add "Claude Code Native Features" section to ralph.md explaining the integration
+- [ ] Update ralph init command to copy skill directory if it exists
 
-### New Components - Activity Feed
-- [x] Create `src/components/ActivityFeed.tsx` - main container, renders last N items
-- [x] Create `src/components/ThoughtItem.tsx` - displays `│ ● {thought text}`
-- [x] Create `src/components/ToolActivityItem.tsx` - shows `│   ✓ Created src/auth.ts` or `│   ⠋ Editing...`
-- [x] Create `src/components/CommitItem.tsx` - displays `│ ✓ a1b2c3d - commit message`
-- [x] Create `src/components/PhaseIndicator.tsx` - pulsing phase indicator
+## Phase 5: Testing and Validation
 
-### Component Updates - Styling
-- [x] Update `src/components/IterationHeader.tsx` - bold text, cyan borders
-- [x] Update `src/components/TaskTitle.tsx` - add pulse effect for pending
-- [x] Update `src/components/StatusBar.tsx` - show commit info, Claude Code colors
-
-### Integration
-- [x] Update `src/App.tsx` - replace `<ToolList>` with `<ActivityFeed>`
-- [x] Add `<PhaseIndicator>` to App layout
-- [x] Show commit summary in iteration results
-
-### Testing
-- [x] Add tests for `parseGitCommitOutput()` in `tests/state-machine.test.ts`
-- [x] Add tests for activity log updates
-- [x] Create `tests/ActivityFeed.test.tsx` - test activity type rendering
-- [x] Create `tests/usePulse.test.ts` - test animation hook
-- [x] Verify existing tests still pass
-
-## Activity Verbs
-
-| Tool | Active | Complete |
-|------|--------|----------|
-| Read | Reading | Read |
-| Edit | Editing | Edited |
-| Write | Creating | Created |
-| Bash | Running | Ran |
-| Grep | Searching | Searched |
-| Glob | Finding | Found |
-
-## Color Scheme
-
-| Element | Color |
-|---------|-------|
-| Borders | cyan |
-| Success icons | green |
-| Warnings | yellow |
-| Errors | red |
-| Read operations | cyan |
-| Write operations | yellow |
-| Commands | magenta |
-| Meta operations | gray |
+- [ ] Test AskUserQuestion flow manually - verify structured interview produces good SPEC
+- [ ] Test /ralph-iterate skill in isolation - verify it follows the protocol
+- [ ] Test Stop hook validation - verify it catches incomplete iterations
+- [ ] Run full ralph run -n 3 with new features on a test project
 
 ## Success Criteria
-- Rolling activity feed shows operations as they happen
-- Thoughts displayed with bullet points
-- Git commits show hash + message
-- Pulsing/animated pending states work
-- Claude Code visual style applied throughout
-- All existing tests pass
-- New component tests written
+- SPEC creation uses AskUserQuestion with structured options
+- Each iteration spawns exploration agents before planning
+- Code review agent runs before each commit
+- TodoWrite shows sub-task progress during iteration
+- /ralph-iterate skill can be invoked standalone
+- Stop hook catches iterations that didn't complete properly
+- All existing tests still pass
