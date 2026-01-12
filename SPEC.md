@@ -21,7 +21,7 @@ Enhance Ralph to leverage Claude Code's native capabilities: AskUserQuestion for
 
 - [x] Create .claude/skills/ralph-iterate/SKILL.md with frontmatter (name, description, allowed-tools, context: fork)
 - [x] Write skill body: Load Context step (read SPEC, index.md, use TodoWrite for sub-tasks)
-- [ ] Write skill body: Explore step (spawn parallel Task(Explore) agents for codebase understanding)
+- [x] Write skill body: Explore step (spawn parallel Task(Explore) agents for codebase understanding)
 - [ ] Write skill body: Plan step (write plan.md with goal, files, tests, exit criteria)
 - [ ] Write skill body: Implement step (code + tests, run npm test and type-check)
 - [ ] Write skill body: Review step (spawn Task agent for code review, address critical issues)

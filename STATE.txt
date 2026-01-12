@@ -306,3 +306,10 @@
   - Documented when to skip TodoWrite (atomic tasks, docs-only, <3 steps)
   - Commit: 6c6645a docs(skill): enhance Load Context step with detailed TodoWrite guidance
 
+✅ 2026-01-12: Enhanced Explore step with parallel agent guidance
+  - Added 4 sub-sections: when to explore, spawn parallel agents, what to explore, using results
+  - Included example with 3 concurrent Task(Explore) calls for auth feature
+  - Added table of exploration prompts by need (architecture, patterns, dependencies, conventions)
+  - Documented 5-step workflow for incorporating exploration results
+  - Commit: 424eba4 docs(skill): enhance Explore step with parallel agent guidance
+

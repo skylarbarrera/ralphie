@@ -212,3 +212,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation)
 - notes: Added 4 sub-sections (SPEC reading, STATE.txt, index.md, TodoWrite); explicit TodoWrite example with all fields; skip guidance
 - next: Enhance Explore step (spawn parallel Task(Explore) agents)
+
+## 424eba4 — Enhance Explore step with parallel agent guidance
+- files: .claude/skills/ralph-iterate/SKILL.md, .ai/ralph/plan.md
+- tests: N/A (documentation)
+- notes: Added 4 sub-sections (when to explore, spawn parallel agents, what to explore, using results); example with 3 concurrent Task(Explore) calls; table of exploration prompts
+- next: Enhance Plan step (write plan.md with goal, files, tests, exit criteria)
