@@ -1,15 +1,20 @@
 ## Goal
-Add Task(Explore) protocol to the "Planning Phase" section in templates/.claude/ralph.md - define how to spawn parallel exploration agents for codebase understanding before implementation.
+Add code review protocol to ralph.md - spawn a Task agent for code review before committing.
 
 ## Files
-- templates/.claude/ralph.md - add new subsection under Planning Phase
+- templates/.claude/ralph.md - add new "Code Review Protocol" section after "Task Completion Criteria"
 
-## Tests
-- N/A (documentation only)
+## Content to Add
+A new section that documents:
+1. When to spawn a code review agent (after tests pass, before committing)
+2. Task agent call example with review prompt
+3. What the agent reviews (code quality, test coverage, patterns, security)
+4. How to handle review feedback (critical vs suggestions)
+5. When to skip review (trivial changes)
 
 ## Exit Criteria
-- Planning Phase section includes Task(Explore) protocol
-- Protocol explains when to spawn parallel agents
-- Example shows how to use Task tool with subagent_type='Explore'
-- Guidance on what to explore (files, patterns, architecture)
-- Changes committed
+- New "Code Review Protocol" section added after "Task Completion Criteria"
+- Includes Task agent example with appropriate prompt
+- Documents review categories and how to handle feedback
+- Fits Ralph's style (concise, practical)
+- Changes committed with clear message

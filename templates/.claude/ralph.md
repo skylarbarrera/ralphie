@@ -356,6 +356,65 @@ A task is ONLY complete when:
 - [ ] Documentation updated (if public API)
 - [ ] Changes committed with clear message
 
+### Code Review Protocol
+
+Before committing, spawn a review agent to catch issues you might have missed. This adds ~30 seconds but prevents bugs and maintains code quality.
+
+**When to Review:**
+- After tests pass, before committing
+- For any task that changes logic or adds features
+- When modifying code you didn't write
+
+**When to Skip:**
+- Documentation-only changes
+- Simple config/dependency updates
+- Trivial fixes (typos, formatting)
+
+**Spawn Review Agent:**
+
+```typescript
+Task({
+  subagent_type: 'general-purpose',
+  description: 'Review code changes',
+  prompt: `Review my changes for this task: [TASK DESCRIPTION]
+
+Files changed:
+- [list files]
+
+Check for:
+1. **Bugs**: Logic errors, edge cases, null handling
+2. **Tests**: Coverage gaps, missing assertions, fragile tests
+3. **Patterns**: Consistency with codebase conventions
+4. **Security**: Input validation, injection risks, secrets exposure
+5. **Performance**: N+1 queries, unnecessary loops, memory leaks
+
+Respond with:
+- CRITICAL: Issues that must be fixed before commit
+- SUGGESTIONS: Improvements to consider (optional to address)
+- APPROVED: If no critical issues found`
+})
+```
+
+**Handling Feedback:**
+
+| Response | Action |
+|----------|--------|
+| CRITICAL issues | Fix them, re-run tests, request another review |
+| SUGGESTIONS only | Address if quick (<2 min), otherwise note for future |
+| APPROVED | Proceed to commit |
+
+**Example Review Flow:**
+
+```
+1. Implement feature + tests
+2. Run tests (npm test) → pass
+3. Run type check (npm run type-check) → pass
+4. Spawn review agent with diff summary
+5. Agent responds: "APPROVED" or "CRITICAL: [issue]"
+6. If critical: fix and re-review
+7. Commit changes
+```
+
 ### Progress Updates
 When updating `STATE.txt`, be specific:
 ```
