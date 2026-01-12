@@ -248,3 +248,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation/prompt)
 - notes: 7-point checklist (task, tests, types, commit, index, spec, state); JSON output format with valid/invalid; example outputs for common scenarios
 - next: Add hook configuration example to templates/.claude/settings.json.example
+
+## 1fc21e0 — Add settings.json.example with Stop hook configuration
+- files: templates/.claude/settings.json.example, .ai/ralph/plan.md
+- tests: N/A (configuration template)
+- notes: Stop hook with type: prompt pointing to scripts/validate-iteration.md; common Ralph permission patterns (npm test, vitest, git commands)
+- next: Document hook setup in templates/.claude/ralph.md under "Hooks Configuration" section

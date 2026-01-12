@@ -352,3 +352,9 @@
   - Special case handling for docs-only, non-TypeScript, partial tasks
   - Commit: d0a1824 docs(hooks): add validate-iteration.md prompt for Stop hook
 
+✅ 2026-01-12: Added settings.json.example with Stop hook configuration
+  - Created templates/.claude/settings.json.example
+  - Stop hook with type: prompt pointing to scripts/validate-iteration.md
+  - Common Ralph permission patterns (npm test, vitest, git commands)
+  - Commit: 1fc21e0 docs(hooks): add settings.json.example with Stop hook configuration
+
