@@ -157,25 +157,137 @@ Exploration Results → Informs Plan → Guides Implementation
 
 ## Step 3: Plan
 
-Write plan to `.ai/ralph/plan.md`:
+Write your plan to `.ai/ralph/plan.md` **before writing any code**. The plan is your contract for this iteration — it defines scope, prevents creep, and provides a clear completion target.
+
+### 3.1 Write the Goal
+
+The Goal is a **single sentence** that describes what this iteration accomplishes. It should be:
+- **Specific**: Name the feature, component, or fix
+- **Completable**: Something achievable in one iteration
+- **Verifiable**: You can objectively confirm it's done
+
+**Good goals:**
+```markdown
+## Goal
+Add JWT token refresh endpoint that returns a new access token when given a valid refresh token.
+```
 
 ```markdown
 ## Goal
-One sentence describing what this iteration accomplishes.
+Fix race condition in WebSocket reconnection that causes duplicate message handlers.
+```
+
+**Bad goals (too vague):**
+```markdown
+## Goal
+Improve authentication.  ← What specifically? Add? Fix? Refactor?
+```
+
+```markdown
+## Goal
+Work on the API.  ← Which endpoint? What change?
+```
+
+### 3.2 List the Files
+
+List every file you plan to create or modify with a brief note about what changes:
+
+```markdown
+## Files
+- src/auth/refresh.ts - create token refresh endpoint
+- src/auth/middleware.ts - add refresh token validation
+- src/auth/types.ts - add RefreshTokenPayload type
+- tests/auth/refresh.test.ts - unit tests for refresh flow
+```
+
+**Guidelines:**
+- **Be explicit** — list actual file paths, not "auth files"
+- **Include tests** — every implementation file should have a corresponding test file
+- **Note the action** — "create", "modify", "add", "fix", "remove"
+- **Use exploration results** — if Step 2 found patterns in specific files, reference them
+
+If you're unsure which files need changes, your exploration in Step 2 was incomplete. Go back and explore more before planning.
+
+### 3.3 Define the Tests
+
+List specific test scenarios that prove your implementation works. These become your acceptance criteria:
+
+```markdown
+## Tests
+- Returns new access token when refresh token is valid
+- Returns 401 when refresh token is expired
+- Returns 401 when refresh token is revoked
+- Returns 400 when refresh token is malformed
+- Rotates refresh token on successful refresh (one-time use)
+```
+
+**Guidelines:**
+- **Cover happy path** — at least one test for the success case
+- **Cover error cases** — invalid input, edge cases, failures
+- **Be specific** — "handles errors" is not a test; "returns 404 when user not found" is
+- **Match existing patterns** — look at how similar features are tested in the codebase
+
+**Skip when:**
+- Task is documentation-only
+- Task is configuration/setup (no logic to test)
+- Existing tests already cover the change
+
+### 3.4 Set Exit Criteria
+
+Exit criteria are the **checkboxes you must check** before committing. They combine your goal, tests, and any additional requirements:
+
+```markdown
+## Exit Criteria
+- Refresh endpoint returns new tokens for valid requests
+- All 5 test scenarios pass
+- Type checking passes (`npm run type-check`)
+- No new linting errors
+- Changes committed with conventional message
+```
+
+**Standard exit criteria (include most of these):**
+- Feature/fix works as described in Goal
+- Tests pass with good coverage (80%+ for new code)
+- Type checking passes (if TypeScript)
+- No linting errors
+- Changes committed
+
+**Additional criteria (when applicable):**
+- Documentation updated (for public APIs)
+- Migration added (for database changes)
+- Environment variables documented (for new config)
+
+### Complete Plan Example
+
+```markdown
+## Goal
+Add JWT token refresh endpoint that returns a new access token when given a valid refresh token.
 
 ## Files
-- src/feature.ts - add new function
-- tests/feature.test.ts - unit tests
+- src/auth/refresh.ts - create token refresh endpoint
+- src/auth/middleware.ts - add refresh token validation helper
+- src/auth/types.ts - add RefreshTokenPayload interface
+- tests/auth/refresh.test.ts - unit tests
 
 ## Tests
-- Test scenario 1
-- Test scenario 2
+- Returns new access token when refresh token is valid
+- Returns 401 when refresh token is expired
+- Returns 401 when refresh token is revoked
+- Returns 400 when refresh token is malformed
+- Rotates refresh token on successful refresh
 
 ## Exit Criteria
-- Function works with valid input
-- Tests pass with 80%+ coverage
+- Refresh endpoint works for valid requests
+- All 5 test scenarios pass
+- Type checking passes
 - Changes committed
 ```
+
+### After Writing the Plan
+
+1. **Review scope** — Is this achievable in one iteration? If not, split the task.
+2. **Update TodoWrite** — Add sub-tasks based on your Files list if not done in Step 1.
+3. **Proceed to implementation** — Only start coding after the plan is written.
 
 ## Step 4: Implement
 
