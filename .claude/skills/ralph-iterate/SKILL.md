@@ -452,25 +452,163 @@ Before proceeding to Review:
 
 ## Step 5: Review
 
-Before committing, spawn a review agent:
+Before committing, spawn a review agent to catch bugs, verify patterns, and ensure quality. This step prevents shipping broken code and helps maintain codebase consistency.
+
+### 5.1 When to Review
+
+**Review when:**
+- You wrote more than 20 lines of new code
+- You modified existing business logic
+- You added or changed API endpoints
+- You made security-relevant changes (auth, validation, encryption)
+- You're uncertain about your implementation approach
+
+**Skip when:**
+- Task is documentation-only
+- Changes are config/setup files only
+- Changes are purely stylistic (formatting, renaming)
+- You only deleted code without adding anything new
+
+### 5.2 Spawn Review Agent
+
+Use the Task tool with `subagent_type='general-purpose'` to spawn a review agent. Provide context about the task and list the files you changed:
 
 ```typescript
 Task({
   subagent_type: 'general-purpose',
   description: 'Review code changes',
-  prompt: `Review changes for: [TASK]
+  prompt: `Review the following code changes for: [TASK DESCRIPTION]
 
-Files: [list]
+## Files Changed
+- [file1.ts] - [what was changed]
+- [file2.ts] - [what was changed]
+- [file.test.ts] - [tests added]
 
-Check: bugs, test coverage, patterns, security, performance.
+## Review Checklist
+Please check for:
+1. **Bugs** - Logic errors, off-by-one, null handling, race conditions
+2. **Test coverage** - Are edge cases tested? Any missing scenarios?
+3. **Patterns** - Does the code follow existing codebase patterns?
+4. **Security** - Input validation, injection risks, auth bypasses
+5. **Performance** - N+1 queries, unnecessary loops, memory leaks
 
-Respond: CRITICAL (must fix), SUGGESTIONS (optional), or APPROVED.`
+## Response Format
+Respond with ONE of:
+- **CRITICAL**: Must-fix issues that would cause bugs or security problems
+- **SUGGESTIONS**: Optional improvements (style, naming, minor optimizations)
+- **APPROVED**: Code is ready to commit
+
+If CRITICAL, list each issue with file:line and a brief fix description.`
 })
 ```
 
-- **CRITICAL**: Fix issues and re-review
-- **SUGGESTIONS**: Address if quick
-- **APPROVED**: Proceed to commit
+**Customize the prompt for your task:**
+- For API changes, emphasize validation and error handling
+- For database changes, emphasize migrations and query performance
+- For auth changes, emphasize security review
+- For UI changes, emphasize user experience and accessibility
+
+### 5.3 Handle Review Feedback
+
+The review agent will respond with one of three outcomes:
+
+| Response | Action |
+|----------|--------|
+| **CRITICAL** | **Must fix** - Address every critical issue before committing |
+| **SUGGESTIONS** | **Optional** - Address if quick (<5 min), otherwise note for future |
+| **APPROVED** | **Proceed** - Move to Step 6 (Commit) |
+
+**Handling CRITICAL feedback:**
+
+1. **Read the issues** - Each critical issue should include file:line and description
+2. **Fix in priority order** - Security > Bugs > Breaking changes
+3. **Re-run tests** - Ensure fixes didn't break anything
+4. **Re-run type check** - Ensure fixes don't introduce type errors
+5. **Request re-review** - Spawn another review agent to verify fixes
+
+```typescript
+// After fixing critical issues, re-review:
+Task({
+  subagent_type: 'general-purpose',
+  description: 'Re-review fixes',
+  prompt: `Re-review after fixing critical issues.
+
+## Original Issues (now fixed)
+- [Issue 1]: Fixed by [change]
+- [Issue 2]: Fixed by [change]
+
+## Files Changed
+- [file1.ts] - [original change + fix]
+
+Verify fixes are correct. Respond: CRITICAL, SUGGESTIONS, or APPROVED.`
+})
+```
+
+**Handling SUGGESTIONS:**
+
+Suggestions are optional but valuable:
+- Address if the fix is quick (< 5 minutes)
+- Skip if the suggestion is stylistic preference
+- Note valuable suggestions in your commit message or index.md for future iterations
+
+### 5.4 Review Flow Example
+
+```
+Implementation Complete
+         │
+         ▼
+┌─────────────────────┐
+│  Spawn Review Agent │
+└─────────────────────┘
+         │
+         ▼
+    ┌─────────┐
+    │ RESULT? │
+    └─────────┘
+         │
+    ┌────┼────┬────────────┐
+    │    │    │            │
+    ▼    │    ▼            ▼
+CRITICAL │  SUGGESTIONS  APPROVED
+    │    │    │            │
+    ▼    │    ▼            ▼
+  Fix    │  Optional    Proceed
+ Issues  │   Fixes      to Commit
+    │    │    │            │
+    ▼    │    ▼            │
+Re-review│  Proceed        │
+    │    │    │            │
+    └────┴────┴────────────┘
+                   │
+                   ▼
+            Step 6: Commit
+```
+
+### 5.5 Update TodoWrite
+
+After review completes, update your sub-tasks:
+
+```typescript
+TodoWrite({
+  todos: [
+    { content: "Write implementation code", activeForm: "Writing code", status: "completed" },
+    { content: "Write unit tests", activeForm: "Writing tests", status: "completed" },
+    { content: "Run tests and type check", activeForm: "Running verification", status: "completed" },
+    { content: "Code review", activeForm: "Reviewing code", status: "completed" },
+    { content: "Commit changes", activeForm: "Committing", status: "pending" }
+  ]
+})
+```
+
+### Review Checklist
+
+Before proceeding to Commit:
+
+- [ ] Review agent spawned with appropriate context
+- [ ] All CRITICAL issues addressed
+- [ ] Tests still pass after any fixes
+- [ ] Type check still passes after any fixes
+- [ ] Response is APPROVED or SUGGESTIONS-only
 
 ## Step 6: Commit
 
