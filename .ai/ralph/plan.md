@@ -1,17 +1,19 @@
 ## Goal
-Add "Hooks Configuration" section to templates/.claude/ralph.md documenting Stop hook setup for iteration validation.
+Sync templates/.claude/ralph.md with .claude/CLAUDE.md to ensure both files match content-wise.
 
 ## Files
-- templates/.claude/ralph.md - add new section after "Error Recovery" section
+- templates/.claude/ralph.md - update to include all sections from CLAUDE.md
 
 ## Tests
-- No code tests needed (documentation-only change)
-- Verify section is well-structured and complete
+- N/A (documentation only)
+- Verify both files have matching sections and content
 
 ## Exit Criteria
-- New "Hooks Configuration" section exists in ralph.md
-- Documents what hooks are and why they're useful
-- Shows settings.json configuration for Stop hook
-- References scripts/validate-iteration.md
-- Explains validation criteria and JSON output format
+- templates/.claude/ralph.md contains all sections from .claude/CLAUDE.md
+- Claude Code native feature sections are preserved (AskUserQuestion, Task(Explore), Code Review Protocol, Sub-Task Tracking, Hooks Configuration)
 - Changes committed
+
+## Status: COMPLETED ✓
+- Added 11 sections from CLAUDE.md
+- All Claude Code native features preserved
+- Commit: 10e84d2

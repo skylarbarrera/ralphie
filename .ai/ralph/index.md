@@ -260,3 +260,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation only)
 - notes: Documents Stop hook purpose, settings.json setup, 7-point validation checklist, JSON output format, troubleshooting table
 - next: Update templates/.claude/ralph.md to sync with .claude/CLAUDE.md
+
+## 10e84d2 — Sync ralph.md with CLAUDE.md for template consistency
+- files: templates/.claude/ralph.md
+- tests: N/A (documentation only)
+- notes: Added 11 sections from CLAUDE.md: comment examples, test structure, file organization, commit examples, performance considerations, auth/auth, dependencies, code review checklist, expanded anti-patterns, tools/linters, 6th philosophical principle
+- next: Add "Claude Code Native Features" section to ralph.md

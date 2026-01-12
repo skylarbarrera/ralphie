@@ -365,3 +365,11 @@
   - Includes troubleshooting table for common validation failures
   - Commit: b51ebad docs(hooks): add Hooks Configuration section to ralph.md
 
+✅ 2026-01-12: Synced templates/.claude/ralph.md with .claude/CLAUDE.md
+  - Added 11 sections from CLAUDE.md for template consistency
+  - Comment examples, test structure, file organization, commit examples
+  - Performance considerations, auth/auth, dependencies sections
+  - Code review checklist, expanded anti-patterns, tools/linters
+  - Added 6th philosophical principle (Documented over undocumented)
+  - Commit: 10e84d2 docs(ralph): sync ralph.md with CLAUDE.md for template consistency
+
