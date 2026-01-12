@@ -63,15 +63,15 @@ templates/.claude/
 
 ## Phase 3: Single Source of Truth
 
-- [ ] Delete .claude/skills/ directory from project (templates is authoritative)
-- [ ] Sync .claude/CLAUDE.md with the new lean ralph.md
+- [x] Delete .claude/skills/ directory from project (templates is authoritative)
+- [x] Sync .claude/CLAUDE.md with the new lean ralph.md
 
 ## Phase 4: Validation
 
-- [ ] Verify ralph.md is ~350 lines (down from ~830)
-- [ ] Verify SKILL.md contains all iteration + SPEC creation guidance
-- [ ] Run tests to ensure no regressions
-- [ ] Test ralph init creates correct structure
+- [x] Verify ralph.md is ~350 lines (down from ~830) ✓ 358 lines
+- [x] Verify SKILL.md contains all iteration + SPEC creation guidance ✓ 967 lines
+- [x] Run tests to ensure no regressions ✓ 542 tests passing
+- [x] Test ralph init creates correct structure ✓ templates has skill
 
 ## Success Criteria
 - ralph.md has brief Ralph intro + coding standards only (~350 lines)
