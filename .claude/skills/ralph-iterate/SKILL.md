@@ -86,22 +86,74 @@ TodoWrite({
 
 ## Step 2: Explore (if needed)
 
-For unfamiliar code, spawn parallel exploration agents:
+Before writing your plan, spawn parallel exploration agents to understand unfamiliar parts of the codebase. This is faster than reading files sequentially and helps you make better architectural decisions.
+
+### 2.1 When to Explore
+
+**Explore when:**
+- Working in a new area of the codebase
+- Task involves multiple interconnected modules
+- Unsure about existing patterns or conventions
+- Need to understand how similar features were implemented
+
+**Skip when:**
+- Working on files you've modified recently
+- Simple changes to isolated functions
+- Task specifies exact file paths in SPEC
+- Documentation-only changes
+
+### 2.2 Spawn Parallel Agents
+
+Use the Task tool with `subagent_type='Explore'` to spawn agents that search the codebase in parallel. **Send all Task calls in a single message** to run them concurrently:
 
 ```typescript
+// Example: Exploring for an authentication feature
+// Spawn all agents in ONE message (parallel execution)
+
 Task({
   subagent_type: 'Explore',
-  description: 'Find [pattern/feature]',
-  prompt: 'Find [what you need]. Report file paths and key patterns.'
+  description: 'Find auth patterns',
+  prompt: 'Find how authentication is implemented. Look for middleware, JWT handling, session management. Report file paths and key patterns.'
+})
+
+Task({
+  subagent_type: 'Explore',
+  description: 'Find test patterns',
+  prompt: 'Find testing patterns for API endpoints. Look for test setup, mocking strategies, assertion patterns. Report examples I can follow.'
+})
+
+Task({
+  subagent_type: 'Explore',
+  description: 'Find error handling',
+  prompt: 'Find error handling patterns. Look for custom error classes, error middleware, response formatting. Report the conventions used.'
 })
 ```
 
-Spawn 2-3 agents in parallel for different concerns (architecture, tests, conventions).
+### 2.3 What to Explore
 
-**Skip exploration when:**
-- Working on files you've modified recently
-- Simple changes to isolated functions
-- Task specifies exact file paths
+Tailor your exploration prompts to your task:
+
+| Need | Prompt Focus |
+|------|--------------|
+| **Architecture** | "How is [feature] structured? What files/modules are involved?" |
+| **Patterns** | "What patterns are used for [X]? Show me examples." |
+| **Dependencies** | "What does [module] depend on? What depends on it?" |
+| **Conventions** | "What naming/file structure conventions are used?" |
+| **Similar features** | "How is [existing similar feature] implemented?" |
+
+### 2.4 Using Exploration Results
+
+Once all agents complete:
+
+1. **Wait for completion** — don't proceed until all agents return
+2. **Extract file paths** — incorporate discovered paths into your plan's Files section
+3. **Follow patterns** — use patterns the agents identify (don't invent new ones)
+4. **Note concerns** — document any blockers or risks in your plan
+5. **Update sub-tasks** — add/remove TodoWrite items based on findings
+
+```
+Exploration Results → Informs Plan → Guides Implementation
+```
 
 ## Step 3: Plan
 

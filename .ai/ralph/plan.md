@@ -1,19 +1,16 @@
 ## Goal
-Enhance the Load Context step in the /ralph-iterate skill to be more detailed and actionable, with explicit TodoWrite examples.
+Enhance the Explore step (Step 2) in the ralph-iterate skill with detailed guidance for spawning parallel Task(Explore) agents, including when to explore, what to explore, and how to use results.
 
 ## Files
-- .claude/skills/ralph-iterate/SKILL.md - enhance Step 1: Load Context section
+- .claude/skills/ralph-iterate/SKILL.md - expand Step 2: Explore section
 
-## Changes
-1. Add detailed instructions for reading SPEC.md (how to find incomplete tasks)
-2. Add STATE.txt reading guidance (when to check, what to look for)
-3. Add index.md reading guidance (how many entries, what to extract)
-4. Add explicit TodoWrite example with proper structure (content, activeForm, status)
-5. Add guidance on when to skip TodoWrite (atomic tasks)
+## Tests
+- N/A (documentation-only change)
 
 ## Exit Criteria
-- Step 1 contains actionable, detailed instructions
-- TodoWrite example shows proper format with all required fields
-- Clear guidance on when to use vs skip TodoWrite
-- No tests needed (documentation/skill file only)
+- Explore step has detailed sub-sections matching Load Context step format
+- Includes when to explore vs when to skip
+- Shows 2-3 parallel agent examples with good prompts
+- Documents what to explore (architecture, patterns, dependencies, conventions)
+- Explains how to use exploration results in planning
 - Changes committed
