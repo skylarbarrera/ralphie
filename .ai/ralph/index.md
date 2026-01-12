@@ -206,3 +206,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (skill configuration)
 - notes: Frontmatter (name, description, context: fork, allowed-tools); body has 6 steps (Load Context, Explore, Plan, Implement, Review, Commit)
 - next: Verify/enhance skill body steps (Load Context step)
+
+## 6c6645a — Enhance Load Context step with detailed TodoWrite guidance
+- files: .claude/skills/ralph-iterate/SKILL.md, .ai/ralph/plan.md
+- tests: N/A (documentation)
+- notes: Added 4 sub-sections (SPEC reading, STATE.txt, index.md, TodoWrite); explicit TodoWrite example with all fields; skip guidance
+- next: Enhance Explore step (spawn parallel Task(Explore) agents)

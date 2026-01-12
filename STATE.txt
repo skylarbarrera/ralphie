@@ -300,3 +300,9 @@
   - Skill body includes 6-step iteration protocol (Load Context, Explore, Plan, Implement, Review, Commit)
   - Commit: d867cb4 feat(skill): create ralph-iterate skill with frontmatter
 
+✅ 2026-01-12: Enhanced Load Context step with detailed TodoWrite guidance
+  - Added 4 sub-sections: SPEC.md reading, STATE.txt checks, index.md reading, TodoWrite
+  - Included explicit TodoWrite example with content, activeForm, status fields
+  - Documented when to skip TodoWrite (atomic tasks, docs-only, <3 steps)
+  - Commit: 6c6645a docs(skill): enhance Load Context step with detailed TodoWrite guidance
+
