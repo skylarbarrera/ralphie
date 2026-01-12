@@ -268,3 +268,12 @@
   - Documented interview flow from questions to SPEC generation
   - Commit: 12064c5 docs(ralph): add AskUserQuestion protocol for SPEC creation interviews
 
+✅ 2026-01-12: Added Task(Explore) protocol for parallel codebase exploration
+  - Added step 2 to Planning Phase: spawn exploration agents if needed
+  - Added detailed Task(Explore) Protocol section with:
+    - When to explore vs skip guidance
+    - Example parallel agent spawning code
+    - What to explore (architecture, patterns, dependencies, conventions)
+    - How to use exploration results in planning
+  - Commit: 953b42c docs(ralph): add Task(Explore) protocol for parallel codebase exploration
+

@@ -182,3 +182,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation only)
 - notes: Added "Creating SPECs (Interactive)" section with 3 question batches (technical foundation, feature scope, quality gates)
 - next: Add Task(Explore) protocol to Planning Phase section
+
+## 953b42c — Add Task(Explore) protocol for parallel codebase exploration
+- files: templates/.claude/ralph.md
+- tests: N/A (documentation only)
+- notes: Added step to Planning Phase for spawning exploration agents; detailed protocol with when to explore/skip, example code, guidance on using results
+- next: Add code review protocol after Task Completion Criteria
