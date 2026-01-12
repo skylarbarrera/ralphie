@@ -335,3 +335,12 @@
   - Visual review flow diagram showing decision points
   - Commit: a4f96a6 docs(skill): enhance Review step with detailed code review guidance
 
+✅ 2026-01-12: Enhanced Commit step with detailed git and tracking guidance
+  - Added 6 sub-sections: Stage Changes, Commit Message, Update index.md, Update SPEC.md, Update STATE.txt, Update TodoWrite
+  - HEREDOC example for proper multi-line commit messages
+  - Commit types table (feat, fix, refactor, test, docs, chore)
+  - index.md entry format with SHA, files, tests, notes, next fields
+  - Commit flow diagram showing complete workflow
+  - Commit checklist for verifying iteration completion
+  - Commit: 51535df docs(skill): enhance Commit step with detailed git and tracking guidance
+

@@ -236,3 +236,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation)
 - notes: Added 5 sub-sections (When to Review, Spawn Review Agent, Handle Review Feedback, Review Flow Example, Update TodoWrite); handling table for CRITICAL/SUGGESTIONS/APPROVED; re-review flow
 - next: Enhance Commit step (git commit, update index.md, check SPEC task)
+
+## 51535df — Enhance Commit step with detailed git and tracking guidance
+- files: .claude/skills/ralph-iterate/SKILL.md, .ai/ralph/plan.md
+- tests: N/A (documentation)
+- notes: Added 6 sub-sections (Stage Changes, Commit Message, Update index.md, Update SPEC.md, Update STATE.txt, Update TodoWrite); HEREDOC example; commit types table; flow diagram
+- next: Create scripts/validate-iteration.md for Stop hook validation
