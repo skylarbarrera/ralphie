@@ -37,20 +37,20 @@ templates/.claude/
 
 ## Phase 1: Refactor ralph.md
 
-- [ ] Keep "Ralph-Specific Guidelines" header with brief intro explaining what Ralph is
-- [ ] Keep "Required Reading" section (SPEC, STATE, index.md)
-- [ ] Add pointer: "For iteration protocol, use /ralph-iterate skill"
-- [ ] Remove "Claude Code Native Features" section (move to SKILL.md)
-- [ ] Remove "Creating SPECs (Interactive)" section (move to SKILL.md)
-- [ ] Remove "Writing SPECs" section (move to SKILL.md)
-- [ ] Remove "Memory System" section (already in SKILL.md)
-- [ ] Remove "Task Completion Criteria" section (in SKILL.md)
-- [ ] Remove "Code Review Protocol" section (in SKILL.md)
-- [ ] Remove "Sub-Task Tracking Protocol" section (in SKILL.md)
-- [ ] Remove "Progress Updates" section (in SKILL.md)
-- [ ] Remove "Error Recovery" section (in SKILL.md)
-- [ ] Remove "Hooks Configuration" section (in SKILL.md)
-- [ ] Keep all coding standards sections (Language, Style, Testing, Architecture, Git, Performance, Security, Dependencies, Anti-Patterns, Tools, Principles)
+- [x] Keep "Ralph-Specific Guidelines" header with brief intro explaining what Ralph is
+- [x] Keep "Required Reading" section (SPEC, STATE, index.md)
+- [x] Add pointer: "For iteration protocol, use /ralph-iterate skill"
+- [x] Remove "Claude Code Native Features" section (move to SKILL.md)
+- [x] Remove "Creating SPECs (Interactive)" section (move to SKILL.md)
+- [x] Remove "Writing SPECs" section (move to SKILL.md)
+- [x] Remove "Memory System" section (already in SKILL.md)
+- [x] Remove "Task Completion Criteria" section (in SKILL.md)
+- [x] Remove "Code Review Protocol" section (in SKILL.md)
+- [x] Remove "Sub-Task Tracking Protocol" section (in SKILL.md)
+- [x] Remove "Progress Updates" section (in SKILL.md)
+- [x] Remove "Error Recovery" section (in SKILL.md)
+- [x] Remove "Hooks Configuration" section (in SKILL.md)
+- [x] Keep all coding standards sections (Language, Style, Testing, Architecture, Git, Performance, Security, Dependencies, Anti-Patterns, Tools, Principles)
 
 ## Phase 2: Enhance SKILL.md
 

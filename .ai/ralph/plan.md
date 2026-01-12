@@ -1,14 +1,17 @@
 ## Goal
-Create new SPEC for v3.1 to address duplication and bloat issues from v3 integration.
+Refactor ralph.md to remove iteration protocol sections, keeping only Ralph intro + coding standards.
 
 ## Files
-- SPEC.md - new spec for reducing template duplication
+- templates/.claude/ralph.md - remove ~10 sections, add skill pointer
 
 ## Tests
-- N/A (planning only)
+- N/A (documentation only)
+- Verify file is ~350 lines after refactor
 
 ## Exit Criteria
-- SPEC.md contains clear problem statement and phased solution
+- Ralph intro + Required Reading kept
+- Pointer to /ralph-iterate skill added
+- All iteration protocol sections removed
+- All coding standards sections kept
+- File is ~350 lines (down from ~830)
 - Changes committed
-
-## Status: COMPLETED ✓
