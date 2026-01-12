@@ -1,19 +1,14 @@
 ## Goal
-Sync templates/.claude/ralph.md with .claude/CLAUDE.md to ensure both files match content-wise.
+Add a "Claude Code Native Features" section to ralph.md explaining how Ralph integrates with Claude Code's native capabilities.
 
 ## Files
-- templates/.claude/ralph.md - update to include all sections from CLAUDE.md
+- templates/.claude/ralph.md - add new section explaining the integration
 
 ## Tests
 - N/A (documentation only)
-- Verify both files have matching sections and content
 
 ## Exit Criteria
-- templates/.claude/ralph.md contains all sections from .claude/CLAUDE.md
-- Claude Code native feature sections are preserved (AskUserQuestion, Task(Explore), Code Review Protocol, Sub-Task Tracking, Hooks Configuration)
+- New section explains the 5 key integrations (AskUserQuestion, Task(Explore), Code Review, TodoWrite, Hooks)
+- Section is placed appropriately (after Ralph-Specific Guidelines intro, before detailed protocols)
+- Content is concise and actionable
 - Changes committed
-
-## Status: COMPLETED ✓
-- Added 11 sections from CLAUDE.md
-- All Claude Code native features preserved
-- Commit: 10e84d2

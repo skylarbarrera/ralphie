@@ -373,3 +373,9 @@
   - Added 6th philosophical principle (Documented over undocumented)
   - Commit: 10e84d2 docs(ralph): sync ralph.md with CLAUDE.md for template consistency
 
+✅ 2026-01-12: Added Claude Code Native Features overview section
+  - Table summarizing 5 key integrations (AskUserQuestion, Task agents, TodoWrite, Stop hook)
+  - Workflow diagram showing how features work together in iteration loop
+  - Placed after Required Reading, before detailed protocol sections
+  - Commit: eb573dd docs(ralph): add Claude Code Native Features overview section
+
