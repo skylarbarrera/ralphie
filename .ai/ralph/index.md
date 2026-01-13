@@ -284,3 +284,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (planning)
 - notes: New spec to fix bloat/duplication: ralph.md for standards only, SKILL.md for iteration protocol
 - next: Phase 1 - refactor ralph.md to remove iteration protocol sections
+
+## da3e6ec — Add Phase 1 - headless flag and event emitter
+- files: src/lib/headless-emitter.ts, src/cli.tsx, tests/cli.test.tsx, src/lib/__tests__/headless-emitter.test.ts
+- tests: 555 passing (13 new tests for headless-emitter)
+- notes: RalphEvent types for 9 event kinds; emit() writes JSON to stdout; --headless flag; executeHeadlessRun placeholder
+- next: Phase 2 - create headless-runner.ts to execute iterations without Ink UI

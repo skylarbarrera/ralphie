@@ -385,3 +385,11 @@
   - Tests: 542 passing (no regressions)
   - Commit: 8ec2754 feat(init): add ralph-iterate skill to templates
 
+✅ 2026-01-12: Added Phase 1 - headless flag and event emitter
+  - Created src/lib/headless-emitter.ts with RalphEvent types (9 event kinds)
+  - Added --headless flag to CLI run command
+  - Added executeHeadlessRun placeholder (full implementation in Phase 2)
+  - Wired conditional: headless skips Ink UI, uses JSON stdout
+  - Tests: 555 passing (13 new tests for headless-emitter)
+  - Commit: da3e6ec feat(headless): add Phase 1 - headless flag and event emitter
+

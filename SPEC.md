@@ -34,9 +34,9 @@ The Factory worker needs to:
 
 ## Phase 1: Add Headless Flag
 
-- [ ] Add `--headless` flag to CLI in `src/cli.tsx`
-- [ ] When headless, skip Ink render, use JSON event emitter to stdout
-- [ ] Create `src/lib/headless-emitter.ts` with event types
+- [x] Add `--headless` flag to CLI in `src/cli.tsx`
+- [x] When headless, skip Ink render, use JSON event emitter to stdout
+- [x] Create `src/lib/headless-emitter.ts` with event types
 
 ### Event Emitter
 
