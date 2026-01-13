@@ -60,3 +60,6 @@ yarn-error.log*
 tmp/
 temp/
 *.tmp
+
+# TLDR CLI (runtime files)
+.tldr/
