@@ -79,6 +79,7 @@ That's it! Check your git history to see what Ralph built.
 | `ralph run -n 5` | Run 5 iterations |
 | `ralph run --all` | Run until SPEC complete |
 | `ralph run --headless` | Output JSON events (no UI) |
+| `ralph spec "description"` | Generate SPEC.md autonomously |
 | `ralph init` | Add Ralph to an existing project |
 | `ralph validate` | Check project structure and SPEC conventions |
 | `ralph upgrade` | Upgrade project to latest version |
@@ -197,6 +198,29 @@ Use `--stuck-threshold` to control when Ralph gives up:
 
 ```bash
 ralph run --headless --stuck-threshold 5  # Give up after 5 iterations without progress
+```
+
+### Autonomous Spec Generation
+
+For fully automated pipelines, generate specs without human input:
+
+```bash
+# Interactive - shows progress
+ralph spec "REST API for user management with JWT auth"
+
+# Headless - outputs JSON events
+ralph spec --headless "Todo app with user accounts and sharing"
+```
+
+Headless output:
+```json
+{"event":"spec_generation_started","description":"...","timestamp":"..."}
+{"event":"spec_generation_complete","specPath":"SPEC.md","taskCount":8,"validationPassed":true,"violations":0}
+```
+
+This enables end-to-end automation:
+```bash
+ralph spec --headless "my project" && ralph run --headless --all
 ```
 
 ## Project Structure

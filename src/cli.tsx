@@ -17,6 +17,7 @@ import { getSpecTitle } from './lib/spec-parser.js';
 import { emitFailed } from './lib/headless-emitter.js';
 import { executeHeadlessRun as runHeadless } from './lib/headless-runner.js';
 import { validateSpecInDir, formatValidationResult } from './lib/spec-validator.js';
+import { generateSpec } from './lib/spec-generator.js';
 
 export const DEFAULT_PROMPT = `You are Ralph, an autonomous coding assistant running in a loop.
 
@@ -258,6 +259,37 @@ function main(): void {
       if (hasErrors) {
         process.exit(1);
       }
+    });
+
+  program
+    .command('spec')
+    .description('Generate a SPEC.md autonomously from a description')
+    .argument('<description>', 'What to build (e.g., "REST API for user management")')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .option('--headless', 'Output JSON events instead of UI', false)
+    .option('--timeout <seconds>', 'Timeout for generation', '300')
+    .action(async (description: string, opts) => {
+      const cwd = resolve(opts.cwd);
+
+      const result = await generateSpec({
+        description,
+        cwd,
+        headless: opts.headless ?? false,
+        timeoutMs: parseInt(opts.timeout, 10) * 1000,
+      });
+
+      if (!result.success) {
+        if (!opts.headless) {
+          console.error(`Failed: ${result.error}`);
+        }
+        process.exit(1);
+      }
+
+      if (!result.validationPassed && !opts.headless) {
+        console.log('\nWarning: SPEC has convention violations. Run `ralph validate` for details.');
+      }
+
+      process.exit(0);
     });
 
   program
