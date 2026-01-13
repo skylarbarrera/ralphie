@@ -171,6 +171,8 @@ export async function runSingleIteration(
 
     const proc = _spawnFn('claude', args, {
       cwd: options.cwd,
+      env: process.env,
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
 
     resetIdleTimer();
