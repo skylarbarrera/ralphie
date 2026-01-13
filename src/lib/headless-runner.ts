@@ -169,17 +169,25 @@ export async function runSingleIteration(
       options.prompt,
     ];
 
+    // Debug: log the command being run to stderr
+    console.error(`[DEBUG] Spawning claude with args: ${args.join(' ')}`);
+    console.error(`[DEBUG] cwd: ${options.cwd}`);
+    console.error(`[DEBUG] ANTHROPIC_API_KEY present: ${!!process.env.ANTHROPIC_API_KEY}`);
+
     const proc = _spawnFn('claude', args, {
       cwd: options.cwd,
       env: process.env,
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
+    console.error(`[DEBUG] Claude process spawned, pid: ${proc.pid}`);
+
     resetIdleTimer();
 
     proc.stdout?.on('data', (chunk: Buffer) => {
       resetIdleTimer();
       const text = chunk.toString('utf-8');
+      console.error(`[DEBUG] stdout chunk: ${text.substring(0, 200)}...`);
       if (logger) {
         for (const line of text.split('\n')) {
           if (line.trim()) {
@@ -190,15 +198,18 @@ export async function runSingleIteration(
       parser.parseChunk(text);
     });
 
-    proc.stderr?.on('data', () => {
+    proc.stderr?.on('data', (chunk: Buffer) => {
       resetIdleTimer();
+      console.error(`[DEBUG] stderr: ${chunk.toString()}`);
     });
 
     proc.on('error', (err) => {
+      console.error(`[DEBUG] process error: ${err.message}`);
       finish(err);
     });
 
-    proc.on('close', () => {
+    proc.on('close', (code) => {
+      console.error(`[DEBUG] process closed with code: ${code}`);
       parser.flush();
       finish();
     });
