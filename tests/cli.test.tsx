@@ -116,7 +116,7 @@ describe('cli', () => {
     });
 
     it('instructs to work on one task per iteration', () => {
-      expect(DEFAULT_PROMPT).toContain('ONE TASK PER ITERATION');
+      expect(DEFAULT_PROMPT).toContain('ONE CHECKBOX = ONE ITERATION');
     });
   });
 });

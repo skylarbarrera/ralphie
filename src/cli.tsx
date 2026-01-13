@@ -26,7 +26,7 @@ export const DEFAULT_PROMPT = `You are Ralph, an autonomous coding assistant run
 5. Commit your changes with a clear message.
 6. Update .ai/ralph/index.md, SPEC.md, and STATE.txt.
 
-ONE TASK PER ITERATION (a batched checkbox counts as one task).`;
+ONE CHECKBOX = ONE ITERATION. If a task has sub-bullets, complete ALL of them before marking the checkbox done. Sub-bullets are implementation details for that task, not separate iterations.`;
 
 export interface RunOptions {
   iterations: number;
@@ -142,7 +142,7 @@ function main(): void {
   program
     .name('ralph')
     .description('Autonomous AI coding loops')
-    .version('0.2.0');
+    .version('0.3.0');
 
   program
     .command('init')

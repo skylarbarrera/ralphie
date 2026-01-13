@@ -25,7 +25,7 @@ your-project/
 
 ## Writing a SPEC
 
-Your SPEC.md should have checkboxes for tasks:
+Your SPEC.md should have checkboxes for tasks. **Each checkbox = one Ralph iteration**, so batch related work together.
 
 ```markdown
 # My Project
@@ -33,25 +33,47 @@ Your SPEC.md should have checkboxes for tasks:
 ## Overview
 Brief description of what you're building.
 
-## Tasks
+## Phase 1: Setup
+- [ ] Initialize project with TypeScript, testing, and linting
+- [ ] Set up database models and migrations
+  - User model with email, password hash, timestamps
+  - Post model with title, body, author reference
+  - Comment model with body, author, post reference
 
-### Phase 1: Setup
-- [ ] Initialize project with TypeScript and testing
-- [ ] Set up database models (User, Post, Comment)
+## Phase 2: Core Features
+- [ ] Implement authentication system
+  - POST /auth/register - create user with hashed password
+  - POST /auth/login - validate credentials, return JWT
+  - POST /auth/logout - invalidate token
+  - Middleware for protected routes
+  - Tests for all auth flows
 
-### Phase 2: Core Features
-- [ ] Create authentication endpoints (register, login, logout)
-- [ ] Build CRUD API for posts with tests
-
-### Phase 3: Polish
-- [ ] Add input validation and error handling
-- [ ] Write API documentation
+- [ ] Build posts API with full CRUD
+  - GET/POST/PUT/DELETE endpoints
+  - Authorization (only author can edit/delete)
+  - Pagination for list endpoint
+  - Tests for all operations
 ```
 
-**Tips:**
-- Batch related tasks: "Create components (Header, Footer, Nav)" not 3 separate tasks
-- Include tests with implementation: "Create auth service with tests"
-- Be specific: "Add JWT authentication" not "Add auth"
+### Task Design Principles
+
+**One checkbox = one iteration.** Sub-bullets are implementation details, not separate tasks.
+
+| Pattern | Iterations | Throughput |
+|---------|------------|------------|
+| `- [ ] Create db.ts`<br>`- [ ] Create redis.ts`<br>`- [ ] Create queue.ts` | 3 | Low |
+| `- [ ] Create data layer (db.ts, redis.ts, queue.ts)` | 1 | High |
+
+**Batching heuristics:**
+- Same verb? Batch them. ("Create X, Create Y" → "Create X and Y")
+- Same feature? Batch them. (model + API + tests = one task)
+- Files that import each other? Batch them.
+- Sweet spot: 3-7 files or ~200-500 lines per task
+
+**Include with each task:**
+- Implementation AND tests
+- Related files that depend on each other
+- All sub-components of a feature
 
 ## Commands
 

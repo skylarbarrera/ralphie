@@ -294,6 +294,24 @@ You: Any specific dotfiles it must support, or auto-discover from home directory
 
 **Important:** When starting a new project, replace the existing SPEC.md entirely. Each SPEC represents one project or feature set.
 
+### Understanding Tasks
+
+**One checkbox = one iteration.** Complete ALL sub-bullets before marking the checkbox done.
+
+```markdown
+# This is ONE task (one iteration):
+- [ ] Implement user authentication
+  - Create User model with password hashing
+  - Add /auth/register and /auth/login endpoints
+  - Create JWT middleware
+  - Write tests for all auth flows
+```
+
+When you see a task with sub-bullets:
+1. Implement everything listed in the sub-bullets
+2. Write tests for the functionality
+3. Only mark the checkbox `[x]` when ALL sub-items are complete
+
 ### Writing SPECs
 
 When generating a SPEC, optimize for **iteration efficiency**. Each checkbox = one Ralph iteration (~3 min), so structure matters.

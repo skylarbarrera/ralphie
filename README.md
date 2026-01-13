@@ -78,8 +78,25 @@ That's it! Check your git history to see what Ralph built.
 | `ralph run` | Run one iteration |
 | `ralph run -n 5` | Run 5 iterations |
 | `ralph run --all` | Run until SPEC complete |
+| `ralph run --headless` | Output JSON events (no UI) |
 | `ralph init` | Add Ralph to an existing project |
 | `ralph validate` | Check if project is ready |
+| `ralph upgrade` | Upgrade project to latest version |
+
+### Run Options
+
+| Option | Description |
+|--------|-------------|
+| `-n, --iterations <n>` | Number of iterations (default: 1) |
+| `-a, --all` | Run until SPEC complete (max 100) |
+| `-p, --prompt <text>` | Custom prompt to send to Claude |
+| `--prompt-file <path>` | Read prompt from file |
+| `--cwd <path>` | Working directory (default: current) |
+| `--timeout-idle <sec>` | Kill after N seconds idle (default: 120) |
+| `--save-jsonl <path>` | Save raw output to JSONL file |
+| `--no-branch` | Skip feature branch creation |
+| `--headless` | Output JSON events instead of UI |
+| `--stuck-threshold <n>` | Iterations without progress before stuck (default: 3) |
 
 ## Creating a Good SPEC
 
@@ -142,6 +159,45 @@ Each iteration, Ralph:
 4. Runs tests to make sure it works
 5. Commits the changes
 6. Marks the task as done
+
+## Headless Mode
+
+For automation and integration with orchestration tools, Ralph supports headless mode:
+
+```bash
+ralph run --headless -n 10
+```
+
+Instead of the interactive UI, Ralph outputs JSON events to stdout (one per line):
+
+```json
+{"event":"started","spec":"SPEC.md","tasks":5,"timestamp":"2024-01-15T10:30:00Z"}
+{"event":"iteration","n":1,"phase":"starting"}
+{"event":"tool","type":"read","path":"src/index.ts"}
+{"event":"tool","type":"write","path":"src/utils.ts"}
+{"event":"tool","type":"bash"}
+{"event":"commit","hash":"abc1234","message":"Add utility functions"}
+{"event":"task_complete","index":0,"text":"Set up project structure"}
+{"event":"iteration_done","n":1,"duration_ms":45000,"stats":{"reads":3,"writes":2,"commands":1}}
+{"event":"complete","tasks_done":5,"total_duration_ms":180000}
+```
+
+### Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | All tasks complete |
+| 1 | Stuck (no progress after threshold) |
+| 2 | Max iterations reached |
+| 3 | Fatal error |
+
+### Stuck Detection
+
+Use `--stuck-threshold` to control when Ralph gives up:
+
+```bash
+ralph run --headless --stuck-threshold 5  # Give up after 5 iterations without progress
+```
 
 ## Project Structure
 

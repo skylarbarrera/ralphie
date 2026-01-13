@@ -260,6 +260,24 @@ Before starting work in a Ralph loop:
 
 Lazy load context. SPEC has the tasks; only read progress/index if you need to verify state.
 
+### Understanding Tasks
+
+**One checkbox = one iteration.** Complete ALL sub-bullets before marking the checkbox done.
+
+```markdown
+# This is ONE task (one iteration):
+- [ ] Implement user authentication
+  - Create User model with password hashing
+  - Add /auth/register and /auth/login endpoints
+  - Create JWT middleware
+  - Write tests for all auth flows
+```
+
+When you see a task with sub-bullets:
+1. Implement everything listed in the sub-bullets
+2. Write tests for the functionality
+3. Only mark the checkbox `[x]` when ALL sub-items are complete
+
 ### Iteration Protocol
 
 For the full iteration protocol (loading context, exploring codebase, planning, implementing, reviewing, and committing), use the `/ralph-iterate` skill. It contains detailed guidance for:
