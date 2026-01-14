@@ -4,6 +4,7 @@ export interface StartedEvent {
   event: 'started';
   spec: string;
   tasks: number;
+  model?: string;
   timestamp: string;
 }
 
@@ -78,11 +79,12 @@ export function emit(event: RalphEvent): void {
   console.log(JSON.stringify(event));
 }
 
-export function emitStarted(spec: string, tasks: number): void {
+export function emitStarted(spec: string, tasks: number, model?: string): void {
   emit({
     event: 'started',
     spec,
     tasks,
+    model,
     timestamp: new Date().toISOString(),
   });
 }

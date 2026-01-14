@@ -410,7 +410,7 @@ describe('headless-runner', () => {
 
       await resultPromise;
 
-      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 2);
+      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 2, undefined);
     });
 
     it('returns EXIT_CODE_ERROR on iteration error', async () => {

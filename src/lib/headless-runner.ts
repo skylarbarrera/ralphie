@@ -261,7 +261,7 @@ export async function executeHeadlessRun(
   _spawnFn: SpawnFn = spawn
 ): Promise<number> {
   const totalTasks = getTotalTaskCount(options.cwd);
-  emitStarted('SPEC.md', totalTasks);
+  emitStarted('SPEC.md', totalTasks, options.model);
 
   let iterationsWithoutProgress = 0;
   let tasksBefore = getCompletedTaskTexts(options.cwd);
