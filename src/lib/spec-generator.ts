@@ -98,6 +98,28 @@ Each checkbox = one Ralph iteration. Batch related work:
 - [ ] Create User module (Model, Service, Controller) with tests
 \`\`\`
 
+## Verification Steps
+
+Each task SHOULD include a **Verify:** section with concrete checks:
+
+\`\`\`markdown
+- [ ] Implement authentication system
+  - POST /auth/register - create user with hashed password
+  - POST /auth/login - validate credentials, return JWT
+  - Tests for all auth flows
+
+  **Verify:**
+  - \`curl -X POST localhost:3000/auth/register -d '{"email":"test@test.com","password":"test123"}'\` → 201
+  - \`curl -X POST localhost:3000/auth/login -d '{"email":"test@test.com","password":"test123"}'\` → returns JWT
+  - \`npm test\` → all tests pass
+\`\`\`
+
+Good verification steps:
+- API calls with expected response codes
+- CLI commands with expected output
+- File existence checks (\`ls dist/\` → contains index.js)
+- Test commands (\`npm test\` → all pass)
+
 ## Output
 
 After writing SPEC.md, output a summary:
