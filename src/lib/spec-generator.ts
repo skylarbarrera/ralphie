@@ -166,6 +166,86 @@ export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecG
     console.log(`Generating SPEC for: ${options.description}\n`);
   }
 
+  // Interactive mode: let Claude run with inherited stdio so AskUserQuestion works
+  if (!options.headless) {
+    return generateSpecInteractive(options, prompt);
+  }
+
+  // Headless mode: use stream-json for parsing
+  return generateSpecHeadless(options, prompt);
+}
+
+async function generateSpecInteractive(
+  options: SpecGeneratorOptions,
+  prompt: string
+): Promise<SpecGeneratorResult> {
+  return new Promise((resolve) => {
+    const args = [
+      '--dangerously-skip-permissions',
+      ...(options.model ? ['--model', options.model] : []),
+    ];
+
+    const proc: ChildProcess = spawn('claude', args, {
+      cwd: options.cwd,
+      env: process.env,
+      stdio: ['pipe', 'inherit', 'inherit'], // pipe stdin, inherit stdout/stderr
+    });
+
+    // Send the prompt as initial input, but keep stdin open for follow-up
+    proc.stdin?.write(prompt + '\n');
+
+    // Pipe user's terminal input to Claude
+    process.stdin.setRawMode?.(false);
+    process.stdin.resume();
+    process.stdin.pipe(proc.stdin!);
+
+    const timeout = setTimeout(() => {
+      proc.kill('SIGTERM');
+      resolve({
+        success: false,
+        error: `Timeout: no progress for ${options.timeoutMs / 1000}s`,
+      });
+    }, options.timeoutMs);
+
+    proc.on('close', (code) => {
+      clearTimeout(timeout);
+
+      // Cleanup stdin piping
+      process.stdin.unpipe(proc.stdin!);
+      process.stdin.pause();
+
+      // Check if SPEC.md was created
+      const specPath = join(options.cwd, 'SPEC.md');
+      if (existsSync(specPath)) {
+        const content = readFileSync(specPath, 'utf-8');
+        const taskCount = (content.match(/^- \[ \]/gm) || []).length;
+
+        const validation = validateSpecInDir(options.cwd);
+        const validationOutput = formatValidationResult(validation);
+        console.log('\nValidation:');
+        console.log(validationOutput);
+
+        resolve({
+          success: true,
+          specPath,
+          taskCount,
+          validationPassed: validation.valid,
+          validationOutput,
+        });
+      } else {
+        resolve({
+          success: false,
+          error: code === 0 ? 'SPEC.md was not created' : `Claude exited with code ${code}`,
+        });
+      }
+    });
+  });
+}
+
+async function generateSpecHeadless(
+  options: SpecGeneratorOptions,
+  prompt: string
+): Promise<SpecGeneratorResult> {
   return new Promise((resolve) => {
     const args = [
       '--dangerously-skip-permissions',
