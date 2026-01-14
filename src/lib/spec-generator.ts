@@ -125,7 +125,19 @@ Good verification steps:
 After writing SPEC.md, output a summary:
 - Number of phases
 - Number of tasks
-- Estimated complexity
+- Estimated complexity`;
+
+const INTERACTIVE_ADDENDUM = `
+
+If the description is vague or missing critical details, ask clarifying questions before generating. Good questions:
+- What's the primary use case?
+- Who are the target users?
+- Any specific tech stack preferences?
+- What integrations are needed?
+
+Once you have enough context, write the SPEC.md.`;
+
+const HEADLESS_ADDENDUM = `
 
 Do NOT ask questions. Make reasonable assumptions based on the description. If something is ambiguous, choose the simpler option.
 
@@ -136,7 +148,8 @@ function emitJson(event: Record<string, unknown>): void {
 }
 
 export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecGeneratorResult> {
-  const prompt = SPEC_GENERATION_PROMPT.replace('{DESCRIPTION}', options.description);
+  const addendum = options.headless ? HEADLESS_ADDENDUM : INTERACTIVE_ADDENDUM;
+  const prompt = SPEC_GENERATION_PROMPT.replace('{DESCRIPTION}', options.description) + addendum;
 
   if (options.headless) {
     emitJson({ event: 'spec_generation_started', description: options.description });
