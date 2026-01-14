@@ -28,25 +28,28 @@ describe('StreamParser', () => {
       expect(eventSpy).not.toHaveBeenCalled();
     });
 
-    it('ignores non-JSON lines', () => {
+    it('ignores non-JSON lines that do not look like JSON', () => {
       const eventSpy = vi.fn();
       parser.on('event', eventSpy);
 
       parser.parseLine('not json');
-      parser.parseLine('{ invalid json }');
       parser.parseLine('random text output');
+      parser.parseLine('>>> Some prefix text');
 
       expect(eventSpy).not.toHaveBeenCalled();
     });
 
-    it('handles malformed JSON gracefully', () => {
+    it('emits error for malformed JSON that looks like JSON', () => {
       const errorSpy = vi.fn();
       parser.on('error', errorSpy);
 
+      parser.parseLine('{ invalid json }');
       parser.parseLine('{"type": "system"');
       parser.parseLine('{broken}');
 
-      expect(errorSpy).not.toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalledTimes(3);
+      expect(errorSpy.mock.calls[0][0].type).toBe('error');
+      expect(errorSpy.mock.calls[0][0].error.message).toContain('Malformed JSON');
     });
   });
 

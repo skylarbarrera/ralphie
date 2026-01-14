@@ -61,26 +61,25 @@ export interface ToolInput {
   [key: string]: unknown;
 }
 
+const FILE_PATH_TOOLS = ['Read', 'Edit', 'Write'];
+
 export function getToolDisplayName(toolName: string, input?: ToolInput): string {
   if (!input) return toolName;
-  if (toolName === 'Read' && typeof input.file_path === 'string') {
-    return input.file_path.split('/').pop() ?? toolName;
-  }
-  if (toolName === 'Edit' && typeof input.file_path === 'string') {
-    return input.file_path.split('/').pop() ?? toolName;
-  }
-  if (toolName === 'Write' && typeof input.file_path === 'string') {
-    return input.file_path.split('/').pop() ?? toolName;
+
+  if (FILE_PATH_TOOLS.includes(toolName) && typeof input.file_path === 'string') {
+    const fileName = input.file_path.split('/').pop();
+    return fileName || toolName;
   }
   if (toolName === 'Bash' && typeof input.command === 'string') {
-    const cmd = input.command.split(' ')[0];
-    return cmd.length > 20 ? cmd.slice(0, 20) + '...' : cmd;
+    const cmd = input.command.split(' ')[0] || '';
+    return cmd.length > 20 ? cmd.slice(0, 20) + '...' : cmd || toolName;
   }
   if (toolName === 'Glob' && typeof input.pattern === 'string') {
-    return input.pattern;
+    return input.pattern || toolName;
   }
   if (toolName === 'Grep' && typeof input.pattern === 'string') {
-    return input.pattern.length > 20 ? input.pattern.slice(0, 20) + '...' : input.pattern;
+    const pattern = input.pattern || '';
+    return pattern.length > 20 ? pattern.slice(0, 20) + '...' : pattern || toolName;
   }
   return toolName;
 }

@@ -140,13 +140,18 @@ export async function runSingleIteration(
     let idleTimer: NodeJS.Timeout | null = null;
     let resolved = false;
 
+    const clearIdleTimer = () => {
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+        idleTimer = null;
+      }
+    };
+
     const finish = (error?: Error) => {
       if (resolved) return;
       resolved = true;
 
-      if (idleTimer) {
-        clearTimeout(idleTimer);
-      }
+      clearIdleTimer();
       if (logger) {
         logger.close();
       }
@@ -163,12 +168,12 @@ export async function runSingleIteration(
     };
 
     const resetIdleTimer = () => {
-      if (idleTimer) {
-        clearTimeout(idleTimer);
-      }
+      clearIdleTimer();
       idleTimer = setTimeout(() => {
-        proc.kill('SIGTERM');
-        finish(new Error(`Idle timeout: no output for ${options.idleTimeoutMs / 1000}s`));
+        if (!resolved) {
+          proc.kill('SIGTERM');
+          finish(new Error(`Idle timeout: no output for ${options.idleTimeoutMs / 1000}s`));
+        }
       }, options.idleTimeoutMs);
     };
 

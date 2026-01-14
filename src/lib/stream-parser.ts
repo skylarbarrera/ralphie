@@ -53,6 +53,17 @@ export class StreamParser extends EventEmitter {
     try {
       parsed = JSON.parse(trimmed) as ClaudeMessage;
     } catch {
+      // Only log if it looks like it was supposed to be JSON (starts with {)
+      // Non-JSON lines (e.g., plain text output) are expected and silently ignored
+      if (trimmed.startsWith('{')) {
+        const errorEvent: ErrorEvent = {
+          type: 'error',
+          error: new Error(`Malformed JSON: ${trimmed.slice(0, 100)}${trimmed.length > 100 ? '...' : ''}`),
+          rawLine: trimmed,
+        };
+        this.emit('error', errorEvent);
+        this.emit('event', errorEvent);
+      }
       return;
     }
 
