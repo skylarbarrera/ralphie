@@ -37,7 +37,28 @@ curl -fsSL https://anthropic.com/install-claude.sh | sh
 claude  # Run once to log in
 ```
 
-### 3. Create Your SPEC
+### 3. Install Ralph Skills (Optional but Recommended)
+
+Ralph includes three helpful skills for Claude Code:
+
+```bash
+# Install all Ralph skills
+npx add-skill skylarbarrera/ralph
+
+# Or install selectively
+npx add-skill skylarbarrera/ralph --skill create-spec
+npx add-skill skylarbarrera/ralph --skill ralph-iterate
+npx add-skill skylarbarrera/ralph --skill review-spec
+npx add-skill skylarbarrera/ralph --skill verify
+```
+
+**Skills included:**
+- `create-spec` - Guided SPEC creation with structured interview
+- `ralph-iterate` - Complete iteration protocol for executing tasks
+- `review-spec` - SPEC validation and quality review
+- `verify` - Pre-commit verification (tests, type check, lint)
+
+### 4. Create Your SPEC
 
 Tell Claude what you want to build. Use the `/create-spec` skill for a guided experience:
 
@@ -61,7 +82,20 @@ Claude will interview you about your project (type, stack, features, constraints
 
 **Starting something new?** Replace your old SPEC. Each SPEC represents one project or feature set.
 
-### 4. Run Ralph
+**Alternative:** Use the command-line for autonomous spec generation:
+
+```bash
+# Interactive mode (default) - uses /create-spec skill with interview
+ralph spec "Build a REST API for user management with JWT auth"
+
+# Autonomous mode - generates spec with review loop, no human interaction
+ralph spec --auto "Todo app with user accounts and sharing"
+
+# Headless mode - outputs JSON events, great for automation
+ralph spec --headless "Blog platform with markdown support"
+```
+
+### 5. Run Ralph
 
 ```bash
 ralph run           # Run once to see how it works
@@ -79,7 +113,9 @@ That's it! Check your git history to see what Ralph built.
 | `ralph run -n 5` | Run 5 iterations |
 | `ralph run --all` | Run until SPEC complete |
 | `ralph run --headless` | Output JSON events (no UI) |
-| `ralph spec "description"` | Generate SPEC.md autonomously |
+| `ralph spec "description"` | Generate SPEC.md with interview (interactive, default) |
+| `ralph spec --auto "description"` | Generate SPEC.md autonomously with review loop |
+| `ralph spec --headless "description"` | Generate SPEC.md and output JSON events |
 | `ralph init` | Add Ralph to an existing project |
 | `ralph validate` | Check project structure and SPEC conventions |
 | `ralph upgrade` | Upgrade project to latest version |
@@ -98,6 +134,7 @@ That's it! Check your git history to see what Ralph built.
 | `--no-branch` | Skip feature branch creation |
 | `--headless` | Output JSON events instead of UI |
 | `--stuck-threshold <n>` | Iterations without progress before stuck (default: 3) |
+| `--harness <name>` | AI harness to use (default: claude-code) |
 
 ## Creating a Good SPEC
 
@@ -160,6 +197,41 @@ Each iteration, Ralph:
 4. Runs tests to make sure it works
 5. Commits the changes
 6. Marks the task as done
+
+## Using the Verify Skill
+
+The `/verify` skill helps ensure code quality before committing. Claude can use it during iterations to check work:
+
+```bash
+claude
+> /verify
+```
+
+The skill auto-detects your project type and runs appropriate checks:
+- **Tests**: npm test, pytest, go test, cargo test, etc.
+- **Type checking**: tsc, mypy, etc.
+- **Linting**: eslint, ruff, golangci-lint, clippy, etc.
+
+**Zero configuration required** - the skill detects what to run from your project files (package.json, tsconfig.json, pyproject.toml, etc.)
+
+**In Ralph iterations:** Claude automatically uses `/verify` before committing when using the `/ralph-iterate` skill.
+
+## Harness Configuration
+
+Ralph supports multiple AI coding assistants through a harness abstraction. Currently, only Claude Code is implemented (v1.0).
+
+**Configuration priority:**
+1. CLI flag: `ralph run --harness codex`
+2. Environment variable: `RALPH_HARNESS=codex`
+3. Config file: `.ralph/config.yml`
+4. Default: `claude-code`
+
+**Config file example (.ralph/config.yml):**
+```yaml
+harness: claude-code
+```
+
+Future harnesses (Codex, OpenCode, etc.) can be added by implementing the harness interface.
 
 ## Headless Mode
 

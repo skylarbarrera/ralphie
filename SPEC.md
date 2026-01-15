@@ -73,7 +73,7 @@ Ralph is a working CLI with:
 
 ### Phase 7: Tests and Documentation
 
-- [ ] Add tests for new functionality
+- [x] Add tests for new functionality
   - Unit tests for review-spec validation logic
   - Integration test: spec generation with review loop
   - Test skills work with `npx add-skill skylarbarrera/ralph`
