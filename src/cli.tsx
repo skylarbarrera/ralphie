@@ -44,6 +44,7 @@ export interface RunOptions {
   headless: boolean;
   stuckThreshold: number;
   model?: string;
+  harness?: string;
 }
 
 export type CliOptions = RunOptions;
@@ -199,6 +200,7 @@ function main(): void {
     .option('--headless', 'Output JSON events instead of UI')
     .option('--stuck-threshold <n>', 'Iterations without progress before stuck (headless)', '3')
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'sonnet')
+    .option('--harness <name>', 'AI harness to use (claude-code, codex, etc.)')
     .action((opts) => {
       let iterations = parseInt(opts.iterations, 10);
       const all = opts.all ?? false;
@@ -222,6 +224,7 @@ function main(): void {
         headless: opts.headless ?? false,
         stuckThreshold: parseInt(opts.stuckThreshold, 10),
         model: opts.model,
+        harness: opts.harness,
       };
 
       if (options.headless) {
