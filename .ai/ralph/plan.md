@@ -1,53 +1,33 @@
-# Plan: Phase 1 - Skill Directory Migration
+# Plan: Create review-spec skill
 
 ## Goal
-Move skills from `.claude/skills/` to `skills/` directory at the project root, update skill frontmatter to match the add-skill format (from vercel-labs/add-skill), and maintain backward compatibility by keeping `.claude/skills/` as symlinks or copies for local development.
+Create a `review-spec` skill that validates SPEC.md files for format compliance and content quality. The skill should check for format issues (checkbox syntax, no code snippets, no file paths, deliverable sub-bullets) and provide content critique (problem-solution fit, integration awareness, scalability, scope).
 
-## Files to Create/Modify
+## Files
 
 ### New Files
-- `skills/create-spec/SKILL.md` - migrated from `.claude/skills/create-spec/SKILL.md`
-- `skills/ralph-iterate/SKILL.md` - migrated from `.claude/skills/ralph-iterate/SKILL.md`
+- `skills/review-spec/SKILL.md` - Main skill file with frontmatter and validation logic
 
-### Modified Files
-- `.claude/skills/create-spec/SKILL.md` - potentially convert to symlink or keep as copy
-- `.claude/skills/ralph-iterate/SKILL.md` - potentially convert to symlink or keep as copy
-
-## Implementation Steps
-
-1. **Research add-skill format**: Check what frontmatter format vercel-labs/add-skill expects
-   - Look for examples in existing SKILL.md files
-   - Identify required fields and structure
-
-2. **Create skills/ directory structure**:
-   - Create `skills/create-spec/` directory
-   - Create `skills/ralph-iterate/` directory
-
-3. **Migrate create-spec skill**:
-   - Read existing `.claude/skills/create-spec/SKILL.md`
-   - Update frontmatter to match add-skill format
-   - Write to `skills/create-spec/SKILL.md`
-
-4. **Migrate ralph-iterate skill**:
-   - Read existing `.claude/skills/ralph-iterate/SKILL.md`
-   - Update frontmatter to match add-skill format
-   - Write to `skills/ralph-iterate/SKILL.md`
-
-5. **Maintain backward compatibility**:
-   - Keep `.claude/skills/` files as copies (symlinks may have issues on some platforms)
-   - Document the relationship between the two directories
+### Files to Reference
+- `skills/create-spec/SKILL.md` - For frontmatter format consistency
+- `skills/ralph-iterate/SKILL.md` - For skill structure examples
+- `SPEC.md` - Example of a well-formed spec to validate against
 
 ## Tests
 
-- Verify `skills/` directory structure exists
-- Verify both SKILL.md files have correct add-skill frontmatter format
-- Verify `.claude/skills/` files still exist for local development
-- Run existing tests to ensure no regressions
+Since this is a skill (markdown file with instructions for Claude), testing will be manual:
+1. Verify frontmatter format matches add-skill standard (name, description, context, allowed-tools)
+2. Review validation criteria are comprehensive
+3. Ensure output format is clear and actionable
 
 ## Exit Criteria
 
-- ✅ `skills/create-spec/SKILL.md` exists with correct add-skill frontmatter
-- ✅ `skills/ralph-iterate/SKILL.md` exists with correct add-skill frontmatter
-- ✅ `.claude/skills/` files remain unchanged for local development
-- ✅ All existing tests pass
-- ✅ Changes committed with descriptive message
+- [x] `skills/review-spec/SKILL.md` exists with proper frontmatter
+- [x] Format checks documented: checkbox syntax, no code snippets, no file paths, deliverable sub-bullets
+- [x] Content critique documented: problem-solution fit, integration awareness, scalability, scope
+- [x] Output format documented: PASS/FAIL on format, list of concerns, improvement suggestions
+- [x] Skill follows add-skill frontmatter format (vercel-labs/add-skill)
+- [x] Tests pass (npm test)
+- [x] Type check passes (npm run type-check)
+- [x] Changes committed with clear message
+- [x] .ai/ralph/index.md, SPEC.md, STATE.txt updated
