@@ -313,3 +313,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 590 passing
 - notes: Comprehensive validation with format checks (checkbox syntax, no code snippets, no file paths, deliverable sub-bullets) and content critique (problem-solution fit, integration awareness, scalability, scope); outputs PASS/FAIL with prioritized concerns and actionable recommendations
 - next: Phase 3 - Create verify skill for pre-commit verification
+
+## 53ab3b7 — feat(skills): create verify skill for pre-commit verification
+- files: skills/verify/SKILL.md, SPEC.md, STATE.txt
+- tests: 590 passing
+- notes: Auto-detects project type from config files; zero configuration required; runs tests, type checking, linting based on available tools; supports TypeScript, Python, Go, Rust, Ruby; clear PASS/FAIL/ERROR reporting; integration guidance for Ralph iteration workflow
+- next: Phase 4 - Update ralph spec command to support interactive mode
