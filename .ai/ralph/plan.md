@@ -1,33 +1,61 @@
-# Plan: Create review-spec skill
+# Plan: Interactive Spec Mode
 
 ## Goal
-Create a `review-spec` skill that validates SPEC.md files for format compliance and content quality. The skill should check for format issues (checkbox syntax, no code snippets, no file paths, deliverable sub-bullets) and provide content critique (problem-solution fit, integration awareness, scalability, scope).
+Update `ralph spec` command to support interactive mode where Claude interviews the user using AskUserQuestion, allowing the user to provide answers, review output, and request changes before finalizing the SPEC.
 
-## Files
+## Files to Modify
 
-### New Files
-- `skills/review-spec/SKILL.md` - Main skill file with frontmatter and validation logic
+### 1. `src/cli.tsx`
+- Add new `spec` command to commander
+- Options: `<description>` (positional), `--output <path>` (default: SPEC.md)
+- Handler calls `runInteractiveSpec()` function
 
-### Files to Reference
-- `skills/create-spec/SKILL.md` - For frontmatter format consistency
-- `skills/ralph-iterate/SKILL.md` - For skill structure examples
-- `SPEC.md` - Example of a well-formed spec to validate against
+### 2. `src/lib/spec-generator.ts` (already exists)
+- Export `runInteractiveSpec()` function
+- Spawns claude with create-spec skill and user description
+- Uses Ink UI for progress display (reuse existing components where possible)
+- Captures generated SPEC content from claude output
+- Writes final SPEC to specified output path
+
+### 3. `src/components/SpecGeneratorUI.tsx` (new)
+- Ink component for spec generation display
+- Shows progress: "Generating SPEC...", "Interviewing user...", "Creating SPEC..."
+- Displays generated SPEC content when ready
+- Simple status indicator (reuse PhaseIndicator or create minimal version)
+
+## Implementation Steps
+
+1. **Add spec command to CLI** (`src/cli.tsx`)
+   - Register `spec <description>` command
+   - Add `--output` option (default: SPEC.md)
+   - Call `runInteractiveSpec(description, outputPath)`
+
+2. **Implement runInteractiveSpec()** (`src/lib/spec-generator.ts`)
+   - Spawn claude process with skill invocation: `/create-spec`
+   - Pass user description via stdin or prompt
+   - Parse output to extract SPEC content
+   - Handle errors and edge cases
+   - Write SPEC to output file
+
+3. **Create SpecGeneratorUI component** (if needed for progress display)
+   - Minimal UI showing current phase
+   - Success/error messaging
+   - Option: reuse existing components (PhaseIndicator, StatusBar)
 
 ## Tests
 
-Since this is a skill (markdown file with instructions for Claude), testing will be manual:
-1. Verify frontmatter format matches add-skill standard (name, description, context, allowed-tools)
-2. Review validation criteria are comprehensive
-3. Ensure output format is clear and actionable
+- Unit tests for `runInteractiveSpec()` function
+  - Mock claude spawn
+  - Verify SPEC content extraction
+  - Verify file writing
+- Integration test: spawn actual claude with create-spec skill (optional, may be slow)
+- CLI test: verify `ralph spec` command registration and options
 
 ## Exit Criteria
 
-- [x] `skills/review-spec/SKILL.md` exists with proper frontmatter
-- [x] Format checks documented: checkbox syntax, no code snippets, no file paths, deliverable sub-bullets
-- [x] Content critique documented: problem-solution fit, integration awareness, scalability, scope
-- [x] Output format documented: PASS/FAIL on format, list of concerns, improvement suggestions
-- [x] Skill follows add-skill frontmatter format (vercel-labs/add-skill)
-- [x] Tests pass (npm test)
-- [x] Type check passes (npm run type-check)
-- [x] Changes committed with clear message
-- [x] .ai/ralph/index.md, SPEC.md, STATE.txt updated
+- [x] `ralph spec "description"` command exists
+- [x] Command spawns claude with `/create-spec` skill
+- [x] Claude interviews user using AskUserQuestion (built into skill)
+- [x] Generated SPEC written to SPEC.md (or custom path via --output)
+- [x] Tests pass
+- [x] Type check passes

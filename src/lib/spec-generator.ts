@@ -157,8 +157,12 @@ function emitJson(event: Record<string, unknown>): void {
 }
 
 export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecGeneratorResult> {
-  const addendum = options.headless ? HEADLESS_ADDENDUM : INTERACTIVE_ADDENDUM;
-  const prompt = SPEC_GENERATION_PROMPT.replace('{DESCRIPTION}', options.description) + addendum;
+  // In interactive mode, use the create-spec skill for structured interview
+  // In headless mode, use the embedded prompt for autonomous generation
+  const useSkill = !options.headless;
+  const prompt = useSkill
+    ? `/create-spec\n\nDescription: ${options.description}`
+    : SPEC_GENERATION_PROMPT.replace('{DESCRIPTION}', options.description) + HEADLESS_ADDENDUM;
 
   if (options.headless) {
     emitJson({ event: 'spec_generation_started', description: options.description });
