@@ -459,3 +459,13 @@
   - Added 4 comprehensive tests for autonomous mode (review success, refinement, max attempts, parsing)
   - Tests: 597 passing (4 new), type check passes
   - Commit: 665cb20 feat(spec): add autonomous mode with review loop
+
+✅ 2026-01-15: Created harness abstraction layer for multi-AI support
+  - Created src/lib/harness/types.ts with Harness interface (runSkill, spawn methods)
+  - Created src/lib/harness/claude-code-harness.ts - ClaudeCodeHarness implementation
+  - Created src/lib/harness/index.ts - Factory function (createHarness)
+  - Created src/lib/config-loader.ts - Config loading from .ralph/config.yml
+  - Added --harness CLI flag to run command in src/cli.tsx
+  - Configuration priority: CLI flag > env (RALPH_HARNESS) > config file > default (claude-code)
+  - Tests: 617 passing (17 new: 6 harness, 11 config-loader, 3 factory)
+  - Commit: fcb141c feat(harness): add harness abstraction layer for multi-AI support

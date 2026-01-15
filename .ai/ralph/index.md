@@ -331,3 +331,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 597 passing (4 new tests for autonomous mode)
 - notes: Added --auto and --max-attempts flags; created generateSpecAutonomous() with review loop; runReviewSpec() invokes /review-spec skill; parseReviewOutput() extracts PASS/FAIL and concerns; refineSpec() regenerates based on feedback; review loop runs up to maxAttempts (default 3); exit codes 0 on success, 1 on max attempts
 - next: Phase 6 - Create harness abstraction in src/lib/harness/
+
+## fcb141c — feat(harness): add harness abstraction layer for multi-AI support
+- files: src/lib/harness/{types,claude-code-harness,index}.ts, src/lib/config-loader.ts, src/cli.tsx, package.json, tests/lib/harness/*.test.ts, tests/lib/config-loader.test.ts
+- tests: 617 passing (17 new tests: 6 harness, 11 config-loader, 3 factory)
+- notes: Harness interface with runSkill() and spawn() methods; ClaudeCodeHarness wraps claude CLI; config loading from .ralph/config.yml with priority: CLI flag > env (RALPH_HARNESS) > config file > default (claude-code); added --harness flag to run command; factory pattern (createHarness) for extensibility
+- next: Phase 7 - Add tests for new functionality and update documentation

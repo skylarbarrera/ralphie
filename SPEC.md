@@ -63,7 +63,7 @@ Ralph is a working CLI with:
 
 ### Phase 6: Harness Abstraction
 
-- [ ] Create harness interface in `src/lib/harness/`
+- [x] Create harness interface in `src/lib/harness/`
   - Define `Harness` interface: run skill with context, return result (success/failure, output)
   - Implement `ClaudeCodeHarness` as default adapter (only implementation for v1)
   - Config selection: `.ralph/config.yml` has `harness: claude-code`
