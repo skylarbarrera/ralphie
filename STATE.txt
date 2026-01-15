@@ -2,6 +2,18 @@
 # Ralph appends completed tasks here after each iteration.
 # This file helps Ralph understand what's been done and what's next.
 
+✅ 2026-01-15: Completed Phase 7 - Tests and Documentation (Ralph v1.0)
+  - Created tests/lib/skills-structure.test.ts with 13 tests for skill frontmatter validation
+  - All skills (create-spec, ralph-iterate, review-spec, verify) have correct add-skill frontmatter
+  - Updated README with comprehensive documentation:
+    - npx add-skill installation instructions
+    - ralph spec command modes (interactive, --auto, --headless)
+    - /verify skill usage guidance
+    - --harness flag and configuration priority
+  - Tests: 630 passing (13 new), type check passes
+  - All SPEC.md phases complete (1-7)
+  - Commit: 6e8018a feat(docs): add Phase 7 tests and documentation
+
 ✅ 2026-01-08: Implemented JSONL stream parser
   - Created src/lib/types.ts with TypeScript types for Claude messages and events
   - Created src/lib/stream-parser.ts with EventEmitter-based parser

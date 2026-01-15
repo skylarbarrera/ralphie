@@ -337,3 +337,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 617 passing (17 new tests: 6 harness, 11 config-loader, 3 factory)
 - notes: Harness interface with runSkill() and spawn() methods; ClaudeCodeHarness wraps claude CLI; config loading from .ralph/config.yml with priority: CLI flag > env (RALPH_HARNESS) > config file > default (claude-code); added --harness flag to run command; factory pattern (createHarness) for extensibility
 - next: Phase 7 - Add tests for new functionality and update documentation
+
+## 6e8018a — feat(docs): add Phase 7 tests and documentation
+- files: tests/lib/skills-structure.test.ts, README.md, SPEC.md, .ai/ralph/plan.md
+- tests: 630 passing (13 new tests for skills structure validation)
+- notes: Created skills-structure.test.ts to validate skill frontmatter format for add-skill compatibility; updated README with skill installation instructions (npx add-skill), ralph spec command modes (interactive, --auto, --headless), verify skill usage, and --harness flag documentation; Phase 7 complete
+- next: Ralph v1.0 complete - all phases done
