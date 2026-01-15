@@ -1,43 +1,53 @@
-# Plan: Phase 2 - Headless Runner
+# Plan: Phase 1 - Skill Directory Migration
 
 ## Goal
-Create `src/lib/headless-runner.ts` that provides a non-React alternative to the Ink-based UI for running Ralph iterations. This enables factory/orchestrator integration by emitting JSON events to stdout instead of rendering a terminal UI.
+Move skills from `.claude/skills/` to `skills/` directory at the project root, update skill frontmatter to match the add-skill format (from vercel-labs/add-skill), and maintain backward compatibility by keeping `.claude/skills/` as symlinks or copies for local development.
 
 ## Files to Create/Modify
-1. **Create**: `src/lib/headless-runner.ts` - main headless runner implementation
-2. **Modify**: `src/cli.tsx` - wire up the headless runner in `executeHeadlessRun`
-3. **Create**: `tests/lib/headless-runner.test.ts` - unit tests
 
-## Implementation Approach
+### New Files
+- `skills/create-spec/SKILL.md` - migrated from `.claude/skills/create-spec/SKILL.md`
+- `skills/ralph-iterate/SKILL.md` - migrated from `.claude/skills/ralph-iterate/SKILL.md`
 
-### headless-runner.ts
-- Re-use `StreamParser` for parsing Claude's stream-json output
-- Re-use `StateMachine` for tracking tool execution and state
-- Use `spawn` directly (not the React hook) to manage the claude process
-- Emit events via `headless-emitter.ts` functions instead of updating React state
-- Support stuck detection (track iterations without task completion)
-- Proper exit codes (0=complete, 1=stuck, 2=max iterations, 3=error)
+### Modified Files
+- `.claude/skills/create-spec/SKILL.md` - potentially convert to symlink or keep as copy
+- `.claude/skills/ralph-iterate/SKILL.md` - potentially convert to symlink or keep as copy
 
-### Key Events to Emit
-- `started` - at start with task count from SPEC.md
-- `iteration` - at start of each iteration
-- `tool` - for each tool start (read/write/bash)
-- `commit` - when git commit detected
-- `task_complete` - when SPEC tasks get checked off
-- `iteration_done` - at end of each iteration with stats
-- `stuck` - when no progress for N iterations
-- `complete` - when all tasks done
-- `failed` - on errors
+## Implementation Steps
+
+1. **Research add-skill format**: Check what frontmatter format vercel-labs/add-skill expects
+   - Look for examples in existing SKILL.md files
+   - Identify required fields and structure
+
+2. **Create skills/ directory structure**:
+   - Create `skills/create-spec/` directory
+   - Create `skills/ralph-iterate/` directory
+
+3. **Migrate create-spec skill**:
+   - Read existing `.claude/skills/create-spec/SKILL.md`
+   - Update frontmatter to match add-skill format
+   - Write to `skills/create-spec/SKILL.md`
+
+4. **Migrate ralph-iterate skill**:
+   - Read existing `.claude/skills/ralph-iterate/SKILL.md`
+   - Update frontmatter to match add-skill format
+   - Write to `skills/ralph-iterate/SKILL.md`
+
+5. **Maintain backward compatibility**:
+   - Keep `.claude/skills/` files as copies (symlinks may have issues on some platforms)
+   - Document the relationship between the two directories
 
 ## Tests
-1. Test event emission sequence
-2. Test stuck detection threshold
-3. Test exit codes
-4. Test task completion tracking
-5. Test tool event emission
+
+- Verify `skills/` directory structure exists
+- Verify both SKILL.md files have correct add-skill frontmatter format
+- Verify `.claude/skills/` files still exist for local development
+- Run existing tests to ensure no regressions
 
 ## Exit Criteria
-- `ralph run --headless` outputs JSONL events to stdout
-- Stuck detection works with threshold
-- Exit codes are correct
-- Tests pass with good coverage
+
+- ✅ `skills/create-spec/SKILL.md` exists with correct add-skill frontmatter
+- ✅ `skills/ralph-iterate/SKILL.md` exists with correct add-skill frontmatter
+- ✅ `.claude/skills/` files remain unchanged for local development
+- ✅ All existing tests pass
+- ✅ Changes committed with descriptive message
