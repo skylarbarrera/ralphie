@@ -20,14 +20,14 @@ import { validateSpecInDir, formatValidationResult } from './lib/spec-validator.
 import { generateSpec } from './lib/spec-generator.js';
 import { getHarnessName } from './lib/config-loader.js';
 
-export const DEFAULT_PROMPT = `You are Ralph, an autonomous coding assistant.
+export const DEFAULT_PROMPT = `You are Ralphie, an autonomous coding assistant.
 
 ## Your Task
 Complete ONE checkbox from SPEC.md per iteration. Sub-bullets under a checkbox are implementation details - complete ALL of them before marking the checkbox done.
 
 ## The Loop
 1. Read SPEC.md to find the next incomplete task (check STATE.txt if unsure)
-2. Write plan to .ai/ralph/plan.md:
+2. Write plan to .ai/ralphie/plan.md:
    - Goal: one sentence
    - Files: what you'll create/modify
    - Tests: what you'll test
@@ -36,11 +36,11 @@ Complete ONE checkbox from SPEC.md per iteration. Sub-bullets under a checkbox a
 4. Run tests and type checks
 5. Mark checkbox complete in SPEC.md
 6. Commit with clear message
-7. Update .ai/ralph/index.md (append commit summary) and STATE.txt
+7. Update .ai/ralphie/index.md (append commit summary) and STATE.txt
 
 ## Memory Files
-- .ai/ralph/plan.md - Current task plan (overwrite each iteration)
-- .ai/ralph/index.md - Commit log (append after each commit)
+- .ai/ralphie/plan.md - Current task plan (overwrite each iteration)
+- .ai/ralphie/index.md - Commit log (append after each commit)
 
 ## Rules
 - Plan BEFORE coding
@@ -48,24 +48,24 @@ Complete ONE checkbox from SPEC.md per iteration. Sub-bullets under a checkbox a
 - Commit AFTER each task
 - No TODO/FIXME stubs in completed tasks`;
 
-export const GREEDY_PROMPT = `You are Ralph, an autonomous coding assistant in GREEDY MODE.
+export const GREEDY_PROMPT = `You are Ralphie, an autonomous coding assistant in GREEDY MODE.
 
 ## Your Task
 Complete AS MANY checkboxes as possible from SPEC.md before context fills up.
 
 ## The Loop (repeat until done or context full)
 1. Read SPEC.md to find the next incomplete task
-2. Write plan to .ai/ralph/plan.md
+2. Write plan to .ai/ralphie/plan.md
 3. Implement the task with tests
 4. Run tests and type checks
 5. Mark checkbox complete in SPEC.md
 6. Commit with clear message
-7. Update .ai/ralph/index.md and STATE.txt
+7. Update .ai/ralphie/index.md and STATE.txt
 8. **CONTINUE to next task** (don't stop!)
 
 ## Memory Files
-- .ai/ralph/plan.md - Current task plan (overwrite each task)
-- .ai/ralph/index.md - Commit log (append after each commit)
+- .ai/ralphie/plan.md - Current task plan (overwrite each task)
+- .ai/ralphie/index.md - Commit log (append after each commit)
 
 ## Rules
 - Commit after EACH task (saves progress incrementally)
@@ -115,7 +115,7 @@ export function executeRun(options: RunOptions): void {
   const validation = validateProject(options.cwd);
 
   if (!validation.valid) {
-    console.error('Cannot run Ralph:');
+    console.error('Cannot run Ralphie:');
     for (const error of validation.errors) {
       console.error(`  - ${error}`);
     }
@@ -196,17 +196,17 @@ function main(): void {
   const program = new Command();
 
   program
-    .name('ralph')
+    .name('ralphie')
     .description('Autonomous AI coding loops')
     .version('0.3.1');
 
   program
     .command('init')
-    .description('Initialize Ralph in the current directory')
+    .description('Initialize Ralphie in the current directory')
     .argument('[directory]', 'Target directory', process.cwd())
     .action((directory: string) => {
       const targetDir = resolve(directory);
-      console.log(`Initializing Ralph in ${targetDir}...\n`);
+      console.log(`Initializing Ralphie in ${targetDir}...\n`);
 
       try {
         const result = runInit(targetDir);
@@ -225,9 +225,9 @@ function main(): void {
           }
         }
 
-        console.log('\nRalph initialized! Next steps:');
+        console.log('\nRalphie initialized! Next steps:');
         console.log('  1. Create SPEC.md with your project tasks');
-        console.log('  2. Run: ralph run');
+        console.log('  2. Run: ralphie run');
       } catch (error) {
         console.error('Error:', error instanceof Error ? error.message : error);
         process.exit(1);
@@ -236,7 +236,7 @@ function main(): void {
 
   program
     .command('run')
-    .description('Run Ralph iterations')
+    .description('Run Ralphie iterations')
     .option('-n, --iterations <number>', 'Number of iterations to run', '1')
     .option('-a, --all', 'Run until all PRD tasks are complete (max 100 iterations)')
     .option('-p, --prompt <text>', 'Prompt to send to Claude')
@@ -288,7 +288,7 @@ function main(): void {
 
   program
     .command('validate')
-    .description('Check if current directory is ready for Ralph and validate SPEC.md conventions')
+    .description('Check if current directory is ready for Ralphie and validate SPEC.md conventions')
     .option('--cwd <path>', 'Working directory to check', process.cwd())
     .option('--spec-only', 'Only validate SPEC.md content (skip project structure check)', false)
     .action((opts) => {
@@ -352,7 +352,7 @@ function main(): void {
       }
 
       if (!result.validationPassed && !opts.headless) {
-        console.log('\nWarning: SPEC has convention violations. Run `ralph validate` for details.');
+        console.log('\nWarning: SPEC has convention violations. Run `ralphie validate` for details.');
       }
 
       process.exit(0);
@@ -360,7 +360,7 @@ function main(): void {
 
   program
     .command('upgrade')
-    .description(`Upgrade a Ralph project to the latest version (v${CURRENT_VERSION})`)
+    .description(`Upgrade a Ralphie project to the latest version (v${CURRENT_VERSION})`)
     .argument('[directory]', 'Target directory', process.cwd())
     .option('--dry-run', 'Show what would be changed without making changes', false)
     .option('--clean', 'Remove legacy files after confirming project is at latest version', false)
@@ -370,28 +370,28 @@ function main(): void {
       const detection = detectVersion(targetDir);
 
       if (detection.detectedVersion === null) {
-        console.log('Could not detect Ralph project version.');
-        console.log('If this is a new project, use: ralph init');
+        console.log('Could not detect Ralphie project version.');
+        console.log('If this is a new project, use: ralphie init');
         return;
       }
 
       if (detection.isLatest && !detection.hasLegacyFiles) {
         const claudeDir = resolve(targetDir, '.claude');
-        const ralphMdPath = resolve(claudeDir, 'ralph.md');
+        const ralphieMdPath = resolve(claudeDir, 'ralphie.md');
 
-        if (existsSync(ralphMdPath)) {
-          const content = readFileSync(ralphMdPath, 'utf-8');
+        if (existsSync(ralphieMdPath)) {
+          const content = readFileSync(ralphieMdPath, 'utf-8');
           const hasOldPatterns = /\bPRD\b/.test(content) || /\bprogress\.txt\b/.test(content);
 
           if (hasOldPatterns) {
-            console.log(`Project is at ${getVersionName(detection.detectedVersion)} but .claude/ralph.md has old patterns.`);
+            console.log(`Project is at ${getVersionName(detection.detectedVersion)} but .claude/ralphie.md has old patterns.`);
 
             if (opts.clean) {
               const templatesDir = resolve(__dirname, '..', 'templates');
-              const templatePath = resolve(templatesDir, '.claude', 'ralph.md');
+              const templatePath = resolve(templatesDir, '.claude', 'ralphie.md');
               if (existsSync(templatePath)) {
-                copyFileSync(templatePath, ralphMdPath);
-                console.log('Updated .claude/ralph.md to v2 template.');
+                copyFileSync(templatePath, ralphieMdPath);
+                console.log('Updated .claude/ralphie.md to v2 template.');
               }
             } else {
               console.log('Run with --clean to update it.');
@@ -470,7 +470,7 @@ function main(): void {
           }
         }
 
-        console.log('\nUpgrade complete! Run: ralph validate');
+        console.log('\nUpgrade complete! Run: ralphie validate');
       } catch (error) {
         console.error('Error:', error instanceof Error ? error.message : error);
         process.exit(1);

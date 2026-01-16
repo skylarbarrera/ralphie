@@ -91,8 +91,8 @@ describe('detectVersion', () => {
     expect(result.foundIndicators).toContain('STATE.txt');
   });
 
-  it('does not detect version from .ai/ralph directory alone', () => {
-    mkdirSync(join(TEST_DIR, '.ai', 'ralph'), { recursive: true });
+  it('does not detect version from .ai/ralphie directory alone', () => {
+    mkdirSync(join(TEST_DIR, '.ai', 'ralphie'), { recursive: true });
     const result = detectVersion(TEST_DIR);
     expect(result.detectedVersion).toBeNull();
   });
@@ -223,41 +223,41 @@ describe('runUpgrade', () => {
       expect(result.created).toContain('STATE.txt');
     });
 
-    it('creates .ai/ralph/ directory', () => {
+    it('creates .ai/ralphie/ directory', () => {
       writeFileSync(join(TEST_DIR, 'PRD.md'), '# PRD');
       const result = runUpgrade(TEST_DIR);
 
-      expect(existsSync(join(TEST_DIR, '.ai', 'ralph'))).toBe(true);
-      expect(result.created).toContain('.ai/ralph/');
+      expect(existsSync(join(TEST_DIR, '.ai', 'ralphie'))).toBe(true);
+      expect(result.created).toContain('.ai/ralphie/');
     });
 
-    it('creates .gitkeep in .ai/ralph/', () => {
+    it('creates .gitkeep in .ai/ralphie/', () => {
       writeFileSync(join(TEST_DIR, 'PRD.md'), '# PRD');
       const result = runUpgrade(TEST_DIR);
 
-      expect(existsSync(join(TEST_DIR, '.ai', 'ralph', '.gitkeep'))).toBe(true);
-      expect(result.created).toContain('.ai/ralph/.gitkeep');
+      expect(existsSync(join(TEST_DIR, '.ai', 'ralphie', '.gitkeep'))).toBe(true);
+      expect(result.created).toContain('.ai/ralphie/.gitkeep');
     });
 
-    it('skips .claude/ralph.md if already v2 content', () => {
+    it('skips .claude/ralphie.md if already v2 content', () => {
       writeFileSync(join(TEST_DIR, 'PRD.md'), '# PRD');
       mkdirSync(join(TEST_DIR, '.claude'), { recursive: true });
-      writeFileSync(join(TEST_DIR, '.claude', 'ralph.md'), 'SPEC.md and STATE.txt patterns');
+      writeFileSync(join(TEST_DIR, '.claude', 'ralphie.md'), 'SPEC.md and STATE.txt patterns');
 
       const result = runUpgrade(TEST_DIR);
 
-      expect(readFileSync(join(TEST_DIR, '.claude', 'ralph.md'), 'utf-8')).toBe('SPEC.md and STATE.txt patterns');
-      expect(result.skipped).toContainEqual('.claude/ralph.md (already v2)');
+      expect(readFileSync(join(TEST_DIR, '.claude', 'ralphie.md'), 'utf-8')).toBe('SPEC.md and STATE.txt patterns');
+      expect(result.skipped).toContainEqual('.claude/ralphie.md (already v2)');
     });
 
-    it('updates .claude/ralph.md if it has old patterns', () => {
+    it('updates .claude/ralphie.md if it has old patterns', () => {
       writeFileSync(join(TEST_DIR, 'PRD.md'), '# PRD');
       mkdirSync(join(TEST_DIR, '.claude'), { recursive: true });
-      writeFileSync(join(TEST_DIR, '.claude', 'ralph.md'), 'Read PRD and progress.txt');
+      writeFileSync(join(TEST_DIR, '.claude', 'ralphie.md'), 'Read PRD and progress.txt');
 
       const result = runUpgrade(TEST_DIR);
 
-      expect(result.renamed).toContainEqual({ from: '.claude/ralph.md (old)', to: '.claude/ralph.md (v2)' });
+      expect(result.renamed).toContainEqual({ from: '.claude/ralphie.md (old)', to: '.claude/ralphie.md (v2)' });
     });
 
     it('performs complete upgrade from v1 to v2', () => {
@@ -268,7 +268,7 @@ describe('runUpgrade', () => {
 
       expect(existsSync(join(TEST_DIR, 'SPEC.md'))).toBe(true);
       expect(existsSync(join(TEST_DIR, 'STATE.txt'))).toBe(true);
-      expect(existsSync(join(TEST_DIR, '.ai', 'ralph'))).toBe(true);
+      expect(existsSync(join(TEST_DIR, '.ai', 'ralphie'))).toBe(true);
       expect(result.fromVersion).toBe(1);
       expect(result.toVersion).toBe(2);
       expect(result.renamed).toHaveLength(2);

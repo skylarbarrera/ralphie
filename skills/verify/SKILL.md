@@ -432,9 +432,9 @@ Tests skipped (documentation-only changes).
 Type check passed. Safe to commit.
 ```
 
-## Integration with Ralph Iteration
+## Integration with Ralphie Iteration
 
-Use `/verify` in Step 5 (Review) of the Ralph iteration:
+Use `/verify` in Step 5 (Review) of the Ralphie iteration:
 
 ```markdown
 ## Step 5: Review
@@ -460,7 +460,7 @@ Use `/verify` in Step 5 (Review) of the Ralph iteration:
 ## When to Use This Skill
 
 **Use `/verify` when:**
-- About to commit code changes in Ralph iteration
+- About to commit code changes in Ralphie iteration
 - User asks "are tests passing?"
 - Unsure if type checking passes
 - Want to check lint status

@@ -1,5 +1,5 @@
 /**
- * Centralized configuration constants for Ralph.
+ * Centralized configuration constants for Ralphie.
  * Modify with caution as these affect performance and UX.
  */
 

@@ -22,7 +22,7 @@ Fix worker pipeline to reliably push commits and create PRs.
 
 - [ ] Add test infrastructure to worker
   - Install test runners in worker container
-  - Run actual tests after Ralph completes
+  - Run actual tests after Ralphie completes
   - Add timeout protection
 `;
       const result = validateSpecContent(content);

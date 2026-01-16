@@ -6,9 +6,9 @@ Replace custom stream parsing (~700 lines) with official Claude Agent SDK and ad
 
 ## Background
 
-Research revealed that Anthropic ships `@anthropic-ai/claude-agent-sdk` which handles all CLI spawning, JSONL parsing, and event typing. OpenAI has equivalent `@openai/codex-sdk`. Ralph's custom `StreamParser` and `StateMachine` are redundant.
+Research revealed that Anthropic ships `@anthropic-ai/claude-agent-sdk` which handles all CLI spawning, JSONL parsing, and event typing. OpenAI has equivalent `@openai/codex-sdk`. Ralphie's custom `StreamParser` and `StateMachine` are redundant.
 
-See: `.ai/ralph/harness-refactor-plan.md` for full research notes.
+See: `.ai/ralphie/harness-refactor-plan.md` for full research notes.
 
 ## Goals
 
@@ -68,14 +68,14 @@ See: `.ai/ralph/harness-refactor-plan.md` for full research notes.
 
 - [ ] Update README with `--harness` flag documentation
 - [ ] Update CLAUDE.md if needed
-- [ ] Archive old harness-refactor-plan.md to `.ai/ralph/archive/`
+- [ ] Archive old harness-refactor-plan.md to `.ai/ralphie/archive/`
 
 ---
 
 ## Success Criteria
 
-- [ ] `ralph run --all` works with Claude (default)
-- [ ] `ralph run --all --harness codex` works with Codex
+- [ ] `ralphie run --all` works with Claude (default)
+- [ ] `ralphie run --all --harness codex` works with Codex
 - [ ] All existing tests pass (should be 630+)
 - [ ] New harness tests pass
 - [ ] `npm run type-check` passes
@@ -109,8 +109,8 @@ type HarnessEvent =
 ### CLI Flag
 
 ```bash
-ralph run --harness <claude|codex>  # Flag
-RALPH_HARNESS=codex ralph run       # Env var
+ralphie run --harness <claude|codex>  # Flag
+RALPH_HARNESS=codex ralphie run       # Env var
 ```
 
 ---
@@ -130,4 +130,4 @@ RALPH_HARNESS=codex ralph run       # Env var
 
 - [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/typescript)
 - [Codex SDK](https://developers.openai.com/codex/sdk/)
-- [Harness Refactor Plan](.ai/ralph/harness-refactor-plan.md)
+- [Harness Refactor Plan](.ai/ralphie/harness-refactor-plan.md)

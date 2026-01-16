@@ -1,14 +1,14 @@
-# Ralph Iteration Validation Prompt
+# Ralphie Iteration Validation Prompt
 
-This prompt is used by the Stop hook to validate that a Ralph iteration completed successfully before allowing the next iteration to begin.
+This prompt is used by the Stop hook to validate that a Ralphie iteration completed successfully before allowing the next iteration to begin.
 
 ## Usage
 
-This file is referenced by Claude Code's Stop hook with `type: prompt`. When Ralph completes an iteration, Claude Code reads this prompt and validates the iteration output.
+This file is referenced by Claude Code's Stop hook with `type: prompt`. When Ralphie completes an iteration, Claude Code reads this prompt and validates the iteration output.
 
 ## Validation Prompt
 
-You are validating whether a Ralph iteration completed successfully. Ralph is an autonomous coding assistant that follows a strict protocol for each iteration.
+You are validating whether a Ralphie iteration completed successfully. Ralphie is an autonomous coding assistant that follows a strict protocol for each iteration.
 
 ### Validation Checklist
 
@@ -16,7 +16,7 @@ Check each of the following criteria. An iteration is ONLY valid if ALL criteria
 
 #### 1. Task Implementation
 - [ ] Code changes were made that address the SPEC task
-- [ ] The implementation follows the plan in `.ai/ralph/plan.md`
+- [ ] The implementation follows the plan in `.ai/ralphie/plan.md`
 - [ ] No placeholder or incomplete code was left in the codebase
 
 #### 2. Tests Pass
@@ -35,13 +35,13 @@ Check each of the following criteria. An iteration is ONLY valid if ALL criteria
 - [ ] Commit message is descriptive and matches the work done
 
 #### 5. Index Updated
-- [ ] `.ai/ralph/index.md` was updated with a new entry
+- [ ] `.ai/ralphie/index.md` was updated with a new entry
 - [ ] Entry includes: SHA, files changed, test count (if applicable), notes, next hint
 - [ ] Entry is appended at the end of the file
 
 #### 6. SPEC Updated (if task completed)
 - [ ] The completed task checkbox was marked with `[x]` in SPEC.md
-- [ ] Only ONE task was completed (Ralph does one task per iteration)
+- [ ] Only ONE task was completed (Ralphie does one task per iteration)
 
 #### 7. STATE Updated (if task completed)
 - [ ] STATE.txt was updated with a progress entry
@@ -149,14 +149,14 @@ Respond with a JSON object in this exact format:
 
 1. **Documentation-only changes**: `tests_passed` can be considered true if no code changes require testing
 2. **Non-TypeScript projects**: `type_check_passed` can be considered true if project doesn't use TypeScript
-3. **Partial implementation**: If only part of a batched task was completed, mark as INVALID - Ralph should complete the full batched checkbox
-4. **Multiple tasks completed**: If more than one SPEC task was marked complete, note this as an issue (Ralph should do ONE task per iteration)
+3. **Partial implementation**: If only part of a batched task was completed, mark as INVALID - Ralphie should complete the full batched checkbox
+4. **Multiple tasks completed**: If more than one SPEC task was marked complete, note this as an issue (Ralphie should do ONE task per iteration)
 
 ### Context to Examine
 
 When validating, look at:
 - The conversation output for test/type-check results
 - Git output showing commit hash and message
-- File operations on `.ai/ralph/index.md`
+- File operations on `.ai/ralphie/index.md`
 - File operations on `SPEC.md` and `STATE.txt`
 - Any error messages or failures in tool outputs

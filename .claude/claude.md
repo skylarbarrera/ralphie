@@ -1,6 +1,6 @@
-# Ralph Coding Standards
+# Ralphie Coding Standards
 
-This file defines coding standards and preferences for AI agents working in Ralph loops.
+This file defines coding standards and preferences for AI agents working in Ralphie loops.
 
 ## Language Preferences
 
@@ -250,22 +250,22 @@ npm audit
 npx bundlephobia <package>
 ```
 
-## Ralph-Specific Guidelines
+## Ralphie-Specific Guidelines
 
 ### Required Reading
-Before starting work in a Ralph loop:
+Before starting work in a Ralphie loop:
 - **Always read:** `SPEC.md` - Project requirements and task list
 - **Read if needed:** `STATE.txt` - Check if unsure what's already done
-- **Read if needed:** `.ai/ralph/index.md` - Last 3-5 commits for context
+- **Read if needed:** `.ai/ralphie/index.md` - Last 3-5 commits for context
 
 Lazy load context. SPEC has the tasks; only read progress/index if you need to verify state.
 
 ### Iteration Protocol
 
-For the full iteration protocol (loading context, exploring codebase, planning, implementing, reviewing, and committing), use the `/ralph-iterate` skill. It contains detailed guidance for:
+For the full iteration protocol (loading context, exploring codebase, planning, implementing, reviewing, and committing), use the `/ralphie-iterate` skill. It contains detailed guidance for:
 - Creating SPECs with structured interviews
 - Using Task(Explore) agents for codebase understanding
-- Writing plans to `.ai/ralph/plan.md`
+- Writing plans to `.ai/ralphie/plan.md`
 - Code review before committing
 - Tracking progress with TodoWrite
 - Updating tracking files (index.md, STATE.txt)

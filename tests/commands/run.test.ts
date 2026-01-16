@@ -9,7 +9,7 @@ describe('validateProject', () => {
   let testDir: string;
 
   beforeEach(() => {
-    testDir = join(tmpdir(), `ralph-test-${Date.now()}`);
+    testDir = join(tmpdir(), `ralphie-test-${Date.now()}`);
     mkdirSync(testDir, { recursive: true });
   });
 
@@ -35,7 +35,7 @@ describe('validateProject', () => {
       const result = validateProject(testDir);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Uncommitted changes detected. Commit or stash before running Ralph.');
+      expect(result.errors).toContain('Uncommitted changes detected. Commit or stash before running Ralphie.');
     });
 
     it('should pass when git repo is clean (with other required files)', () => {
@@ -47,8 +47,8 @@ describe('validateProject', () => {
       // Create required files
       writeFileSync(join(testDir, 'SPEC.md'), '# Spec\n- [ ] Task 1');
       mkdirSync(join(testDir, '.claude'), { recursive: true });
-      writeFileSync(join(testDir, '.claude', 'ralph.md'), '# Ralph');
-      mkdirSync(join(testDir, '.ai', 'ralph'), { recursive: true });
+      writeFileSync(join(testDir, '.claude', 'ralphie.md'), '# Ralphie');
+      mkdirSync(join(testDir, '.ai', 'ralphie'), { recursive: true });
 
       // Commit everything
       execSync('git add .', { cwd: testDir, stdio: 'pipe' });
@@ -64,8 +64,8 @@ describe('validateProject', () => {
       // Create required files but no git repo
       writeFileSync(join(testDir, 'SPEC.md'), '# Spec\n- [ ] Task 1');
       mkdirSync(join(testDir, '.claude'), { recursive: true });
-      writeFileSync(join(testDir, '.claude', 'ralph.md'), '# Ralph');
-      mkdirSync(join(testDir, '.ai', 'ralph'), { recursive: true });
+      writeFileSync(join(testDir, '.claude', 'ralphie.md'), '# Ralphie');
+      mkdirSync(join(testDir, '.ai', 'ralphie'), { recursive: true });
 
       // Add a file that would be "uncommitted" if it were a git repo
       writeFileSync(join(testDir, 'dirty.txt'), 'not tracked');
@@ -74,7 +74,7 @@ describe('validateProject', () => {
 
       // Should pass - no git check in non-git directory
       expect(result.valid).toBe(true);
-      expect(result.errors).not.toContain('Uncommitted changes detected. Commit or stash before running Ralph.');
+      expect(result.errors).not.toContain('Uncommitted changes detected. Commit or stash before running Ralphie.');
     });
   });
 
@@ -86,24 +86,24 @@ describe('validateProject', () => {
       expect(result.errors).toContain('SPEC.md not found. Create a SPEC.md with your project tasks.');
     });
 
-    it('should fail when .claude/ralph.md is missing', () => {
+    it('should fail when .claude/ralphie.md is missing', () => {
       writeFileSync(join(testDir, 'SPEC.md'), '# Spec');
 
       const result = validateProject(testDir);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('.claude/ralph.md not found. Run `ralph init` first.');
+      expect(result.errors).toContain('.claude/ralphie.md not found. Run `ralphie init` first.');
     });
 
-    it('should fail when .ai/ralph/ is missing', () => {
+    it('should fail when .ai/ralphie/ is missing', () => {
       writeFileSync(join(testDir, 'SPEC.md'), '# Spec');
       mkdirSync(join(testDir, '.claude'), { recursive: true });
-      writeFileSync(join(testDir, '.claude', 'ralph.md'), '# Ralph');
+      writeFileSync(join(testDir, '.claude', 'ralphie.md'), '# Ralphie');
 
       const result = validateProject(testDir);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('.ai/ralph/ not found. Run `ralph init` first.');
+      expect(result.errors).toContain('.ai/ralphie/ not found. Run `ralphie init` first.');
     });
   });
 });

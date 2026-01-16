@@ -1,31 +1,31 @@
-# Using Ralph
+# Using Ralphie
 
-Ralph is an autonomous AI coding loop. You write a SPEC, Ralph works through it task by task.
+Ralphie is an autonomous AI coding loop. You write a SPEC, Ralphie works through it task by task.
 
 ## Quick Start
 
 1. **Create a SPEC.md** with your project requirements and tasks
-2. **Run Ralph**: `ralph run` or `ralph run -n 5` for multiple iterations
+2. **Run Ralphie**: `ralphie run` or `ralphie run -n 5` for multiple iterations
 
 ## Project Structure
 
-Ralph expects this structure:
+Ralphie expects this structure:
 
 ```
 your-project/
 ├── .claude/
-│   └── ralph.md      # Coding standards (auto-created)
-├── .ai/ralph/
-│   ├── plan.md       # Current task plan (Ralph writes this)
-│   └── index.md      # Commit history (Ralph appends here)
+│   └── ralphie.md      # Coding standards (auto-created)
+├── .ai/ralphie/
+│   ├── plan.md       # Current task plan (Ralphie writes this)
+│   └── index.md      # Commit history (Ralphie appends here)
 ├── SPEC.md            # YOUR requirements (you write this)
-├── STATE.txt      # Progress log (Ralph updates this)
+├── STATE.txt      # Progress log (Ralphie updates this)
 └── src/              # Your code
 ```
 
 ## Writing a SPEC
 
-Your SPEC.md should have checkboxes for tasks. **Each checkbox = one Ralph iteration**, so batch related work together.
+Your SPEC.md should have checkboxes for tasks. **Each checkbox = one Ralphie iteration**, so batch related work together.
 
 ```markdown
 # My Project
@@ -78,23 +78,23 @@ Brief description of what you're building.
 ## Commands
 
 ```bash
-ralph run              # Run one iteration
-ralph run -n 5         # Run 5 iterations
-ralph run --help       # See all options
+ralphie run              # Run one iteration
+ralphie run -n 5         # Run 5 iterations
+ralphie run --help       # See all options
 ```
 
 ## The Loop
 
-Each iteration, Ralph:
+Each iteration, Ralphie:
 1. Reads SPEC.md to find the next incomplete task
-2. Writes a plan to .ai/ralph/plan.md
+2. Writes a plan to .ai/ralphie/plan.md
 3. Implements the task with tests
 4. Commits changes
-5. Updates STATE.txt and .ai/ralph/index.md
+5. Updates STATE.txt and .ai/ralphie/index.md
 
 ## Tips
 
-- **Clean git state**: Ralph requires no uncommitted changes before running
+- **Clean git state**: Ralphie requires no uncommitted changes before running
 - **One task per iteration**: Don't expect multiple checkboxes done at once
 - **Check STATE.txt**: See what's been done if you're unsure
 - **Edit SPEC anytime**: Add/remove/reorder tasks between runs

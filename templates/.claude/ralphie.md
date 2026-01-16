@@ -1,6 +1,6 @@
-# Claude Coding Standards for Ralph Projects
+# Claude Coding Standards for Ralphie Projects
 
-This file defines coding standards and preferences for AI agents working in Ralph loops.
+This file defines coding standards and preferences for AI agents working in Ralphie loops.
 
 ## Language Preferences
 
@@ -250,13 +250,13 @@ npm audit
 npx bundlephobia <package>
 ```
 
-## Ralph-Specific Guidelines
+## Ralphie-Specific Guidelines
 
 ### Required Reading
-Before starting work in a Ralph loop:
+Before starting work in a Ralphie loop:
 - **Always read:** `SPEC.md` - Project requirements and task list
 - **Read if needed:** `STATE.txt` - Check if unsure what's already done
-- **Read if needed:** `.ai/ralph/index.md` - Last 3-5 commits for context
+- **Read if needed:** `.ai/ralphie/index.md` - Last 3-5 commits for context
 
 Lazy load context. SPEC has the tasks; only read progress/index if you need to verify state.
 
@@ -326,7 +326,7 @@ You: Any specific dotfiles it must support, or auto-discover from home directory
 
 ### Writing SPECs
 
-When generating a SPEC, optimize for **iteration efficiency**. Each checkbox = one Ralph iteration (~3 min), so structure matters.
+When generating a SPEC, optimize for **iteration efficiency**. Each checkbox = one Ralphie iteration (~3 min), so structure matters.
 
 **Batch by default.** Group related tasks under one checkbox:
 
@@ -551,7 +551,7 @@ pytest --cov=src --cov-fail-under=80
 ## Tips
 
 - **Write verify steps**: Tasks without verification may be marked complete without actually working
-- **Test locally first**: If verification needs a running server, start it before Ralph runs
+- **Test locally first**: If verification needs a running server, start it before Ralphie runs
 - **Keep verify steps simple**: One command, one expected result
 - **Fail fast**: Put the most likely-to-fail verification first
 

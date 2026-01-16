@@ -3,7 +3,7 @@ set -e
 
 # Linting Loop
 # ==============
-# Runs Ralph to fix linting errors one at a time.
+# Runs Ralphie to fix linting errors one at a time.
 #
 # Usage:
 #   ./examples/linting-loop.sh 30           # Run 30 iterations
@@ -22,7 +22,7 @@ echo "  Iterations: $ITERATIONS"
 echo "  Linter: $LINTER"
 echo ""
 
-ralph run -n "$ITERATIONS" -p "You are fixing linting errors.
+ralphie run -n "$ITERATIONS" -p "You are fixing linting errors.
 
 1. Run the linter: ${LINTER}
 2. Pick ONE error or warning to fix

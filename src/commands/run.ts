@@ -31,7 +31,7 @@ export function validateProject(cwd: string): ValidationResult {
   const warnings: string[] = [];
 
   if (isGitRepo(cwd) && hasUncommittedChanges(cwd)) {
-    errors.push('Uncommitted changes detected. Commit or stash before running Ralph.');
+    errors.push('Uncommitted changes detected. Commit or stash before running Ralphie.');
   }
 
   const specPath = join(cwd, 'SPEC.md');
@@ -39,14 +39,14 @@ export function validateProject(cwd: string): ValidationResult {
     errors.push('SPEC.md not found. Create a SPEC.md with your project tasks.');
   }
 
-  const ralphMdPath = join(cwd, '.claude', 'ralph.md');
-  if (!existsSync(ralphMdPath)) {
-    errors.push('.claude/ralph.md not found. Run `ralph init` first.');
+  const ralphieMdPath = join(cwd, '.claude', 'ralphie.md');
+  if (!existsSync(ralphieMdPath)) {
+    errors.push('.claude/ralphie.md not found. Run `ralphie init` first.');
   }
 
-  const aiRalphPath = join(cwd, '.ai', 'ralph');
-  if (!existsSync(aiRalphPath)) {
-    errors.push('.ai/ralph/ not found. Run `ralph init` first.');
+  const aiRalphiePath = join(cwd, '.ai', 'ralphie');
+  if (!existsSync(aiRalphiePath)) {
+    errors.push('.ai/ralphie/ not found. Run `ralphie init` first.');
   }
 
   const valid = errors.length === 0;

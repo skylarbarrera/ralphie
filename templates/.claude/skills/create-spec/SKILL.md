@@ -101,7 +101,7 @@ What this project achieves when complete.
 
 ### Task Rules
 
-**Each checkbox = one Ralph iteration.** Batch related work.
+**Each checkbox = one Ralphie iteration.** Batch related work.
 
 ```markdown
 # BAD - 4 iterations

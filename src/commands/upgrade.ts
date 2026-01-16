@@ -127,16 +127,16 @@ function migrateV1ToV2(targetDir: string, result: MigrationResult): void {
 }
 
 function ensureV2Structure(targetDir: string, result: MigrationResult): void {
-  const aiRalphDir = join(targetDir, '.ai', 'ralph');
-  if (!existsSync(aiRalphDir)) {
-    mkdirSync(aiRalphDir, { recursive: true });
-    result.created.push('.ai/ralph/');
+  const aiRalphieDir = join(targetDir, '.ai', 'ralphie');
+  if (!existsSync(aiRalphieDir)) {
+    mkdirSync(aiRalphieDir, { recursive: true });
+    result.created.push('.ai/ralphie/');
   }
 
-  const gitkeepPath = join(aiRalphDir, '.gitkeep');
+  const gitkeepPath = join(aiRalphieDir, '.gitkeep');
   if (!existsSync(gitkeepPath)) {
     writeFileSync(gitkeepPath, '', 'utf-8');
-    result.created.push('.ai/ralph/.gitkeep');
+    result.created.push('.ai/ralphie/.gitkeep');
   }
 
   const claudeDir = join(targetDir, '.claude');
@@ -144,26 +144,26 @@ function ensureV2Structure(targetDir: string, result: MigrationResult): void {
     mkdirSync(claudeDir, { recursive: true });
   }
 
-  const ralphMdDest = join(claudeDir, 'ralph.md');
+  const ralphieMdDest = join(claudeDir, 'ralphie.md');
   const templatesDir = getTemplatesDir();
-  const ralphMdSrc = join(templatesDir, '.claude', 'ralph.md');
+  const ralphieMdSrc = join(templatesDir, '.claude', 'ralphie.md');
 
-  if (!existsSync(ralphMdDest)) {
-    if (existsSync(ralphMdSrc)) {
-      copyFileSync(ralphMdSrc, ralphMdDest);
-      result.created.push('.claude/ralph.md');
+  if (!existsSync(ralphieMdDest)) {
+    if (existsSync(ralphieMdSrc)) {
+      copyFileSync(ralphieMdSrc, ralphieMdDest);
+      result.created.push('.claude/ralphie.md');
     }
   } else {
-    const existingContent = readFileSync(ralphMdDest, 'utf-8');
+    const existingContent = readFileSync(ralphieMdDest, 'utf-8');
     const hasOldPatterns = /\bPRD\b/.test(existingContent) || /\bprogress\.txt\b/.test(existingContent);
 
     if (hasOldPatterns) {
-      if (existsSync(ralphMdSrc)) {
-        copyFileSync(ralphMdSrc, ralphMdDest);
-        result.renamed.push({ from: '.claude/ralph.md (old)', to: '.claude/ralph.md (v2)' });
+      if (existsSync(ralphieMdSrc)) {
+        copyFileSync(ralphieMdSrc, ralphieMdDest);
+        result.renamed.push({ from: '.claude/ralphie.md (old)', to: '.claude/ralphie.md (v2)' });
       }
     } else {
-      result.skipped.push('.claude/ralph.md (already v2)');
+      result.skipped.push('.claude/ralphie.md (already v2)');
     }
   }
 
@@ -198,7 +198,7 @@ export function runUpgrade(targetDir: string, targetVersion: number = CURRENT_VE
   const detection = detectVersion(targetDir);
 
   if (detection.detectedVersion === null) {
-    throw new Error('Could not detect project version. Is this a Ralph project?');
+    throw new Error('Could not detect project version. Is this a Ralphie project?');
   }
 
   if (detection.detectedVersion >= targetVersion) {

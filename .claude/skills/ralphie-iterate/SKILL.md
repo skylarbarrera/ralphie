@@ -1,15 +1,15 @@
 ---
-name: ralph-iterate
-description: Execute one Ralph iteration - load context, explore codebase, plan implementation, write code with tests, review changes, and commit. Use this skill to run a single autonomous coding iteration following the Ralph protocol.
+name: ralphie-iterate
+description: Execute one Ralphie iteration - load context, explore codebase, plan implementation, write code with tests, review changes, and commit. Use this skill to run a single autonomous coding iteration following the Ralphie protocol.
 context: fork
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, TodoWrite, LSP
 ---
 
-# Ralph Iteration Protocol
+# Ralphie Iteration Protocol
 
-Execute ONE complete Ralph iteration: read SPEC, plan, implement, test, review, commit.
+Execute ONE complete Ralphie iteration: read SPEC, plan, implement, test, review, commit.
 
-**For coding standards** (language, style, testing, git, security), see `ralph.md`.
+**For coding standards** (language, style, testing, git, security), see `ralphie.md`.
 
 ## Claude Code Native Features
 
@@ -29,11 +29,11 @@ This skill leverages Claude Code's native capabilities:
 - Proper task batching
 - LLM-based review before finalizing
 
-This skill (`ralph-iterate`) is for **executing** iterations, not creating specs.
+This skill (`ralphie-iterate`) is for **executing** iterations, not creating specs.
 
 ## Writing SPECs
 
-Optimize for **iteration efficiency**. Each checkbox = one Ralph iteration.
+Optimize for **iteration efficiency**. Each checkbox = one Ralphie iteration.
 
 ### Batch Related Tasks
 
@@ -60,7 +60,7 @@ Optimize for **iteration efficiency**. Each checkbox = one Ralph iteration.
 
 ### What SPECs Should NOT Include
 
-SPECs describe **requirements**, not solutions. Implementation details belong in `.ai/ralph/plan.md`.
+SPECs describe **requirements**, not solutions. Implementation details belong in `.ai/ralphie/plan.md`.
 
 **Never include in SPEC.md:**
 - Code snippets or fix approaches
@@ -91,7 +91,7 @@ SPECs describe **requirements**, not solutions. Implementation details belong in
 - Over-specified SPECs constrain solutions and hide better approaches
 - Requirements should be testable outcomes, not implementation checklists
 
-**Run `ralph validate` to check your SPEC for violations.**
+**Run `ralphie validate` to check your SPEC for violations.**
 
 ## Step 1: Load Context
 
@@ -120,7 +120,7 @@ Look for:
 
 ### 1.3 Read Recent Context
 
-Read **last 3-5 entries** from `.ai/ralph/index.md`:
+Read **last 3-5 entries** from `.ai/ralphie/index.md`:
 - Extract file patterns (what files were recently changed)
 - Note "next:" hints (what the previous iteration recommended)
 - Understand recent architectural decisions
@@ -241,7 +241,7 @@ Exploration Results → Informs Plan → Guides Implementation
 
 ## Step 3: Plan
 
-Write your plan to `.ai/ralph/plan.md` **before writing any code**. The plan is your contract for this iteration — it defines scope, prevents creep, and provides a clear completion target.
+Write your plan to `.ai/ralphie/plan.md` **before writing any code**. The plan is your contract for this iteration — it defines scope, prevents creep, and provides a clear completion target.
 
 ### 3.1 Write the Goal
 
@@ -765,7 +765,7 @@ docs(readme): add API documentation
 
 ### 6.3 Update index.md
 
-After committing, append an entry to `.ai/ralph/index.md`. This creates a searchable history of what each iteration accomplished.
+After committing, append an entry to `.ai/ralphie/index.md`. This creates a searchable history of what each iteration accomplished.
 
 **Get your commit SHA:**
 ```bash
@@ -872,7 +872,7 @@ Before considering this iteration complete:
 - [ ] No unintended files staged (run `git status`)
 - [ ] Commit message follows conventional format
 - [ ] Commit message uses HEREDOC (no escaping issues)
-- [ ] `.ai/ralph/index.md` has new entry with correct SHA
+- [ ] `.ai/ralphie/index.md` has new entry with correct SHA
 - [ ] `SPEC.md` task is checked off: `- [x]`
 - [ ] `STATE.txt` has completion record
 - [ ] TodoWrite sub-tasks marked completed
@@ -932,7 +932,7 @@ Tests Pass + Review Approved
 
 ## Hooks Configuration
 
-Ralph uses a **Stop hook** to validate iteration completion. Configure in `.claude/settings.json`:
+Ralphie uses a **Stop hook** to validate iteration completion. Configure in `.claude/settings.json`:
 
 ```json
 {

@@ -11,7 +11,7 @@ import {
   emitComplete,
   emitFailed,
   emitWarning,
-  type RalphEvent,
+  type RalphieEvent,
 } from '../headless-emitter.js';
 
 describe('headless-emitter', () => {
@@ -31,7 +31,7 @@ describe('headless-emitter', () => {
 
   describe('emit', () => {
     it('writes JSON to stdout', () => {
-      const event: RalphEvent = {
+      const event: RalphieEvent = {
         event: 'started',
         spec: 'SPEC.md',
         tasks: 5,
@@ -45,7 +45,7 @@ describe('headless-emitter', () => {
     });
 
     it('outputs valid JSON for each event type', () => {
-      const events: RalphEvent[] = [
+      const events: RalphieEvent[] = [
         { event: 'started', spec: 'SPEC.md', tasks: 3, timestamp: '2026-01-12T12:00:00.000Z' },
         { event: 'iteration', n: 1, phase: 'reading' },
         { event: 'tool', type: 'read', path: 'src/index.ts' },

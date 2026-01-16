@@ -64,7 +64,7 @@ export interface WarningEvent {
   files?: string[];
 }
 
-export type RalphEvent =
+export type RalphieEvent =
   | StartedEvent
   | IterationEvent
   | ToolEvent
@@ -76,7 +76,7 @@ export type RalphEvent =
   | FailedEvent
   | WarningEvent;
 
-export function emit(event: RalphEvent): void {
+export function emit(event: RalphieEvent): void {
   console.log(JSON.stringify(event));
 }
 

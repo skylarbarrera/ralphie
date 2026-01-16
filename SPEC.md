@@ -1,17 +1,17 @@
-# Ralph v1.0 - Skill-Based Architecture
+# Ralphie v1.0 - Skill-Based Architecture
 
-Convert Ralph to a skill-based architecture with verification capabilities for v1 release.
+Convert Ralphie to a skill-based architecture with verification capabilities for v1 release.
 
 ## Goal
 
-Transform Ralph into a skill-installable tool where major operations are Claude Code skills, add verification capabilities, and design a harness abstraction layer for future multi-harness support.
+Transform Ralphie into a skill-installable tool where major operations are Claude Code skills, add verification capabilities, and design a harness abstraction layer for future multi-harness support.
 
 ## Current State
 
-Ralph is a working CLI with:
+Ralphie is a working CLI with:
 - Commands: `init`, `run`, `validate`, `spec`, `upgrade`
 - Headless mode for programmatic integration
-- Skills in `.claude/skills/`: `create-spec`, `ralph-iterate`
+- Skills in `.claude/skills/`: `create-spec`, `ralphie-iterate`
 - Spec generation via `src/lib/spec-generator.ts`
 - Stream parsing and state machine for Claude output
 
@@ -23,7 +23,7 @@ Ralph is a working CLI with:
 
 - [x] Move skills from `.claude/skills/` to `skills/` directory
   - Create `skills/create-spec/SKILL.md` from existing `.claude/skills/create-spec/SKILL.md`
-  - Create `skills/ralph-iterate/SKILL.md` from existing `.claude/skills/ralph-iterate/SKILL.md`
+  - Create `skills/ralphie-iterate/SKILL.md` from existing `.claude/skills/ralphie-iterate/SKILL.md`
   - Update skill frontmatter to match add-skill format (vercel-labs/add-skill)
   - Keep `.claude/skills/` as symlinks or copies for local development
 
@@ -45,7 +45,7 @@ Ralph is a working CLI with:
 
 ### Phase 4: Interactive Spec Mode
 
-- [x] Update `ralph spec` command to support interactive mode
+- [x] Update `ralphie spec` command to support interactive mode
   - Default behavior: interactive interview with AskUserQuestion
   - User is present, Claude interviews user, asks clarifying questions
   - User provides answers, reviews output, can request changes before finalizing
@@ -53,7 +53,7 @@ Ralph is a working CLI with:
 
 ### Phase 5: Autonomous Spec Mode
 
-- [x] Add autonomous mode for `ralph spec --auto` or `ralph spec --headless`
+- [x] Add autonomous mode for `ralphie spec --auto` or `ralphie spec --headless`
   - No user present
   - Generate initial spec with `create-spec` skill logic
   - Run `review-spec` validation on generated spec
@@ -66,9 +66,9 @@ Ralph is a working CLI with:
 - [x] Create harness interface in `src/lib/harness/`
   - Define `Harness` interface: run skill with context, return result (success/failure, output)
   - Implement `ClaudeCodeHarness` as default adapter (only implementation for v1)
-  - Config selection: `.ralph/config.yml` has `harness: claude-code`
+  - Config selection: `.ralphie/config.yml` has `harness: claude-code`
   - Environment variable override: `RALPH_HARNESS=codex`
-  - CLI flag override: `ralph run --harness codex`
+  - CLI flag override: `ralphie run --harness codex`
   - Design interface so other harnesses (Codex, OpenCode) can be added later
 
 ### Phase 7: Tests and Documentation
@@ -76,14 +76,14 @@ Ralph is a working CLI with:
 - [x] Add tests for new functionality
   - Unit tests for review-spec validation logic
   - Integration test: spec generation with review loop
-  - Test skills work with `npx add-skill skylarbarrera/ralph`
+  - Test skills work with `npx add-skill skylarbarrera/ralphie`
   - Update README with new commands and skill installation
 
 ---
 
 ## Config
 
-Ralph reads from `.ralph/config.yml` when present:
+Ralphie reads from `.ralphie/config.yml` when present:
 
 ```yaml
 harness: claude-code  # Default harness (only config needed)
@@ -95,10 +95,10 @@ Defaults are used when config is not present.
 
 ## Success Criteria
 
-- Skills installable via `npx add-skill skylarbarrera/ralph`
-- Skills installable selectively: `npx add-skill skylarbarrera/ralph --skill create-spec --skill verify`
-- `ralph spec "description"` runs interactive interview (user present)
-- `ralph spec --auto "description"` runs autonomous generation with review loop
+- Skills installable via `npx add-skill skylarbarrera/ralphie`
+- Skills installable selectively: `npx add-skill skylarbarrera/ralphie --skill create-spec --skill verify`
+- `ralphie spec "description"` runs interactive interview (user present)
+- `ralphie spec --auto "description"` runs autonomous generation with review loop
 - Verify skill works during iteration (Claude uses it to check work before committing)
 - Harness interface designed for future extensibility (only Claude Code implemented for v1)
 - All existing tests pass

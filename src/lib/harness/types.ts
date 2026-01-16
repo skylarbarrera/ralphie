@@ -50,7 +50,7 @@ export interface HarnessRunOptions {
  * Harness interface for AI coding assistants.
  *
  * Each harness wraps an official SDK (Claude Agent SDK, Codex SDK, etc.)
- * and emits normalized events for Ralph to consume.
+ * and emits normalized events for Ralphie to consume.
  */
 export interface Harness {
   /** Name of the harness */

@@ -5,7 +5,7 @@
       {
         "type": "prompt",
         "promptFile": "scripts/validate-iteration.md",
-        "description": "Validate Ralph iteration completion before allowing next iteration"
+        "description": "Validate Ralphie iteration completion before allowing next iteration"
       }
     ]
   },

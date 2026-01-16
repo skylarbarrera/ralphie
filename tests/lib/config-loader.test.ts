@@ -94,13 +94,13 @@ describe('config-loader', () => {
       expect(result).toBeNull();
     });
 
-    it('should load config from .ralph/config.yml', () => {
+    it('should load config from .ralphie/config.yml', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue('harness: claude\n');
 
       const result = loadConfig('/tmp');
       expect(result).toEqual({ harness: 'claude' });
-      expect(fs.readFileSync).toHaveBeenCalledWith('/tmp/.ralph/config.yml', 'utf-8');
+      expect(fs.readFileSync).toHaveBeenCalledWith('/tmp/.ralphie/config.yml', 'utf-8');
     });
 
     it('should return null on read error', () => {

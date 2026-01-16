@@ -1,6 +1,6 @@
-# Claude Code Hooks for Ralph
+# Claude Code Hooks for Ralphie
 
-Hooks allow you to run custom scripts at specific points in Claude's execution. They're perfect for Ralph loops to ensure quality standards are maintained.
+Hooks allow you to run custom scripts at specific points in Claude's execution. They're perfect for Ralphie loops to ensure quality standards are maintained.
 
 ## Available Hooks
 
@@ -123,15 +123,15 @@ Claude Code supports these hook types:
 4. **Exit with proper codes** - 0 for success, non-zero for failure
 5. **Log what you're doing** - Use echo for visibility
 
-## Using Hooks in Ralph Loops
+## Using Hooks in Ralphie Loops
 
-Hooks automatically run during Ralph execution:
+Hooks automatically run during Ralphie execution:
 
 ```bash
-# Hooks run on every commit made by Ralph
-npm run ralph -- -n 20
+# Hooks run on every commit made by Ralphie
+npm run ralphie -- -n 20
 
-# If a hook fails, Ralph stops and reports the error
+# If a hook fails, Ralphie stops and reports the error
 # Fix the issue, then resume the loop
 ```
 
@@ -139,7 +139,7 @@ npm run ralph -- -n 20
 
 ```bash
 # Skip hooks for a single run
-SKIP_HOOKS=1 npm run ralph -- -n 10
+SKIP_HOOKS=1 npm run ralphie -- -n 10
 
 # Or use --no-verify in git commits
 git commit --no-verify -m "message"

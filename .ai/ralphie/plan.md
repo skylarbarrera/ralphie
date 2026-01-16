@@ -8,7 +8,7 @@ Complete v1.0 by adding tests for new skill/spec functionality and updating docu
 - README.md (document skill installation and new commands)
 - SPEC.md (mark Phase 7 as complete)
 - STATE.txt (append completion entry)
-- .ai/ralph/index.md (append commit entry)
+- .ai/ralphie/index.md (append commit entry)
 
 ## Tests to Add
 1. Integration test: Full autonomous spec generation with review loop
@@ -24,7 +24,7 @@ Complete v1.0 by adding tests for new skill/spec functionality and updating docu
 - New integration test added for spec generation with review loop
 - README updated with:
   - npx add-skill installation instructions
-  - ralph spec command documentation (interactive, --auto, --headless)
+  - ralphie spec command documentation (interactive, --auto, --headless)
   - --harness flag documentation
   - verify skill usage guidance
 - No TypeScript errors

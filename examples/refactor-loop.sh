@@ -3,7 +3,7 @@ set -e
 
 # Refactor Loop
 # ===============
-# Runs Ralph to clean up code duplication and improve structure.
+# Runs Ralphie to clean up code duplication and improve structure.
 #
 # Usage:
 #   ./examples/refactor-loop.sh 15          # Run 15 iterations
@@ -22,7 +22,7 @@ echo "  Iterations: $ITERATIONS"
 echo "  Detector: $DETECTOR"
 echo ""
 
-ralph run -n "$ITERATIONS" -p "You are refactoring code to reduce duplication.
+ralphie run -n "$ITERATIONS" -p "You are refactoring code to reduce duplication.
 
 1. Run duplication detection: ${DETECTOR}
 2. Find ONE instance of duplicated code

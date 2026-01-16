@@ -25,7 +25,7 @@ Read SPEC.md
 
 ## Step 2: Format Checks
 
-Check for format violations that break Ralph iteration efficiency or create ambiguity.
+Check for format violations that break Ralphie iteration efficiency or create ambiguity.
 
 ### 2.1 Checkbox Syntax
 
@@ -92,7 +92,7 @@ Check for format violations that break Ralph iteration efficiency or create ambi
 **Check for:**
 - No file:line references (e.g., `auth.ts:42`)
 - No specific file paths in task bullets (e.g., `src/auth/login.ts`)
-- Files belong in `.ai/ralph/plan.md`, not SPEC.md
+- Files belong in `.ai/ralphie/plan.md`, not SPEC.md
 
 ### 2.4 Sub-Bullets Are Deliverables
 
@@ -383,8 +383,8 @@ None. SPEC is ready to use.
 - You just generated a SPEC with `/create-spec`
 - User asks you to validate a SPEC before starting work
 - You're unsure if a SPEC follows conventions
-- Running `ralph spec --auto` (autonomous mode uses this for self-review)
+- Running `ralphie spec --auto` (autonomous mode uses this for self-review)
 
 **Don't use when:**
 - SPEC has already been validated and user is ready to start iterations
-- You're mid-iteration (use `/ralph-iterate` instead)
+- You're mid-iteration (use `/ralphie-iterate` instead)

@@ -6,4 +6,4 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-exec npx tsx "$SCRIPT_DIR/../src/cli.tsx" "$@"
+exec bun "$SCRIPT_DIR/../src/cli.tsx" "$@"

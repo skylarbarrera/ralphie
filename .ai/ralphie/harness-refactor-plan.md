@@ -1,4 +1,4 @@
-# Ralph Harness Refactor Plan
+# Ralphie Harness Refactor Plan
 
 ## TL;DR
 
@@ -8,7 +8,7 @@ Replace ~700 lines of custom stream parsing with official SDKs. Add Codex suppor
 
 ## Problem: We Reinvented the Wheel
 
-Ralph currently has custom implementations for:
+Ralphie currently has custom implementations for:
 - `StreamParser` (~200 lines) - Parses Claude Code JSONL output
 - `StateMachine` (~350 lines) - Tracks tool execution state
 - `Harness` abstraction (~150 lines) - Wraps CLI spawning
@@ -55,7 +55,7 @@ We don't need to adopt AG-UI as a dependency, but our event types align with it.
 
 ```
 ┌─────────────────────────────────────────┐
-│  Ralph (thin wrapper)                   │
+│  Ralphie (thin wrapper)                   │
 │  ├─ SPEC parser + completion check      │
 │  ├─ Iteration loop (until done/stuck)   │
 │  ├─ TUI or Headless output              │
@@ -241,23 +241,23 @@ npm install @anthropic-ai/claude-agent-sdk @openai/codex-sdk
 
 ```bash
 # Default (Claude)
-ralph run --all
+ralphie run --all
 
 # Explicit Claude
-ralph run --all --harness claude
+ralphie run --all --harness claude
 
 # Use Codex
-ralph run --all --harness codex
+ralphie run --all --harness codex
 
 # Environment variable
-RALPH_HARNESS=codex ralph run --all
+RALPH_HARNESS=codex ralphie run --all
 ```
 
 ---
 
-## What Ralph Keeps (Value-Add)
+## What Ralphie Keeps (Value-Add)
 
-The official SDKs handle the hard stuff. Ralph adds:
+The official SDKs handle the hard stuff. Ralphie adds:
 
 | Feature | Description |
 |---------|-------------|

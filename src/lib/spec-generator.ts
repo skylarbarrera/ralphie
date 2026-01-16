@@ -24,7 +24,7 @@ export interface SpecGeneratorResult {
   error?: string;
 }
 
-const SPEC_GENERATION_PROMPT = `You are generating a SPEC.md for a Ralph project. Your task is to create a well-structured specification based on the user's description.
+const SPEC_GENERATION_PROMPT = `You are generating a SPEC.md for a Ralphie project. Your task is to create a well-structured specification based on the user's description.
 
 ## Your Task
 
@@ -98,7 +98,7 @@ SPECs describe **requirements**, not solutions. NEVER include:
 
 ## Task Batching
 
-Each checkbox = one Ralph iteration. Batch related work:
+Each checkbox = one Ralphie iteration. Batch related work:
 
 \`\`\`markdown
 # BAD - 4 iterations

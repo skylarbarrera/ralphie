@@ -1,10 +1,14 @@
-# Ralph - Let AI Code While You Sleep
+<p align="center">
+  <img src="ralphie-white.png" alt="Ralphie" width="200">
+</p>
 
-Ralph runs AI in a loop to build software. You describe what you want, Ralph builds it piece by piece, committing working code along the way. Come back to find your project done.
+# Ralphie - Let AI Code While You Sleep
 
-## The Ralph Wiggum Philosophy
+Ralphie runs AI in a loop to build software. You describe what you want, Ralphie builds it piece by piece, committing working code along the way. Come back to find your project done.
 
-Ralph implements the [Ralph Wiggum technique](https://github.com/ghuntley/how-to-ralph-wiggum) - an AI development methodology where a coding agent runs in a loop until all tasks are complete.
+## The Ralphie Wiggum Philosophy
+
+Ralphie builds on the [Ralphie Wiggum technique](https://github.com/ghuntley/how-to-ralphie-wiggum) - an AI development methodology where a coding agent runs in a loop until all tasks are complete.
 
 **Core insight:** Progress doesn't live in the LLM's context window - it lives in your files and git history.
 
@@ -15,65 +19,84 @@ Each iteration:
 4. Writes code, commits, updates state
 5. Exits - loop restarts with clean slate
 
-This is deliberately simple. No sophisticated orchestration. Just a loop that keeps restarting the agent until the checklist is done.
-
 **Why it works:** The AI can make mistakes, get confused, even fail completely - but the next iteration starts fresh and sees only the committed progress. Iteration beats perfection.
 
-**Best for:** Tasks with clear completion criteria - migrations, refactors, test coverage, batch operations. Not for ambiguous requirements or architectural exploration.
+### Beyond Basic Ralphie Wiggum
 
-## What Ralph Does
+The original technique works best for mechanical tasks with obvious completion criteria. Ralphie extends this to handle **larger features and architectural work** through:
+
+- **Structured SPECs** - Break complex features into discrete, checkable tasks
+- **Interview-based spec creation** - Handle ambiguity upfront, before the loop starts
+- **Sub-bullets for scope** - Each checkbox can contain multiple implementation steps
+- **Verification steps** - Catch issues during iteration, not after
+- **Memory files** (.ai/ralphie/) - Maintain context across iterations without polluting the LLM
+
+The key: transform ambiguous requirements into clear checklists *before* running the loop. The interview process does the thinking; the loop does the execution.
+
+**Example:** "Build a user authentication system" is too vague for basic Ralphie Wiggum. But after an interview, it becomes:
+```markdown
+- [ ] Create User model with password hashing
+- [ ] Add /auth/register endpoint with validation
+- [ ] Add /auth/login endpoint returning JWT
+- [ ] Create auth middleware for protected routes
+- [ ] Write tests for all auth flows
+```
+
+Now each task has clear completion criteria, and the loop can execute.
+
+## What Ralphie Does
 
 1. You describe what you want to build
 2. Claude interviews you and creates a **SPEC** (a structured task list)
-3. Ralph picks the next task from your SPEC
-4. Ralph writes code, runs tests, and commits
+3. Ralphie picks the next task from your SPEC
+4. Ralphie writes code, runs tests, and commits
 5. Repeat until your project is done
 
-**Example:** You tell Claude "I want a todo app with user login." Claude asks clarifying questions, then generates a detailed SPEC. Ralph implements authentication, creates the database, builds the UI, writes tests - all while you're away.
+**Example:** You tell Claude "I want a todo app with user login." Claude asks clarifying questions, then generates a detailed SPEC. Ralphie implements authentication, creates the database, builds the UI, writes tests - all while you're away.
 
 ## Quick Start
 
-### 1. Install Ralph
+### 1. Install Ralphie
 
 ```bash
 # Clone the repo
-git clone https://github.com/skylarbarrera/ralph.git my-project
+git clone https://github.com/skylarbarrera/ralphie.git my-project
 cd my-project
 
 # Install dependencies
-npm install
+bun install
 
-# Make ralph available as a command
-npm link
+# Make ralphie available as a command
+bun link
 ```
 
 ### 2. Install Claude Code
 
-Ralph uses Claude Code (Anthropic's AI coding tool) under the hood:
+Ralphie uses Claude Code (Anthropic's AI coding tool) under the hood:
 
 ```bash
 curl -fsSL https://anthropic.com/install-claude.sh | sh
 claude  # Run once to log in
 ```
 
-### 3. Install Ralph Skills (Optional but Recommended)
+### 3. Install Ralphie Skills (Optional but Recommended)
 
-Ralph includes three helpful skills for Claude Code:
+Ralphie includes three helpful skills for Claude Code:
 
 ```bash
-# Install all Ralph skills
-npx add-skill skylarbarrera/ralph
+# Install all Ralphie skills
+npx add-skill skylarbarrera/ralphie
 
 # Or install selectively
-npx add-skill skylarbarrera/ralph --skill create-spec
-npx add-skill skylarbarrera/ralph --skill ralph-iterate
-npx add-skill skylarbarrera/ralph --skill review-spec
-npx add-skill skylarbarrera/ralph --skill verify
+npx add-skill skylarbarrera/ralphie --skill create-spec
+npx add-skill skylarbarrera/ralphie --skill ralphie-iterate
+npx add-skill skylarbarrera/ralphie --skill review-spec
+npx add-skill skylarbarrera/ralphie --skill verify
 ```
 
 **Skills included:**
 - `create-spec` - Guided SPEC creation with structured interview
-- `ralph-iterate` - Complete iteration protocol for executing tasks
+- `ralphie-iterate` - Complete iteration protocol for executing tasks
 - `review-spec` - SPEC validation and quality review
 - `verify` - Pre-commit verification (tests, type check, lint)
 
@@ -105,39 +128,39 @@ Claude will interview you about your project (type, stack, features, constraints
 
 ```bash
 # Interactive mode (default) - uses /create-spec skill with interview
-ralph spec "Build a REST API for user management with JWT auth"
+ralphie spec "Build a REST API for user management with JWT auth"
 
 # Autonomous mode - generates spec with review loop, no human interaction
-ralph spec --auto "Todo app with user accounts and sharing"
+ralphie spec --auto "Todo app with user accounts and sharing"
 
 # Headless mode - outputs JSON events, great for automation
-ralph spec --headless "Blog platform with markdown support"
+ralphie spec --headless "Blog platform with markdown support"
 ```
 
-### 5. Run Ralph
+### 5. Run Ralphie
 
 ```bash
-ralph run           # Run once to see how it works
-ralph run -n 10     # Run 10 times to build more
-ralph run --all     # Run until SPEC is complete
+ralphie run           # Run once to see how it works
+ralphie run -n 10     # Run 10 times to build more
+ralphie run --all     # Run until SPEC is complete
 ```
 
-That's it! Check your git history to see what Ralph built.
+That's it! Check your git history to see what Ralphie built.
 
 ## Commands
 
 | Command | What it does |
 |---------|-------------|
-| `ralph run` | Run one iteration |
-| `ralph run -n 5` | Run 5 iterations |
-| `ralph run --all` | Run until SPEC complete |
-| `ralph run --headless` | Output JSON events (no UI) |
-| `ralph spec "description"` | Generate SPEC.md with interview (interactive, default) |
-| `ralph spec --auto "description"` | Generate SPEC.md autonomously with review loop |
-| `ralph spec --headless "description"` | Generate SPEC.md and output JSON events |
-| `ralph init` | Add Ralph to an existing project |
-| `ralph validate` | Check project structure and SPEC conventions |
-| `ralph upgrade` | Upgrade project to latest version |
+| `ralphie run` | Run one iteration |
+| `ralphie run -n 5` | Run 5 iterations |
+| `ralphie run --all` | Run until SPEC complete |
+| `ralphie run --headless` | Output JSON events (no UI) |
+| `ralphie spec "description"` | Generate SPEC.md with interview (interactive, default) |
+| `ralphie spec --auto "description"` | Generate SPEC.md autonomously with review loop |
+| `ralphie spec --headless "description"` | Generate SPEC.md and output JSON events |
+| `ralphie init` | Add Ralphie to an existing project |
+| `ralphie validate` | Check project structure and SPEC conventions |
+| `ralphie upgrade` | Upgrade project to latest version |
 
 ### Run Options
 
@@ -158,13 +181,13 @@ That's it! Check your git history to see what Ralph built.
 
 ### Greedy Mode
 
-By default, Ralph follows the classic Ralph Wiggum approach: **one task per iteration**, fresh context each time.
+By default, Ralphie follows the classic Ralphie Wiggum approach: **one task per iteration**, fresh context each time.
 
-With `--greedy`, Ralph intentionally breaks this rule - completing **as many tasks as possible** before the context fills up. This trades the "fresh start" guarantee for speed and shared context between related tasks:
+With `--greedy`, Ralphie intentionally breaks this rule - completing **as many tasks as possible** before the context fills up. This trades the "fresh start" guarantee for speed and shared context between related tasks:
 
 ```bash
-ralph run --greedy -n 5      # Each iteration does multiple tasks
-ralph run --greedy --all     # Maximum throughput
+ralphie run --greedy -n 5      # Each iteration does multiple tasks
+ralphie run --greedy --all     # Maximum throughput
 ```
 
 **Tradeoffs:**
@@ -231,11 +254,11 @@ Claude: [generates detailed SPEC with tasks for admin auth, post CRUD,
 │   You describe idea    ──►   Claude interviews you           │
 │                              Claude creates SPEC.md          │
 │                                                              │
-│   You run ralph        ──►   Ralph reads SPEC                │
-│                              Ralph picks next task           │
-│                              Ralph writes code               │
-│                              Ralph runs tests                │
-│                              Ralph commits                   │
+│   You run ralphie        ──►   Ralphie reads SPEC                │
+│                              Ralphie picks next task           │
+│                              Ralphie writes code               │
+│                              Ralphie runs tests                │
+│                              Ralphie commits                   │
 │                              (repeat)                        │
 │                                                              │
 │   You come back        ◄──   Working code in git history    │
@@ -243,7 +266,7 @@ Claude: [generates detailed SPEC with tasks for admin auth, post CRUD,
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Each iteration, Ralph:
+Each iteration, Ralphie:
 1. Reads your SPEC to find the next unchecked task
 2. Plans how to implement it
 3. Writes the code
@@ -267,11 +290,11 @@ The skill auto-detects your project type and runs appropriate checks:
 
 **Zero configuration required** - the skill detects what to run from your project files (package.json, tsconfig.json, pyproject.toml, etc.)
 
-**In Ralph iterations:** Claude automatically uses `/verify` before committing when using the `/ralph-iterate` skill.
+**In Ralphie iterations:** Claude automatically uses `/verify` before committing when using the `/ralphie-iterate` skill.
 
 ## Multi-AI Support
 
-Ralph supports multiple AI coding assistants through a harness abstraction layer. Switch between AI providers without changing your workflow.
+Ralphie supports multiple AI coding assistants through a harness abstraction layer. Switch between AI providers without changing your workflow.
 
 ### Available Harnesses
 
@@ -297,29 +320,29 @@ export OPENAI_API_KEY=sk-...          # For Codex
 # Or add to your shell profile (~/.bashrc, ~/.zshrc)
 ```
 
-Ralph never stores or handles API keys directly - authentication is delegated entirely to the underlying SDKs.
+Ralphie never stores or handles API keys directly - authentication is delegated entirely to the underlying SDKs.
 
 ### Usage
 
 ```bash
 # Use Claude (default)
-ralph run
+ralphie run
 
 # Use Codex
-ralph run --harness codex
+ralphie run --harness codex
 
 # Headless mode with Codex
-ralph run --headless --harness codex
+ralphie run --headless --harness codex
 ```
 
 ### Configuration Priority
 
-1. **CLI flag**: `ralph run --harness codex`
+1. **CLI flag**: `ralphie run --harness codex`
 2. **Environment variable**: `RALPH_HARNESS=codex`
-3. **Config file**: `.ralph/config.yml`
+3. **Config file**: `.ralphie/config.yml`
 4. **Default**: `claude`
 
-**Config file example (.ralph/config.yml):**
+**Config file example (.ralphie/config.yml):**
 ```yaml
 harness: codex
 ```
@@ -333,7 +356,7 @@ The harness abstraction provides:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐
-│   Ralph TUI     │     │ Ralph Headless  │
+│   Ralphie TUI     │     │ Ralphie Headless  │
 └────────┬────────┘     └────────┬────────┘
          │                       │
          └───────────┬───────────┘
@@ -370,13 +393,13 @@ Events emitted: `tool_start`, `tool_end`, `thinking`, `message`, `error`
 
 ## Headless Mode
 
-For automation and integration with orchestration tools, Ralph supports headless mode:
+For automation and integration with orchestration tools, Ralphie supports headless mode:
 
 ```bash
-ralph run --headless -n 10
+ralphie run --headless -n 10
 ```
 
-Instead of the interactive UI, Ralph outputs JSON events to stdout (one per line):
+Instead of the interactive UI, Ralphie outputs JSON events to stdout (one per line):
 
 ```json
 {"event":"started","spec":"SPEC.md","tasks":5,"timestamp":"2024-01-15T10:30:00Z"}
@@ -401,10 +424,10 @@ Instead of the interactive UI, Ralph outputs JSON events to stdout (one per line
 
 ### Stuck Detection
 
-Use `--stuck-threshold` to control when Ralph gives up:
+Use `--stuck-threshold` to control when Ralphie gives up:
 
 ```bash
-ralph run --headless --stuck-threshold 5  # Give up after 5 iterations without progress
+ralphie run --headless --stuck-threshold 5  # Give up after 5 iterations without progress
 ```
 
 ### Autonomous Spec Generation
@@ -413,10 +436,10 @@ For fully automated pipelines, generate specs without human input:
 
 ```bash
 # Interactive - shows progress
-ralph spec "REST API for user management with JWT auth"
+ralphie spec "REST API for user management with JWT auth"
 
 # Headless - outputs JSON events
-ralph spec --headless "Todo app with user accounts and sharing"
+ralphie spec --headless "Todo app with user accounts and sharing"
 ```
 
 Headless output:
@@ -427,41 +450,41 @@ Headless output:
 
 This enables end-to-end automation:
 ```bash
-ralph spec --headless "my project" && ralph run --headless --all
+ralphie spec --headless "my project" && ralphie run --headless --all
 ```
 
 ## Project Structure
 
-After running `ralph init`, your project looks like this:
+After running `ralphie init`, your project looks like this:
 
 ```
 your-project/
 ├── SPEC.md              # Your requirements (created via /create-spec)
-├── STATE.txt            # Progress log (Ralph updates this)
-├── .ai/ralph/
+├── STATE.txt            # Progress log (Ralphie updates this)
+├── .ai/ralphie/
 │   ├── plan.md          # Current task plan
-│   └── index.md         # History of what Ralph did
+│   └── index.md         # History of what Ralphie did
 └── .claude/
-    ├── ralph.md         # Coding standards for Ralph
+    ├── ralphie.md         # Coding standards for Ralphie
     └── skills/
         ├── create-spec/ # Guided spec creation with LLM review
-        └── ralph-iterate/ # Iteration execution protocol
+        └── ralphie-iterate/ # Iteration execution protocol
 ```
 
-## Adding Ralph to an Existing Project
+## Adding Ralphie to an Existing Project
 
 Already have a project? Just run:
 
 ```bash
 cd your-project
-ralph init
+ralphie init
 ```
 
-Then create your SPEC.md and run `ralph run`.
+Then create your SPEC.md and run `ralphie run`.
 
 ## Example Workflows
 
-Ralph includes ready-to-use scripts for common tasks:
+Ralphie includes ready-to-use scripts for common tasks:
 
 ### Improve Test Coverage
 ```bash
@@ -485,19 +508,19 @@ Ralph includes ready-to-use scripts for common tasks:
 
 ## Safety Tips
 
-- **Start small:** Run `ralph run` once first to see what happens
-- **Check commits:** Review what Ralph builds in your git history
-- **Use limits:** Set iteration limits to control how much Ralph does
+- **Start small:** Run `ralphie run` once first to see what happens
+- **Check commits:** Review what Ralphie builds in your git history
+- **Use limits:** Set iteration limits to control how much Ralphie does
 - **Sandbox option:** Run in Docker for complete isolation:
   ```bash
-  docker sandbox run claude ralph run -n 10
+  docker sandbox run claude ralphie run -n 10
   ```
 
 ## Troubleshooting
 
-**"command not found: ralph"**
+**"command not found: ralphie"**
 ```bash
-npm link   # Makes ralph available globally
+bun link   # Makes ralphie available globally
 ```
 
 **"command not found: claude"**
@@ -506,24 +529,24 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-**Ralph keeps working on the same task**
+**Ralphie keeps working on the same task**
 - Make sure tasks in SPEC.md use checkboxes: `- [ ]` (not done) vs `- [x]` (done)
 - Check STATE.txt to see what's been completed
 
 **Tests keep failing**
 - Add to your SPEC: "Fix any test failures before proceeding"
-- Or let Ralph fix them: `ralph run -p "Fix all failing tests"`
+- Or let Ralphie fix them: `ralphie run -p "Fix all failing tests"`
 
 ## Cost
 
-Ralph runs Claude repeatedly, which costs money:
+Ralphie runs Claude repeatedly, which costs money:
 - Roughly $0.10-0.50 per iteration depending on task complexity
 - Set iteration limits to control spending
 - Monitor usage in your Anthropic dashboard
 
 ## Requirements
 
-- Node.js 18+
+- [Bun](https://bun.sh) (fast JavaScript runtime)
 - Claude Code CLI (free to install, requires Anthropic account)
 - Git (for commits)
 

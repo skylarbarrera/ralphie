@@ -3,7 +3,7 @@ set -e
 
 # Test Coverage Loop
 # ====================
-# Runs Ralph to improve test coverage until a target is met.
+# Runs Ralphie to improve test coverage until a target is met.
 #
 # Usage:
 #   ./examples/test-coverage-loop.sh 20       # Run 20 iterations, default 80% target
@@ -22,7 +22,7 @@ echo "  Iterations: $ITERATIONS"
 echo "  Target: ${TARGET}%"
 echo ""
 
-ralph run -n "$ITERATIONS" -p "You are improving test coverage.
+ralphie run -n "$ITERATIONS" -p "You are improving test coverage.
 
 1. Run the test coverage tool (jest --coverage, pytest --cov, etc.)
 2. Find the file or function with the lowest coverage

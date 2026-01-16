@@ -3,7 +3,7 @@ set -e
 
 # PR Review Loop
 # ================
-# Runs Ralph to work through SPEC tasks, creating a PR for each one.
+# Runs Ralphie to work through SPEC tasks, creating a PR for each one.
 # Useful for teams that want code review before merging.
 #
 # Usage:
@@ -41,7 +41,7 @@ echo "  Iterations: $ITERATIONS"
 echo "  Main branch: $MAIN_BRANCH"
 echo ""
 
-ralph run -n "$ITERATIONS" -p "You are implementing SPEC tasks with PRs for review.
+ralphie run -n "$ITERATIONS" -p "You are implementing SPEC tasks with PRs for review.
 
 1. Read SPEC.md and find the next incomplete task
 2. Create a feature branch: git checkout -b feature/<task-name>

@@ -128,8 +128,8 @@ describe('cli', () => {
   });
 
   describe('DEFAULT_PROMPT', () => {
-    it('contains Ralph loop instructions', () => {
-      expect(DEFAULT_PROMPT).toContain('Ralph');
+    it('contains Ralphie loop instructions', () => {
+      expect(DEFAULT_PROMPT).toContain('Ralphie');
       expect(DEFAULT_PROMPT).toContain('SPEC.md');
       expect(DEFAULT_PROMPT).toContain('STATE.txt');
       expect(DEFAULT_PROMPT.toLowerCase()).toContain('commit');

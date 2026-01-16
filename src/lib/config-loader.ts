@@ -5,15 +5,15 @@ import yaml from 'js-yaml';
 import type { HarnessName } from './harness/types.js';
 
 /**
- * Ralph configuration from .ralph/config.yml
+ * Ralphie configuration from .ralphie/config.yml
  */
-export interface RalphConfig {
+export interface RalphieConfig {
   /** The harness to use ('claude' or 'codex') */
   harness?: HarnessName;
 }
 
 /**
- * Valid harness names that Ralph supports.
+ * Valid harness names that Ralphie supports.
  */
 const VALID_HARNESSES: HarnessName[] = ['claude', 'codex'];
 
@@ -21,7 +21,7 @@ const VALID_HARNESSES: HarnessName[] = ['claude', 'codex'];
  * Get the harness name from configuration with priority order:
  * 1. CLI flag (explicit override)
  * 2. Environment variable (RALPH_HARNESS)
- * 3. Config file (.ralph/config.yml)
+ * 3. Config file (.ralphie/config.yml)
  * 4. Default ('claude')
  *
  * @param cliHarness - Harness name from CLI flag
@@ -45,13 +45,13 @@ export function getHarnessName(cliHarness: string | undefined, cwd: string): Har
 }
 
 /**
- * Load Ralph configuration from .ralph/config.yml
+ * Load Ralphie configuration from .ralphie/config.yml
  *
  * @param cwd - Working directory to search for config file
  * @returns The parsed config or null if not found
  */
-export function loadConfig(cwd: string): RalphConfig | null {
-  const configPath = path.join(cwd, '.ralph', 'config.yml');
+export function loadConfig(cwd: string): RalphieConfig | null {
+  const configPath = path.join(cwd, '.ralphie', 'config.yml');
 
   try {
     if (!fs.existsSync(configPath)) {
@@ -59,7 +59,7 @@ export function loadConfig(cwd: string): RalphConfig | null {
     }
 
     const content = fs.readFileSync(configPath, 'utf-8');
-    const config = yaml.load(content) as RalphConfig;
+    const config = yaml.load(content) as RalphieConfig;
 
     return config;
   } catch (error) {
