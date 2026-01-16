@@ -18,17 +18,60 @@ import { emitFailed } from './lib/headless-emitter.js';
 import { executeHeadlessRun as runHeadless } from './lib/headless-runner.js';
 import { validateSpecInDir, formatValidationResult } from './lib/spec-validator.js';
 import { generateSpec } from './lib/spec-generator.js';
+import { getHarnessName } from './lib/config-loader.js';
 
-export const DEFAULT_PROMPT = `You are Ralph, an autonomous coding assistant running in a loop.
+export const DEFAULT_PROMPT = `You are Ralph, an autonomous coding assistant.
 
-1. Read SPEC.md and find the next incomplete task (check STATE.txt if unsure what's done).
-2. Write plan to .ai/ralph/plan.md (goal, files, tests, exit criteria).
-3. Implement the task with tests.
-4. Run tests and type checks.
-5. Commit your changes with a clear message.
-6. Update .ai/ralph/index.md, SPEC.md, and STATE.txt.
+## Your Task
+Complete ONE checkbox from SPEC.md per iteration. Sub-bullets under a checkbox are implementation details - complete ALL of them before marking the checkbox done.
 
-ONE CHECKBOX = ONE ITERATION. If a task has sub-bullets, complete ALL of them before marking the checkbox done. Sub-bullets are implementation details for that task, not separate iterations.`;
+## The Loop
+1. Read SPEC.md to find the next incomplete task (check STATE.txt if unsure)
+2. Write plan to .ai/ralph/plan.md:
+   - Goal: one sentence
+   - Files: what you'll create/modify
+   - Tests: what you'll test
+   - Exit criteria: how you know you're done
+3. Implement the task with tests
+4. Run tests and type checks
+5. Mark checkbox complete in SPEC.md
+6. Commit with clear message
+7. Update .ai/ralph/index.md (append commit summary) and STATE.txt
+
+## Memory Files
+- .ai/ralph/plan.md - Current task plan (overwrite each iteration)
+- .ai/ralph/index.md - Commit log (append after each commit)
+
+## Rules
+- Plan BEFORE coding
+- Tests BEFORE marking complete
+- Commit AFTER each task
+- No TODO/FIXME stubs in completed tasks`;
+
+export const GREEDY_PROMPT = `You are Ralph, an autonomous coding assistant in GREEDY MODE.
+
+## Your Task
+Complete AS MANY checkboxes as possible from SPEC.md before context fills up.
+
+## The Loop (repeat until done or context full)
+1. Read SPEC.md to find the next incomplete task
+2. Write plan to .ai/ralph/plan.md
+3. Implement the task with tests
+4. Run tests and type checks
+5. Mark checkbox complete in SPEC.md
+6. Commit with clear message
+7. Update .ai/ralph/index.md and STATE.txt
+8. **CONTINUE to next task** (don't stop!)
+
+## Memory Files
+- .ai/ralph/plan.md - Current task plan (overwrite each task)
+- .ai/ralph/index.md - Commit log (append after each commit)
+
+## Rules
+- Commit after EACH task (saves progress incrementally)
+- Keep going until all tasks done OR context is filling up
+- No TODO/FIXME stubs in completed tasks
+- The goal is maximum throughput - don't stop after one task`;
 
 export interface RunOptions {
   iterations: number;
@@ -45,6 +88,7 @@ export interface RunOptions {
   stuckThreshold: number;
   model?: string;
   harness?: string;
+  greedy: boolean;
 }
 
 export type CliOptions = RunOptions;
@@ -64,7 +108,7 @@ export function resolvePrompt(options: RunOptions): string {
     return readFileSync(filePath, 'utf-8');
   }
 
-  return DEFAULT_PROMPT;
+  return options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
 }
 
 export function executeRun(options: RunOptions): void {
@@ -96,6 +140,8 @@ export function executeRun(options: RunOptions): void {
   const prompt = resolvePrompt(options);
   const idleTimeoutMs = options.timeoutIdle * 1000;
 
+  const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
+
   const { waitUntilExit, unmount } = render(
     <IterationRunner
       prompt={prompt}
@@ -104,6 +150,7 @@ export function executeRun(options: RunOptions): void {
       idleTimeoutMs={idleTimeoutMs}
       saveJsonl={options.saveJsonl}
       model={options.model}
+      harness={harness}
     />
   );
 
@@ -129,6 +176,8 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
   }
 
   const prompt = resolvePrompt(options);
+  const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
+
   const exitCode = await runHeadless({
     prompt,
     cwd: options.cwd,
@@ -137,6 +186,7 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
     idleTimeoutMs: options.timeoutIdle * 1000,
     saveJsonl: options.saveJsonl,
     model: options.model,
+    harness,
   });
 
   process.exit(exitCode);
@@ -200,7 +250,8 @@ function main(): void {
     .option('--headless', 'Output JSON events instead of UI')
     .option('--stuck-threshold <n>', 'Iterations without progress before stuck (headless)', '3')
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'sonnet')
-    .option('--harness <name>', 'AI harness to use (claude-code, codex, etc.)')
+    .option('--harness <name>', 'AI harness to use (claude, codex)')
+    .option('-g, --greedy', 'Complete multiple tasks per iteration until context fills')
     .action((opts) => {
       let iterations = parseInt(opts.iterations, 10);
       const all = opts.all ?? false;
@@ -225,6 +276,7 @@ function main(): void {
         stuckThreshold: parseInt(opts.stuckThreshold, 10),
         model: opts.model,
         harness: opts.harness,
+        greedy: opts.greedy ?? false,
       };
 
       if (options.headless) {

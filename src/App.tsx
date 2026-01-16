@@ -1,18 +1,60 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Text, useApp } from 'ink';
+import { StatusMessage } from '@inkjs/ui';
 import { IterationHeader } from './components/IterationHeader.js';
 import { TaskTitle } from './components/TaskTitle.js';
 import { ActivityFeed } from './components/ActivityFeed.js';
 import { PhaseIndicator } from './components/PhaseIndicator.js';
 import { StatusBar } from './components/StatusBar.js';
 import { CompletedIterationsList } from './components/CompletedIterationsList.js';
-import { useClaudeStream, type UseClaudeStreamOptions, type ClaudeStreamState } from './hooks/useClaudeStream.js';
+import { useHarnessStream, type HarnessStreamState } from './hooks/useHarnessStream.js';
 import { join } from 'path';
-import type { UIIterationResult, Stats } from './lib/types.js';
+import type { UIIterationResult, Stats, FailureContext, ActivityItem } from './lib/types.js';
+import type { ToolGroup } from './lib/state-machine.js';
+import type { HarnessName } from './lib/harness/types.js';
 import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructure } from './lib/spec-parser.js';
 
 // Alias for backwards compatibility and shorter local usage
 type IterationResult = UIIterationResult;
+type StreamState = HarnessStreamState;
+
+function buildFailureContext(
+  toolGroups: ToolGroup[],
+  activityLog: ActivityItem[]
+): FailureContext | null {
+  const allTools = toolGroups.flatMap(g => g.tools);
+  const lastTool = allTools[allTools.length - 1];
+  const errorTool = allTools.find(t => t.isError) ?? lastTool;
+
+  const recentActivity = activityLog
+    .slice(-5)
+    .map(item => {
+      if (item.type === 'thought') return `💭 ${item.text.slice(0, 100)}`;
+      if (item.type === 'tool_start') return `▶ ${item.displayName}`;
+      if (item.type === 'tool_complete') {
+        const icon = item.isError ? '✗' : '✓';
+        return `${icon} ${item.displayName} (${(item.durationMs / 1000).toFixed(1)}s)`;
+      }
+      if (item.type === 'commit') return `📝 ${item.hash.slice(0, 7)} ${item.message}`;
+      return '';
+    })
+    .filter(Boolean);
+
+  return {
+    lastToolName: errorTool?.name ?? null,
+    lastToolInput: errorTool?.input ? formatToolInput(errorTool.input) : null,
+    lastToolOutput: errorTool?.output?.slice(0, 500) ?? null,
+    recentActivity,
+  };
+}
+
+function formatToolInput(input: Record<string, unknown>): string {
+  if (input.command) return `command: ${String(input.command).slice(0, 200)}`;
+  if (input.file_path) return `file: ${String(input.file_path)}`;
+  if (input.pattern) return `pattern: ${String(input.pattern)}`;
+  if (input.prompt) return `prompt: ${String(input.prompt).slice(0, 100)}`;
+  return JSON.stringify(input).slice(0, 200);
+}
 
 // Re-export for external consumers
 export type { UIIterationResult as IterationResult } from './lib/types.js';
@@ -25,7 +67,8 @@ export interface AppProps {
   idleTimeoutMs?: number;
   saveJsonl?: string | boolean;
   model?: string;
-  _mockState?: ClaudeStreamState;
+  harness?: HarnessName;
+  _mockState?: StreamState;
   onIterationComplete?: (result: IterationResult) => void;
   completedResults?: IterationResult[];
   taskNumber?: string | null;
@@ -33,34 +76,27 @@ export interface AppProps {
   specTaskText?: string | null;
 }
 
-export function App({
-  prompt,
-  iteration = 1,
-  totalIterations = 1,
-  cwd,
-  idleTimeoutMs,
-  saveJsonl,
-  model,
-  _mockState,
+interface AppInnerProps {
+  state: StreamState;
+  iteration: number;
+  totalIterations: number;
+  specTaskText: string | null;
+  taskNumber: string | null;
+  phaseName: string | null;
+  completedResults: IterationResult[];
+  onIterationComplete?: (result: IterationResult) => void;
+}
+
+function AppInner({
+  state,
+  iteration,
+  totalIterations,
+  specTaskText,
+  taskNumber,
+  phaseName,
+  completedResults,
   onIterationComplete,
-  completedResults = [],
-  taskNumber = null,
-  phaseName = null,
-  specTaskText = null,
-}: AppProps): React.ReactElement {
-  const streamOptions: UseClaudeStreamOptions = {
-    prompt,
-    iteration,
-    totalIterations,
-    cwd,
-    idleTimeoutMs,
-    saveJsonl,
-    model,
-  };
-
-  const liveState = useClaudeStream(streamOptions);
-  const state = _mockState ?? liveState;
-
+}: AppInnerProps): React.ReactElement {
   const elapsedSeconds = Math.floor(state.elapsedMs / 1000);
 
   useEffect(() => {
@@ -77,9 +113,10 @@ export function App({
         usage: state.result?.usage ?? null,
         taskNumber,
         phaseName,
+        failureContext: state.error ? buildFailureContext(state.toolGroups, state.activityLog) : null,
       });
     }
-  }, [state.phase, state.isRunning, iteration, state.elapsedMs, state.stats, state.error, state.taskText, specTaskText, state.lastCommit, state.result, onIterationComplete, taskNumber, phaseName]);
+  }, [state.phase, state.isRunning, iteration, state.elapsedMs, state.stats, state.error, state.taskText, specTaskText, state.lastCommit, state.result, onIterationComplete, taskNumber, phaseName, state.toolGroups, state.activityLog]);
 
   const isPending = state.phase === 'idle' || !state.taskText;
 
@@ -95,9 +132,8 @@ export function App({
       <PhaseIndicator phase={state.phase} />
       <ActivityFeed activityLog={state.activityLog} />
       {state.error && (
-        <Box>
-          <Text color="cyan">│ </Text>
-          <Text color="red">✗ Error: {state.error.message}</Text>
+        <Box marginLeft={2}>
+          <StatusMessage variant="error">{state.error.message}</StatusMessage>
         </Box>
       )}
       <Box>
@@ -108,6 +144,45 @@ export function App({
   );
 }
 
+export function App({
+  prompt,
+  iteration = 1,
+  totalIterations = 1,
+  cwd,
+  model,
+  harness = 'claude',
+  _mockState,
+  onIterationComplete,
+  completedResults = [],
+  taskNumber = null,
+  phaseName = null,
+  specTaskText = null,
+}: AppProps): React.ReactElement {
+  const liveState = useHarnessStream({
+    prompt,
+    cwd,
+    harness,
+    model,
+    iteration,
+    totalIterations,
+  });
+
+  const state = _mockState ?? liveState;
+
+  return (
+    <AppInner
+      state={state}
+      iteration={iteration}
+      totalIterations={totalIterations}
+      specTaskText={specTaskText}
+      taskNumber={taskNumber}
+      phaseName={phaseName}
+      completedResults={completedResults}
+      onIterationComplete={onIterationComplete}
+    />
+  );
+}
+
 export interface IterationRunnerProps {
   prompt: string;
   totalIterations: number;
@@ -115,10 +190,11 @@ export interface IterationRunnerProps {
   idleTimeoutMs?: number;
   saveJsonl?: string | boolean;
   model?: string;
+  harness?: HarnessName;
   _mockResults?: IterationResult[];
   _mockCurrentIteration?: number;
   _mockIsComplete?: boolean;
-  _mockState?: ClaudeStreamState;
+  _mockState?: StreamState;
 }
 
 function formatDuration(ms: number): string {
@@ -166,6 +242,7 @@ export function IterationRunner({
   idleTimeoutMs,
   saveJsonl,
   model,
+  harness,
   _mockResults,
   _mockCurrentIteration,
   _mockIsComplete,
@@ -268,18 +345,60 @@ export function IterationRunner({
         <Box>
           <Text color="cyan">╚═══════════════════════════════════════════════════════╝</Text>
         </Box>
-        {results.map((result, idx) => (
+        {results.map((result, idx) => {
+          const displayText = result.specTaskText ?? result.taskText ?? 'Unknown task';
+          const truncatedText = displayText.length > 40 ? displayText.slice(0, 40) + '...' : displayText;
+          return (
           <Box key={idx} flexDirection="column">
             <Box>
               <Text color={result.error ? 'red' : 'green'}>
                 {result.error ? '✗' : '✓'}
               </Text>
-              <Text> Iteration {result.iteration}: </Text>
+              <Text color="cyan"> {result.taskNumber ?? result.iteration}. </Text>
+              {result.phaseName && (
+                <Text color="yellow">[{result.phaseName}] </Text>
+              )}
               <Text color="gray">
-                {result.taskText ? result.taskText.slice(0, 40) + (result.taskText.length > 40 ? '...' : '') : 'No task'}
+                {truncatedText}
               </Text>
               <Text color="gray"> ({formatDuration(result.durationMs)})</Text>
             </Box>
+            {result.error && (
+              <Box flexDirection="column" marginLeft={2}>
+                <Box>
+                  <Text color="red">  Error: </Text>
+                  <Text color="gray">{result.error.message.slice(0, 80)}{result.error.message.length > 80 ? '...' : ''}</Text>
+                </Box>
+                {result.failureContext?.lastToolName && (
+                  <Box>
+                    <Text color="yellow">  Tool: </Text>
+                    <Text color="gray">{result.failureContext.lastToolName}</Text>
+                  </Box>
+                )}
+                {result.failureContext?.lastToolInput && (
+                  <Box>
+                    <Text color="yellow">  Input: </Text>
+                    <Text color="gray">{result.failureContext.lastToolInput.slice(0, 100)}{result.failureContext.lastToolInput.length > 100 ? '...' : ''}</Text>
+                  </Box>
+                )}
+                {result.failureContext?.lastToolOutput && (
+                  <Box>
+                    <Text color="yellow">  Output: </Text>
+                    <Text color="gray">{result.failureContext.lastToolOutput.slice(0, 150)}{result.failureContext.lastToolOutput.length > 150 ? '...' : ''}</Text>
+                  </Box>
+                )}
+                {result.failureContext?.recentActivity && result.failureContext.recentActivity.length > 0 && (
+                  <Box flexDirection="column">
+                    <Text color="yellow">  Recent activity:</Text>
+                    {result.failureContext.recentActivity.map((activity, i) => (
+                      <Box key={i} marginLeft={2}>
+                        <Text color="gray">{activity.slice(0, 80)}</Text>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            )}
             {result.lastCommit && (
               <Box marginLeft={2}>
                 <Text color="green">✓ </Text>
@@ -288,7 +407,8 @@ export function IterationRunner({
               </Box>
             )}
           </Box>
-        ))}
+        );
+        })}
       </Box>
     );
   }
@@ -305,6 +425,7 @@ export function IterationRunner({
       idleTimeoutMs={idleTimeoutMs}
       saveJsonl={saveJsonl}
       model={model}
+      harness={harness}
       onIterationComplete={handleIterationComplete}
       _mockState={_mockState}
       completedResults={results}

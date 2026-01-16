@@ -1,24 +1,25 @@
 export * from './types.js';
-export * from './claude-code-harness.js';
 
-import { Harness } from './types.js';
-import { ClaudeCodeHarness } from './claude-code-harness.js';
+import type { Harness, HarnessName } from './types.js';
+import { claudeHarness } from './claude.js';
+import { codexHarness } from './codex.js';
 
 /**
- * Create a harness instance by name.
+ * Get a harness by name.
  *
- * Currently only supports "claude-code". Other harnesses (codex, opencode, etc.)
- * can be added in the future by implementing the Harness interface.
+ * Supports 'claude' (default) and 'codex'.
  *
- * @param name - The harness name (e.g., "claude-code", "codex")
- * @returns A Harness instance
- * @throws Error if the harness name is not recognized
+ * @param name - The harness name ('claude' or 'codex')
+ * @returns The harness implementation
  */
-export function createHarness(name: string): Harness {
+export function getHarness(name: HarnessName = 'claude'): Harness {
   switch (name) {
-    case 'claude-code':
-      return new ClaudeCodeHarness();
-    default:
-      throw new Error(`Unknown harness: ${name}. Supported harnesses: claude-code`);
+    case 'claude':
+      return claudeHarness;
+    case 'codex':
+      return codexHarness;
   }
 }
+
+export { claudeHarness } from './claude.js';
+export { codexHarness } from './codex.js';

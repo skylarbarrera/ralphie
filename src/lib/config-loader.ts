@@ -2,41 +2,46 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 
+import type { HarnessName } from './harness/types.js';
+
 /**
  * Ralph configuration from .ralph/config.yml
  */
 export interface RalphConfig {
-  /** The harness to use (e.g., "claude-code", "codex") */
-  harness?: string;
+  /** The harness to use ('claude' or 'codex') */
+  harness?: HarnessName;
 }
+
+/**
+ * Valid harness names that Ralph supports.
+ */
+const VALID_HARNESSES: HarnessName[] = ['claude', 'codex'];
 
 /**
  * Get the harness name from configuration with priority order:
  * 1. CLI flag (explicit override)
  * 2. Environment variable (RALPH_HARNESS)
  * 3. Config file (.ralph/config.yml)
- * 4. Default ("claude-code")
+ * 4. Default ('claude')
  *
  * @param cliHarness - Harness name from CLI flag
  * @param cwd - Working directory to search for config file
  * @returns The resolved harness name
  */
-export function getHarnessName(cliHarness: string | undefined, cwd: string): string {
-  if (cliHarness) {
-    return cliHarness;
+export function getHarnessName(cliHarness: string | undefined, cwd: string): HarnessName {
+  const candidates = [
+    cliHarness,
+    process.env.RALPH_HARNESS,
+    loadConfig(cwd)?.harness,
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate && VALID_HARNESSES.includes(candidate as HarnessName)) {
+      return candidate as HarnessName;
+    }
   }
 
-  const envHarness = process.env.RALPH_HARNESS;
-  if (envHarness) {
-    return envHarness;
-  }
-
-  const config = loadConfig(cwd);
-  if (config?.harness) {
-    return config.harness;
-  }
-
-  return 'claude-code';
+  return 'claude';
 }
 
 /**

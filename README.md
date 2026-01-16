@@ -2,6 +2,25 @@
 
 Ralph runs AI in a loop to build software. You describe what you want, Ralph builds it piece by piece, committing working code along the way. Come back to find your project done.
 
+## The Ralph Wiggum Philosophy
+
+Ralph implements the [Ralph Wiggum technique](https://github.com/ghuntley/how-to-ralph-wiggum) - an AI development methodology where a coding agent runs in a loop until all tasks are complete.
+
+**Core insight:** Progress doesn't live in the LLM's context window - it lives in your files and git history.
+
+Each iteration:
+1. Starts with fresh context (no accumulated confusion)
+2. Reads current state from disk (SPEC.md, git history)
+3. Picks the next incomplete task
+4. Writes code, commits, updates state
+5. Exits - loop restarts with clean slate
+
+This is deliberately simple. No sophisticated orchestration. Just a loop that keeps restarting the agent until the checklist is done.
+
+**Why it works:** The AI can make mistakes, get confused, even fail completely - but the next iteration starts fresh and sees only the committed progress. Iteration beats perfection.
+
+**Best for:** Tasks with clear completion criteria - migrations, refactors, test coverage, batch operations. Not for ambiguous requirements or architectural exploration.
+
 ## What Ralph Does
 
 1. You describe what you want to build
@@ -126,6 +145,7 @@ That's it! Check your git history to see what Ralph built.
 |--------|-------------|
 | `-n, --iterations <n>` | Number of iterations (default: 1) |
 | `-a, --all` | Run until SPEC complete (max 100) |
+| `-g, --greedy` | Complete multiple tasks per iteration (see below) |
 | `-p, --prompt <text>` | Custom prompt to send to Claude |
 | `--prompt-file <path>` | Read prompt from file |
 | `--cwd <path>` | Working directory (default: current) |
@@ -134,7 +154,40 @@ That's it! Check your git history to see what Ralph built.
 | `--no-branch` | Skip feature branch creation |
 | `--headless` | Output JSON events instead of UI |
 | `--stuck-threshold <n>` | Iterations without progress before stuck (default: 3) |
-| `--harness <name>` | AI harness to use (default: claude-code) |
+| `--harness <name>` | AI harness to use: `claude`, `codex` (default: claude) |
+
+### Greedy Mode
+
+By default, Ralph follows the classic Ralph Wiggum approach: **one task per iteration**, fresh context each time.
+
+With `--greedy`, Ralph intentionally breaks this rule - completing **as many tasks as possible** before the context fills up. This trades the "fresh start" guarantee for speed and shared context between related tasks:
+
+```bash
+ralph run --greedy -n 5      # Each iteration does multiple tasks
+ralph run --greedy --all     # Maximum throughput
+```
+
+**Tradeoffs:**
+
+| Aspect | Default (one task) | Greedy (many tasks) |
+|--------|-------------------|---------------------|
+| Throughput | Slower (iteration overhead per task) | Faster (overhead only at start) |
+| Progress visibility | Frequent "iteration done" signals | Batched - wait longer, see more at once |
+| Stuck detection | Precise (clean iteration boundaries) | Less precise (may timeout mid-task) |
+| Context | Fresh start each task | Accumulates - helps related tasks, hurts unrelated |
+| Error recovery | Clean restart on failure | Errors may cascade within iteration |
+
+**When to use greedy:**
+- Related tasks that benefit from shared context (model + API + tests)
+- Initial project scaffolding
+- Bulk refactoring or formatting
+- When you want maximum speed
+
+**When to use default:**
+- Unrelated tasks that need isolation
+- Complex features needing focused attention
+- Debugging or investigation
+- When you want precise progress tracking
 
 ## Creating a Good SPEC
 
@@ -216,22 +269,104 @@ The skill auto-detects your project type and runs appropriate checks:
 
 **In Ralph iterations:** Claude automatically uses `/verify` before committing when using the `/ralph-iterate` skill.
 
-## Harness Configuration
+## Multi-AI Support
 
-Ralph supports multiple AI coding assistants through a harness abstraction. Currently, only Claude Code is implemented (v1.0).
+Ralph supports multiple AI coding assistants through a harness abstraction layer. Switch between AI providers without changing your workflow.
 
-**Configuration priority:**
-1. CLI flag: `ralph run --harness codex`
-2. Environment variable: `RALPH_HARNESS=codex`
-3. Config file: `.ralph/config.yml`
-4. Default: `claude-code`
+### Available Harnesses
+
+| Harness | Description | Status |
+|---------|-------------|--------|
+| `claude` | Claude Code via official SDK | ✅ Default |
+| `codex` | OpenAI Codex CLI | ✅ Supported |
+
+### API Keys
+
+Each harness uses its provider's official SDK, which reads API keys from standard environment variables:
+
+| Harness | Environment Variable |
+|---------|---------------------|
+| `claude` | `ANTHROPIC_API_KEY` |
+| `codex` | `OPENAI_API_KEY` |
+
+```bash
+# Set your API keys
+export ANTHROPIC_API_KEY=sk-ant-...   # For Claude
+export OPENAI_API_KEY=sk-...          # For Codex
+
+# Or add to your shell profile (~/.bashrc, ~/.zshrc)
+```
+
+Ralph never stores or handles API keys directly - authentication is delegated entirely to the underlying SDKs.
+
+### Usage
+
+```bash
+# Use Claude (default)
+ralph run
+
+# Use Codex
+ralph run --harness codex
+
+# Headless mode with Codex
+ralph run --headless --harness codex
+```
+
+### Configuration Priority
+
+1. **CLI flag**: `ralph run --harness codex`
+2. **Environment variable**: `RALPH_HARNESS=codex`
+3. **Config file**: `.ralph/config.yml`
+4. **Default**: `claude`
 
 **Config file example (.ralph/config.yml):**
 ```yaml
-harness: claude-code
+harness: codex
 ```
 
-Future harnesses (Codex, OpenCode, etc.) can be added by implementing the harness interface.
+### Architecture
+
+The harness abstraction provides:
+- **Normalized events** - Tool calls, thinking, messages work identically across providers
+- **SDK integration** - Uses official SDKs (Claude Agent SDK, Codex SDK) instead of CLI parsing
+- **Easy extensibility** - Add new AI providers by implementing the `Harness` interface
+
+```
+┌─────────────────┐     ┌─────────────────┐
+│   Ralph TUI     │     │ Ralph Headless  │
+└────────┬────────┘     └────────┬────────┘
+         │                       │
+         └───────────┬───────────┘
+                     │
+              ┌──────▼──────┐
+              │   Harness   │
+              │  Abstraction│
+              └──────┬──────┘
+                     │
+        ┌────────────┼────────────┐
+        │            │            │
+   ┌────▼────┐  ┌────▼────┐  ┌────▼────┐
+   │ Claude  │  │  Codex  │  │ Future  │
+   │ Harness │  │ Harness │  │ Harness │
+   └─────────┘  └─────────┘  └─────────┘
+```
+
+### Adding New Harnesses
+
+Implement the `Harness` interface in `src/lib/harness/`:
+
+```typescript
+interface Harness {
+  name: string;
+  run(
+    prompt: string,
+    options: HarnessRunOptions,
+    onEvent: (event: HarnessEvent) => void
+  ): Promise<HarnessResult>;
+}
+```
+
+Events emitted: `tool_start`, `tool_end`, `thinking`, `message`, `error`
 
 ## Headless Mode
 

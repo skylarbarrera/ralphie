@@ -1,12 +1,10 @@
-import { spawn, type ChildProcess, type SpawnOptionsWithoutStdio } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { StreamParser } from './stream-parser.js';
-import { StateMachine } from './state-machine.js';
-import { JsonlLogger } from './logger.js';
 import { isSpecComplete } from './spec-parser.js';
 import { getToolCategory } from './tool-categories.js';
 import type { HeadlessIterationResult } from './types.js';
+import type { HarnessName, HarnessEvent } from './harness/types.js';
+import { getHarness } from './harness/index.js';
 import {
   emitStarted,
   emitIteration,
@@ -28,16 +26,11 @@ export interface HeadlessRunOptions {
   idleTimeoutMs: number;
   saveJsonl?: string;
   model?: string;
+  harness?: HarnessName;
 }
 
 // Re-export for backwards compatibility
 export type { HeadlessIterationResult as IterationResult } from './types.js';
-
-export type SpawnFn = (
-  command: string,
-  args: readonly string[],
-  options?: SpawnOptionsWithoutStdio
-) => ChildProcess;
 
 export const EXIT_CODE_COMPLETE = 0;
 export const EXIT_CODE_STUCK = 1;
@@ -116,152 +109,109 @@ export function detectTodoStubs(cwd: string): string[] {
   return filesWithStubs;
 }
 
+/**
+ * Run a single iteration using a harness (Claude SDK or Codex SDK).
+ */
 export async function runSingleIteration(
   options: HeadlessRunOptions,
   iteration: number,
-  totalIterations: number,
-  _spawnFn: SpawnFn = spawn
 ): Promise<HeadlessIterationResult> {
-  return new Promise((resolve) => {
-    const startTime = Date.now();
-    const machine = new StateMachine(iteration, totalIterations);
-    const parser = new StreamParser();
+  const startTime = Date.now();
+  const harnessName = options.harness ?? 'claude';
+  const harness = getHarness(harnessName);
 
-    let logger: JsonlLogger | null = null;
-    if (options.saveJsonl) {
-      logger = new JsonlLogger({ filename: options.saveJsonl });
-    }
+  const stats = {
+    toolsStarted: 0,
+    toolsCompleted: 0,
+    toolsErrored: 0,
+    reads: 0,
+    writes: 0,
+    commands: 0,
+    metaOps: 0,
+  };
 
-    let idleTimer: NodeJS.Timeout | null = null;
-    let resolved = false;
+  let commitHash: string | undefined;
+  let commitMessage: string | undefined;
+  let lastError: Error | undefined;
 
-    const clearIdleTimer = () => {
-      if (idleTimer) {
-        clearTimeout(idleTimer);
-        idleTimer = null;
+  const handleEvent = (event: HarnessEvent) => {
+    switch (event.type) {
+      case 'tool_start': {
+        stats.toolsStarted++;
+        const category = getToolCategory(event.name);
+        if (category === 'read') stats.reads++;
+        else if (category === 'write') stats.writes++;
+        else if (category === 'command') stats.commands++;
+        else stats.metaOps++;
+
+        const toolType = category === 'read' ? 'read'
+          : category === 'write' ? 'write'
+          : 'bash';
+        emitTool(toolType as 'read' | 'write' | 'bash', event.input);
+        break;
       }
-    };
+      case 'tool_end': {
+        stats.toolsCompleted++;
+        if (event.error) stats.toolsErrored++;
 
-    const finish = (error?: Error) => {
-      if (resolved) return;
-      resolved = true;
-
-      clearIdleTimer();
-      if (logger) {
-        logger.close();
-      }
-
-      const state = machine.getState();
-      resolve({
-        iteration,
-        durationMs: Date.now() - startTime,
-        stats: state.stats,
-        error,
-        commitHash: state.lastCommit?.hash,
-        commitMessage: state.lastCommit?.message,
-      });
-    };
-
-    const resetIdleTimer = () => {
-      clearIdleTimer();
-      idleTimer = setTimeout(() => {
-        if (!resolved) {
-          proc.kill('SIGTERM');
-          finish(new Error(`Idle timeout: no output for ${options.idleTimeoutMs / 1000}s`));
-        }
-      }, options.idleTimeoutMs);
-    };
-
-    // Wire up parser events to emit headless events
-    parser.on('tool_start', (event) => {
-      machine.handleToolStart(event);
-      const category = getToolCategory(event.toolName);
-      const toolType = category === 'read' ? 'read'
-        : category === 'write' ? 'write'
-        : category === 'command' ? 'bash'
-        : 'bash';
-      const path = event.input?.file_path || event.input?.path || event.input?.pattern;
-      emitTool(toolType as 'read' | 'write' | 'bash', typeof path === 'string' ? path : undefined);
-    });
-
-    parser.on('tool_end', (event) => {
-      machine.handleToolEnd(event);
-
-      // Check for git commit
-      const state = machine.getState();
-      if (state.lastCommit) {
-        emitCommit(state.lastCommit.hash, state.lastCommit.message);
-      }
-    });
-
-    parser.on('text', (event) => {
-      machine.handleText(event);
-    });
-
-    parser.on('result', (event) => {
-      machine.handleResult(event);
-      finish();
-    });
-
-    parser.on('error', (event) => {
-      finish(event.error);
-    });
-
-    const args = [
-      '--dangerously-skip-permissions',
-      '--output-format',
-      'stream-json',
-      '--verbose',
-      ...(options.model ? ['--model', options.model] : []),
-      '-p',
-      options.prompt,
-    ];
-
-    const proc = _spawnFn('claude', args, {
-      cwd: options.cwd,
-      env: process.env,
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-
-    // Close stdin immediately - Claude waits for stdin close before starting
-    proc.stdin?.end();
-
-    resetIdleTimer();
-
-    proc.stdout?.on('data', (chunk: Buffer) => {
-      resetIdleTimer();
-      const text = chunk.toString('utf-8');
-      if (logger) {
-        for (const line of text.split('\n')) {
-          if (line.trim()) {
-            logger.log(line);
+        // Check for git commit in Bash output
+        if (event.name === 'Bash' && event.output) {
+          const commitMatch = event.output.match(/\[[\w-]+\s+([a-f0-9]{7,40})\]\s+(.+)/);
+          if (commitMatch) {
+            commitHash = commitMatch[1];
+            commitMessage = commitMatch[2];
+            emitCommit(commitHash, commitMessage);
           }
         }
+        break;
       }
-      parser.parseChunk(text);
-    });
+      case 'error': {
+        lastError = new Error(event.message);
+        break;
+      }
+    }
+  };
 
-    proc.stderr?.on('data', () => {
-      resetIdleTimer();
-    });
+  try {
+    const result = await harness.run(
+      options.prompt,
+      {
+        cwd: options.cwd,
+        model: options.model,
+      },
+      handleEvent
+    );
 
-    proc.on('error', (err) => {
-      finish(err);
-    });
+    if (!result.success && result.error) {
+      lastError = new Error(result.error);
+    }
 
-    proc.on('close', () => {
-      parser.flush();
-      finish();
-    });
-  });
+    return {
+      iteration,
+      durationMs: result.durationMs || Date.now() - startTime,
+      stats,
+      error: lastError,
+      commitHash,
+      commitMessage,
+    };
+  } catch (err) {
+    return {
+      iteration,
+      durationMs: Date.now() - startTime,
+      stats,
+      error: err instanceof Error ? err : new Error(String(err)),
+      commitHash,
+      commitMessage,
+    };
+  }
 }
 
 export async function executeHeadlessRun(
   options: HeadlessRunOptions,
-  _spawnFn: SpawnFn = spawn
 ): Promise<number> {
   const totalTasks = getTotalTaskCount(options.cwd);
-  emitStarted('SPEC.md', totalTasks, options.model);
+  const harnessName = options.harness ?? 'claude';
+  emitStarted('SPEC.md', totalTasks, options.model, harnessName);
 
   let iterationsWithoutProgress = 0;
   let tasksBefore = getCompletedTaskTexts(options.cwd);
@@ -271,7 +221,7 @@ export async function executeHeadlessRun(
   for (let i = 1; i <= options.iterations; i++) {
     emitIteration(i, 'starting');
 
-    const result = await runSingleIteration(options, i, options.iterations, _spawnFn);
+    const result = await runSingleIteration(options, i);
 
     if (result.error) {
       emitFailed(result.error.message);

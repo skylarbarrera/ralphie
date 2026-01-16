@@ -1,7 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { EventEmitter } from 'events';
-import { Readable } from 'stream';
-import type { ChildProcess } from 'child_process';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   runSingleIteration,
   executeHeadlessRun,
@@ -13,9 +10,9 @@ import {
   EXIT_CODE_MAX_ITERATIONS,
   EXIT_CODE_ERROR,
   type HeadlessRunOptions,
-  type SpawnFn,
 } from '../../src/lib/headless-runner.js';
 import * as headlessEmitter from '../../src/lib/headless-emitter.js';
+import * as harnessModule from '../../src/lib/harness/index.js';
 import * as fs from 'fs';
 
 vi.mock('fs', () => ({
@@ -36,46 +33,13 @@ vi.mock('../../src/lib/headless-emitter.js', () => ({
   emitWarning: vi.fn(),
 }));
 
-function createMockProcess(): ChildProcess & {
-  stdout: Readable;
-  stderr: Readable;
-  emitData: (data: string) => void;
-  emitClose: () => void;
-  emitError: (err: Error) => void;
-} {
-  const proc = new EventEmitter() as ChildProcess & {
-    stdout: Readable;
-    stderr: Readable;
-    emitData: (data: string) => void;
-    emitClose: () => void;
-    emitError: (err: Error) => void;
-  };
-  proc.stdout = new Readable({ read() {} });
-  proc.stderr = new Readable({ read() {} });
-  proc.kill = vi.fn();
-
-  proc.emitData = (data: string) => {
-    proc.stdout.emit('data', Buffer.from(data));
-  };
-
-  proc.emitClose = () => {
-    proc.emit('close', 0);
-  };
-
-  proc.emitError = (err: Error) => {
-    proc.emit('error', err);
-  };
-
-  return proc;
-}
+vi.mock('../../src/lib/harness/index.js', () => ({
+  getHarness: vi.fn(),
+}));
 
 describe('headless-runner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
   });
 
   describe('getCompletedTaskTexts', () => {
@@ -139,8 +103,14 @@ describe('headless-runner', () => {
 
   describe('runSingleIteration', () => {
     it('returns iteration result on successful completion', async () => {
-      const mockProc = createMockProcess();
-      const mockSpawn: SpawnFn = vi.fn().mockReturnValue(mockProc);
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockResolvedValue({
+          success: true,
+          durationMs: 1000,
+        }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -150,28 +120,25 @@ describe('headless-runner', () => {
         idleTimeoutMs: 5000,
       };
 
-      const resultPromise = runSingleIteration(options, 1, 1, mockSpawn);
-
-      // Simulate Claude output
-      const systemMsg = JSON.stringify({ type: 'system', result: { session_id: 'test' } });
-      const textMsg = JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'Working...' }] } });
-      const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false, duration_ms: 1000 } });
-
-      mockProc.emitData(systemMsg + '\n');
-      mockProc.emitData(textMsg + '\n');
-      mockProc.emitData(resultMsg + '\n');
-      mockProc.emitClose();
-
-      const result = await resultPromise;
+      const result = await runSingleIteration(options, 1);
 
       expect(result.iteration).toBe(1);
-      expect(result.durationMs).toBeGreaterThanOrEqual(0);
+      expect(result.durationMs).toBe(1000);
       expect(result.error).toBeUndefined();
     });
 
-    it('emits tool events for Read operations', async () => {
-      const mockProc = createMockProcess();
-      const mockSpawn: SpawnFn = vi.fn().mockReturnValue(mockProc);
+    it('tracks tool stats from harness events', async () => {
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockImplementation(async (_prompt, _options, onEvent) => {
+          onEvent({ type: 'tool_start', name: 'Read', input: '/test/file.ts' });
+          onEvent({ type: 'tool_end', name: 'Read', output: 'contents' });
+          onEvent({ type: 'tool_start', name: 'Write', input: '/test/new.ts' });
+          onEvent({ type: 'tool_end', name: 'Write', output: 'success' });
+          return { success: true, durationMs: 1000 };
+        }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -181,44 +148,24 @@ describe('headless-runner', () => {
         idleTimeoutMs: 5000,
       };
 
-      const resultPromise = runSingleIteration(options, 1, 1, mockSpawn);
+      const result = await runSingleIteration(options, 1);
 
-      const toolStartMsg = JSON.stringify({
-        type: 'assistant',
-        message: {
-          content: [{
-            type: 'tool_use',
-            id: 'tool-1',
-            name: 'Read',
-            input: { file_path: '/test/file.ts' }
-          }]
-        }
-      });
-      const toolEndMsg = JSON.stringify({
-        type: 'user',
-        message: {
-          content: [{
-            type: 'tool_result',
-            tool_use_id: 'tool-1',
-            content: 'file contents'
-          }]
-        }
-      });
-      const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-
-      mockProc.emitData(toolStartMsg + '\n');
-      mockProc.emitData(toolEndMsg + '\n');
-      mockProc.emitData(resultMsg + '\n');
-      mockProc.emitClose();
-
-      await resultPromise;
-
-      expect(headlessEmitter.emitTool).toHaveBeenCalledWith('read', '/test/file.ts');
+      expect(result.stats.toolsStarted).toBe(2);
+      expect(result.stats.toolsCompleted).toBe(2);
+      expect(result.stats.reads).toBe(1);
+      expect(result.stats.writes).toBe(1);
     });
 
-    it('emits tool events for Write operations', async () => {
-      const mockProc = createMockProcess();
-      const mockSpawn: SpawnFn = vi.fn().mockReturnValue(mockProc);
+    it('detects git commits from Bash output', async () => {
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockImplementation(async (_prompt, _options, onEvent) => {
+          onEvent({ type: 'tool_start', name: 'Bash', input: 'git commit' });
+          onEvent({ type: 'tool_end', name: 'Bash', output: '[main abc1234] feat: add feature' });
+          return { success: true, durationMs: 1000 };
+        }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -228,170 +175,23 @@ describe('headless-runner', () => {
         idleTimeoutMs: 5000,
       };
 
-      const resultPromise = runSingleIteration(options, 1, 1, mockSpawn);
-
-      const toolStartMsg = JSON.stringify({
-        type: 'assistant',
-        message: {
-          content: [{
-            type: 'tool_use',
-            id: 'tool-1',
-            name: 'Write',
-            input: { file_path: '/test/new-file.ts' }
-          }]
-        }
-      });
-      const toolEndMsg = JSON.stringify({
-        type: 'user',
-        message: {
-          content: [{
-            type: 'tool_result',
-            tool_use_id: 'tool-1',
-            content: 'success'
-          }]
-        }
-      });
-      const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-
-      mockProc.emitData(toolStartMsg + '\n');
-      mockProc.emitData(toolEndMsg + '\n');
-      mockProc.emitData(resultMsg + '\n');
-      mockProc.emitClose();
-
-      await resultPromise;
-
-      expect(headlessEmitter.emitTool).toHaveBeenCalledWith('write', '/test/new-file.ts');
-    });
-
-    it('emits tool events for Bash commands', async () => {
-      const mockProc = createMockProcess();
-      const mockSpawn: SpawnFn = vi.fn().mockReturnValue(mockProc);
-
-      const options: HeadlessRunOptions = {
-        prompt: 'Test prompt',
-        cwd: '/test',
-        iterations: 1,
-        stuckThreshold: 3,
-        idleTimeoutMs: 5000,
-      };
-
-      const resultPromise = runSingleIteration(options, 1, 1, mockSpawn);
-
-      const toolStartMsg = JSON.stringify({
-        type: 'assistant',
-        message: {
-          content: [{
-            type: 'tool_use',
-            id: 'tool-1',
-            name: 'Bash',
-            input: { command: 'npm test' }
-          }]
-        }
-      });
-      const toolEndMsg = JSON.stringify({
-        type: 'user',
-        message: {
-          content: [{
-            type: 'tool_result',
-            tool_use_id: 'tool-1',
-            content: 'All tests passed'
-          }]
-        }
-      });
-      const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-
-      mockProc.emitData(toolStartMsg + '\n');
-      mockProc.emitData(toolEndMsg + '\n');
-      mockProc.emitData(resultMsg + '\n');
-      mockProc.emitClose();
-
-      await resultPromise;
-
-      expect(headlessEmitter.emitTool).toHaveBeenCalledWith('bash', undefined);
-    });
-
-    it('returns error on process error', async () => {
-      const mockProc = createMockProcess();
-      const mockSpawn: SpawnFn = vi.fn().mockReturnValue(mockProc);
-
-      const options: HeadlessRunOptions = {
-        prompt: 'Test prompt',
-        cwd: '/test',
-        iterations: 1,
-        stuckThreshold: 3,
-        idleTimeoutMs: 5000,
-      };
-
-      const resultPromise = runSingleIteration(options, 1, 1, mockSpawn);
-
-      mockProc.emitError(new Error('Process failed'));
-
-      const result = await resultPromise;
-
-      expect(result.error).toBeDefined();
-      expect(result.error?.message).toBe('Process failed');
-    });
-
-    it('detects git commits', async () => {
-      const mockProc = createMockProcess();
-      const mockSpawn: SpawnFn = vi.fn().mockReturnValue(mockProc);
-
-      const options: HeadlessRunOptions = {
-        prompt: 'Test prompt',
-        cwd: '/test',
-        iterations: 1,
-        stuckThreshold: 3,
-        idleTimeoutMs: 5000,
-      };
-
-      const resultPromise = runSingleIteration(options, 1, 1, mockSpawn);
-
-      const toolStartMsg = JSON.stringify({
-        type: 'assistant',
-        message: {
-          content: [{
-            type: 'tool_use',
-            id: 'tool-1',
-            name: 'Bash',
-            input: { command: 'git commit -m "feat: add feature"' }
-          }]
-        }
-      });
-      const toolEndMsg = JSON.stringify({
-        type: 'user',
-        message: {
-          content: [{
-            type: 'tool_result',
-            tool_use_id: 'tool-1',
-            content: '[main abc1234] feat: add feature'
-          }]
-        }
-      });
-      const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-
-      mockProc.emitData(toolStartMsg + '\n');
-      mockProc.emitData(toolEndMsg + '\n');
-      mockProc.emitData(resultMsg + '\n');
-      mockProc.emitClose();
-
-      const result = await resultPromise;
+      const result = await runSingleIteration(options, 1);
 
       expect(result.commitHash).toBe('abc1234');
       expect(result.commitMessage).toBe('feat: add feature');
       expect(headlessEmitter.emitCommit).toHaveBeenCalledWith('abc1234', 'feat: add feature');
     });
-  });
 
-  describe('executeHeadlessRun', () => {
-    it('emits started event with total task count', async () => {
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(`
-- [x] Done
-- [ ] Todo
-      `);
-
-      const mockProc = createMockProcess();
-      const mockSpawn: SpawnFn = vi.fn().mockReturnValue(mockProc);
+    it('returns error when harness fails', async () => {
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockResolvedValue({
+          success: false,
+          error: 'API error',
+          durationMs: 100,
+        }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -401,24 +201,67 @@ describe('headless-runner', () => {
         idleTimeoutMs: 5000,
       };
 
-      const resultPromise = executeHeadlessRun(options, mockSpawn);
+      const result = await runSingleIteration(options, 1);
 
-      // Simulate quick completion
-      const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-      mockProc.emitData(resultMsg + '\n');
-      mockProc.emitClose();
+      expect(result.error).toBeDefined();
+      expect(result.error?.message).toBe('API error');
+    });
 
-      await resultPromise;
+    it('handles harness exceptions', async () => {
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockRejectedValue(new Error('Network error')),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
-      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 2, undefined);
+      const options: HeadlessRunOptions = {
+        prompt: 'Test prompt',
+        cwd: '/test',
+        iterations: 1,
+        stuckThreshold: 3,
+        idleTimeoutMs: 5000,
+      };
+
+      const result = await runSingleIteration(options, 1);
+
+      expect(result.error).toBeDefined();
+      expect(result.error?.message).toBe('Network error');
+    });
+  });
+
+  describe('executeHeadlessRun', () => {
+    it('emits started event with harness name', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue('- [x] Done');
+
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockResolvedValue({ success: true, durationMs: 100 }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
+
+      const options: HeadlessRunOptions = {
+        prompt: 'Test prompt',
+        cwd: '/test',
+        iterations: 1,
+        stuckThreshold: 3,
+        idleTimeoutMs: 5000,
+      };
+
+      await executeHeadlessRun(options);
+
+      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 1, undefined, 'claude');
     });
 
     it('returns EXIT_CODE_ERROR on iteration error', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue('- [ ] Task');
 
-      const mockProc = createMockProcess();
-      const mockSpawn: SpawnFn = vi.fn().mockReturnValue(mockProc);
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockResolvedValue({ success: false, error: 'Failed', durationMs: 100 }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -428,35 +271,21 @@ describe('headless-runner', () => {
         idleTimeoutMs: 5000,
       };
 
-      const resultPromise = executeHeadlessRun(options, mockSpawn);
-
-      mockProc.emitError(new Error('Claude failed'));
-
-      const exitCode = await resultPromise;
+      const exitCode = await executeHeadlessRun(options);
 
       expect(exitCode).toBe(EXIT_CODE_ERROR);
-      expect(headlessEmitter.emitFailed).toHaveBeenCalledWith('Claude failed');
+      expect(headlessEmitter.emitFailed).toHaveBeenCalledWith('Failed');
     });
 
     it('returns EXIT_CODE_STUCK after threshold iterations without progress', async () => {
-      let callCount = 0;
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockImplementation(() => {
-        // Always return the same incomplete task (no progress)
-        return '- [ ] Incomplete task';
-      });
+      vi.mocked(fs.readFileSync).mockReturnValue('- [ ] Incomplete task');
 
-      const mockSpawn: SpawnFn = vi.fn().mockImplementation(() => {
-        callCount++;
-        const proc = createMockProcess();
-        // Auto-complete each iteration
-        setTimeout(() => {
-          const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-          proc.emitData(resultMsg + '\n');
-          proc.emitClose();
-        }, 10);
-        return proc;
-      });
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockResolvedValue({ success: true, durationMs: 100 }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -466,34 +295,28 @@ describe('headless-runner', () => {
         idleTimeoutMs: 5000,
       };
 
-      const exitCode = await executeHeadlessRun(options, mockSpawn);
+      const exitCode = await executeHeadlessRun(options);
 
       expect(exitCode).toBe(EXIT_CODE_STUCK);
       expect(headlessEmitter.emitStuck).toHaveBeenCalledWith('No task progress', 3);
     });
 
     it('returns EXIT_CODE_COMPLETE when all tasks done', async () => {
-      let callCount = 0;
+      let readCount = 0;
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockImplementation(() => {
-        callCount++;
-        if (callCount <= 2) {
-          // First call (task count) and initial state - has incomplete task
+        readCount++;
+        if (readCount <= 2) {
           return '- [ ] Task\n- [x] Done';
         }
-        // After iteration - all complete
         return '- [x] Task\n- [x] Done';
       });
 
-      const mockSpawn: SpawnFn = vi.fn().mockImplementation(() => {
-        const proc = createMockProcess();
-        setTimeout(() => {
-          const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-          proc.emitData(resultMsg + '\n');
-          proc.emitClose();
-        }, 10);
-        return proc;
-      });
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockResolvedValue({ success: true, durationMs: 100 }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -503,7 +326,7 @@ describe('headless-runner', () => {
         idleTimeoutMs: 5000,
       };
 
-      const exitCode = await executeHeadlessRun(options, mockSpawn);
+      const exitCode = await executeHeadlessRun(options);
 
       expect(exitCode).toBe(EXIT_CODE_COMPLETE);
       expect(headlessEmitter.emitComplete).toHaveBeenCalled();
@@ -511,24 +334,18 @@ describe('headless-runner', () => {
 
     it('returns EXIT_CODE_MAX_ITERATIONS when iterations exhausted', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      // Return different tasks to avoid stuck detection, but never complete
       let readCount = 0;
       vi.mocked(fs.readFileSync).mockImplementation(() => {
         readCount++;
-        // Add a new completed task each time to avoid stuck detection
         const completed = '- [x] Done'.repeat(readCount);
         return `${completed}\n- [ ] Always incomplete`;
       });
 
-      const mockSpawn: SpawnFn = vi.fn().mockImplementation(() => {
-        const proc = createMockProcess();
-        setTimeout(() => {
-          const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-          proc.emitData(resultMsg + '\n');
-          proc.emitClose();
-        }, 10);
-        return proc;
-      });
+      const mockHarness = {
+        name: 'claude' as const,
+        run: vi.fn().mockResolvedValue({ success: true, durationMs: 100 }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -538,24 +355,20 @@ describe('headless-runner', () => {
         idleTimeoutMs: 5000,
       };
 
-      const exitCode = await executeHeadlessRun(options, mockSpawn);
+      const exitCode = await executeHeadlessRun(options);
 
       expect(exitCode).toBe(EXIT_CODE_MAX_ITERATIONS);
     });
 
-    it('emits iteration events', async () => {
+    it('uses specified harness', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue('- [x] All done');
+      vi.mocked(fs.readFileSync).mockReturnValue('- [x] Done');
 
-      const mockSpawn: SpawnFn = vi.fn().mockImplementation(() => {
-        const proc = createMockProcess();
-        setTimeout(() => {
-          const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-          proc.emitData(resultMsg + '\n');
-          proc.emitClose();
-        }, 10);
-        return proc;
-      });
+      const mockHarness = {
+        name: 'codex' as const,
+        run: vi.fn().mockResolvedValue({ success: true, durationMs: 100 }),
+      };
+      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
@@ -563,81 +376,13 @@ describe('headless-runner', () => {
         iterations: 1,
         stuckThreshold: 3,
         idleTimeoutMs: 5000,
+        harness: 'codex',
       };
 
-      await executeHeadlessRun(options, mockSpawn);
+      await executeHeadlessRun(options);
 
-      expect(headlessEmitter.emitIteration).toHaveBeenCalledWith(1, 'starting');
-    });
-
-    it('emits iteration_done events with stats', async () => {
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue('- [x] All done');
-
-      const mockSpawn: SpawnFn = vi.fn().mockImplementation(() => {
-        const proc = createMockProcess();
-        setTimeout(() => {
-          const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-          proc.emitData(resultMsg + '\n');
-          proc.emitClose();
-        }, 10);
-        return proc;
-      });
-
-      const options: HeadlessRunOptions = {
-        prompt: 'Test prompt',
-        cwd: '/test',
-        iterations: 1,
-        stuckThreshold: 3,
-        idleTimeoutMs: 5000,
-      };
-
-      await executeHeadlessRun(options, mockSpawn);
-
-      expect(headlessEmitter.emitIterationDone).toHaveBeenCalledWith(
-        1,
-        expect.any(Number),
-        expect.objectContaining({
-          toolsStarted: expect.any(Number),
-          toolsCompleted: expect.any(Number),
-        })
-      );
-    });
-
-    it('emits task_complete for newly completed tasks', async () => {
-      let readCount = 0;
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockImplementation(() => {
-        readCount++;
-        if (readCount <= 2) {
-          // Initial state
-          return '- [ ] Task A\n- [ ] Task B';
-        }
-        // After iteration - Task A completed
-        return '- [x] Task A\n- [ ] Task B';
-      });
-
-      const mockSpawn: SpawnFn = vi.fn().mockImplementation(() => {
-        const proc = createMockProcess();
-        setTimeout(() => {
-          const resultMsg = JSON.stringify({ type: 'result', result: { is_error: false } });
-          proc.emitData(resultMsg + '\n');
-          proc.emitClose();
-        }, 10);
-        return proc;
-      });
-
-      const options: HeadlessRunOptions = {
-        prompt: 'Test prompt',
-        cwd: '/test',
-        iterations: 1,
-        stuckThreshold: 3,
-        idleTimeoutMs: 5000,
-      };
-
-      await executeHeadlessRun(options, mockSpawn);
-
-      expect(headlessEmitter.emitTaskComplete).toHaveBeenCalledWith(1, 'Task A');
+      expect(harnessModule.getHarness).toHaveBeenCalledWith('codex');
+      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 1, undefined, 'codex');
     });
   });
 

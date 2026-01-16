@@ -2,12 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render } from 'ink-testing-library';
 import { App, IterationRunner, type IterationResult } from '../src/App.js';
-import type { ClaudeStreamState } from '../src/hooks/useClaudeStream.js';
+import type { HarnessStreamState } from '../src/hooks/useHarnessStream.js';
 import type { Stats } from '../src/lib/state-machine.js';
 import type { ActivityItem, LastCommit } from '../src/lib/types.js';
 
-vi.mock('../src/hooks/useClaudeStream.js', () => ({
-  useClaudeStream: () => ({
+vi.mock('../src/hooks/useHarnessStream.js', () => ({
+  useHarnessStream: () => ({
     phase: 'idle',
     taskText: null,
     activeTools: [],
@@ -30,7 +30,7 @@ vi.mock('../src/hooks/useClaudeStream.js', () => ({
   }),
 }));
 
-function createMockState(overrides: Partial<ClaudeStreamState> = {}): ClaudeStreamState {
+function createMockState(overrides: Partial<HarnessStreamState> = {}): HarnessStreamState {
   return {
     phase: 'idle',
     taskText: null,
@@ -261,15 +261,13 @@ describe('App', () => {
       });
       const { lastFrame } = render(<App prompt="test" _mockState={state} />);
       const output = lastFrame();
-      expect(output).toContain('✗');
-      expect(output).toContain('Error');
       expect(output).toContain('Connection timed out');
     });
 
     it('does not show error when none present', () => {
       const state = createMockState({ error: null });
       const { lastFrame } = render(<App prompt="test" _mockState={state} />);
-      expect(lastFrame()).not.toContain('Error:');
+      expect(lastFrame()).not.toContain('Connection timed out');
     });
   });
 
@@ -349,6 +347,7 @@ describe('App', () => {
           usage: null,
           taskNumber: null,
           phaseName: null,
+          failureContext: null,
         });
       });
     });
@@ -385,6 +384,7 @@ describe('App', () => {
           usage: null,
           taskNumber: null,
           phaseName: null,
+          failureContext: null,
         });
       });
     });
@@ -433,6 +433,7 @@ function createMockResult(overrides: Partial<IterationResult> = {}): IterationRe
     usage: null,
     taskNumber: null,
     phaseName: null,
+    failureContext: null,
     ...overrides,
   };
 }
@@ -549,9 +550,9 @@ describe('IterationRunner', () => {
         />
       );
       const output = lastFrame();
-      expect(output).toContain('Iteration 1');
+      expect(output).toContain('1.');
       expect(output).toContain('Implementing auth');
-      expect(output).toContain('Iteration 2');
+      expect(output).toContain('2.');
       expect(output).toContain('Adding tests');
     });
 
@@ -585,7 +586,7 @@ describe('IterationRunner', () => {
           _mockIsComplete={true}
         />
       );
-      expect(lastFrame()).toContain('No task');
+      expect(lastFrame()).toContain('Unknown task');
     });
 
     it('shows success/error icons per iteration', () => {
@@ -604,6 +605,102 @@ describe('IterationRunner', () => {
       const output = lastFrame();
       expect(output).toContain('✓');
       expect(output).toContain('✗');
+    });
+
+    it('shows error message for failed iterations', () => {
+      const results: IterationResult[] = [
+        createMockResult({ iteration: 1, error: new Error('Connection timeout after 30s') }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('Error:');
+      expect(output).toContain('Connection timeout after 30s');
+    });
+
+    it('truncates long error messages', () => {
+      const longError = 'This is a very long error message that exceeds the 80 character limit and should be truncated for display';
+      const results: IterationResult[] = [
+        createMockResult({ iteration: 1, error: new Error(longError) }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('Error:');
+      expect(output).toContain('...');
+      expect(output).not.toContain(longError);
+    });
+
+    it('shows failure context with tool info', () => {
+      const results: IterationResult[] = [
+        createMockResult({
+          iteration: 1,
+          error: new Error('Process timed out'),
+          failureContext: {
+            lastToolName: 'Bash',
+            lastToolInput: 'command: npm test',
+            lastToolOutput: 'FAIL tests/auth.test.ts\nTest suite failed to run',
+            recentActivity: ['▶ Read package.json', '✓ Read package.json (0.1s)', '▶ Bash npm test'],
+          },
+        }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('Error:');
+      expect(output).toContain('Process timed out');
+      expect(output).toContain('Tool:');
+      expect(output).toContain('Bash');
+      expect(output).toContain('Input:');
+      expect(output).toContain('npm test');
+      expect(output).toContain('Output:');
+      expect(output).toContain('FAIL tests/auth.test.ts');
+      expect(output).toContain('Recent activity:');
+    });
+
+    it('shows recent activity in failure context', () => {
+      const results: IterationResult[] = [
+        createMockResult({
+          iteration: 1,
+          error: new Error('Failed'),
+          failureContext: {
+            lastToolName: null,
+            lastToolInput: null,
+            lastToolOutput: null,
+            recentActivity: ['💭 Analyzing the code', '▶ Read src/index.ts'],
+          },
+        }),
+      ];
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockResults={results}
+          _mockIsComplete={true}
+        />
+      );
+      const output = lastFrame();
+      expect(output).toContain('Recent activity:');
+      expect(output).toContain('Analyzing the code');
+      expect(output).toContain('Read src/index.ts');
     });
 
     it('shows commit info for iterations with commits', () => {
@@ -661,7 +758,7 @@ describe('IterationRunner', () => {
         />
       );
       const output = lastFrame();
-      expect(output).toContain('Iteration 1');
+      expect(output).toContain('1.');
       const commitCount = (output?.match(/abc1234/g) || []).length;
       expect(commitCount).toBe(0);
     });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { resolvePrompt, DEFAULT_PROMPT, type CliOptions } from '../src/cli.js';
+import { resolvePrompt, DEFAULT_PROMPT, GREEDY_PROMPT, type CliOptions } from '../src/cli.js';
 import { existsSync, readFileSync } from 'fs';
 
 vi.mock('fs', () => ({
@@ -25,6 +25,7 @@ describe('cli', () => {
         noBranch: false,
         headless: false,
         stuckThreshold: 3,
+        greedy: false,
       };
 
       expect(resolvePrompt(options)).toBe('Custom prompt text');
@@ -44,6 +45,7 @@ describe('cli', () => {
         noBranch: false,
         headless: false,
         stuckThreshold: 3,
+        greedy: false,
       };
 
       expect(resolvePrompt(options)).toBe('Prompt from file content');
@@ -64,6 +66,7 @@ describe('cli', () => {
         noBranch: false,
         headless: false,
         stuckThreshold: 3,
+        greedy: false,
       };
 
       expect(() => resolvePrompt(options)).toThrow('Prompt file not found: /test/missing.txt');
@@ -79,6 +82,7 @@ describe('cli', () => {
         noBranch: false,
         headless: false,
         stuckThreshold: 3,
+        greedy: false,
       };
 
       expect(resolvePrompt(options)).toBe(DEFAULT_PROMPT);
@@ -99,10 +103,27 @@ describe('cli', () => {
         noBranch: false,
         headless: false,
         stuckThreshold: 3,
+        greedy: false,
       };
 
       expect(resolvePrompt(options)).toBe('Direct prompt');
       expect(readFileSync).not.toHaveBeenCalled();
+    });
+
+    it('returns GREEDY_PROMPT when greedy option is true', () => {
+      const options: CliOptions = {
+        iterations: 1,
+        all: false,
+        cwd: '/test',
+        timeoutIdle: 120,
+        quiet: false,
+        noBranch: false,
+        headless: false,
+        stuckThreshold: 3,
+        greedy: true,
+      };
+
+      expect(resolvePrompt(options)).toBe(GREEDY_PROMPT);
     });
   });
 
@@ -111,12 +132,32 @@ describe('cli', () => {
       expect(DEFAULT_PROMPT).toContain('Ralph');
       expect(DEFAULT_PROMPT).toContain('SPEC.md');
       expect(DEFAULT_PROMPT).toContain('STATE.txt');
-      expect(DEFAULT_PROMPT).toContain('task');
       expect(DEFAULT_PROMPT.toLowerCase()).toContain('commit');
     });
 
     it('instructs to work on one task per iteration', () => {
-      expect(DEFAULT_PROMPT).toContain('ONE CHECKBOX = ONE ITERATION');
+      expect(DEFAULT_PROMPT).toContain('Complete ONE checkbox');
+    });
+
+    it('includes memory file instructions', () => {
+      expect(DEFAULT_PROMPT).toContain('plan.md');
+      expect(DEFAULT_PROMPT).toContain('index.md');
+    });
+  });
+
+  describe('GREEDY_PROMPT', () => {
+    it('contains greedy mode instructions', () => {
+      expect(GREEDY_PROMPT).toContain('GREEDY MODE');
+      expect(GREEDY_PROMPT).toContain('AS MANY checkboxes');
+    });
+
+    it('instructs to continue to next task', () => {
+      expect(GREEDY_PROMPT).toContain('CONTINUE to next task');
+    });
+
+    it('includes memory file instructions', () => {
+      expect(GREEDY_PROMPT).toContain('plan.md');
+      expect(GREEDY_PROMPT).toContain('index.md');
     });
   });
 });

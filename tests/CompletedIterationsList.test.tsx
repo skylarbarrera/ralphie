@@ -25,6 +25,7 @@ function createMockResult(overrides: Partial<IterationResult> = {}): IterationRe
     usage: null,
     taskNumber: null,
     phaseName: null,
+    failureContext: null,
     ...overrides,
   };
 }

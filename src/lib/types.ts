@@ -160,6 +160,14 @@ export interface BaseIterationResult {
   stats: Stats;
 }
 
+// Context captured when an iteration fails - provides actionable debugging info
+export interface FailureContext {
+  lastToolName: string | null;
+  lastToolInput: string | null;
+  lastToolOutput: string | null;
+  recentActivity: string[];
+}
+
 // UI-specific iteration result (App.tsx)
 export interface UIIterationResult extends BaseIterationResult {
   error: Error | null;
@@ -170,6 +178,7 @@ export interface UIIterationResult extends BaseIterationResult {
   usage: { inputTokens: number; outputTokens: number } | null;
   taskNumber: string | null;
   phaseName: string | null;
+  failureContext: FailureContext | null;
 }
 
 // Headless-specific iteration result (headless-runner.ts)

@@ -15,53 +15,74 @@ describe('config-loader', () => {
   });
 
   describe('getHarnessName', () => {
-    it('should return CLI flag harness when provided', () => {
+    it('should return CLI flag harness when provided and valid', () => {
       const result = getHarnessName('codex', '/tmp');
       expect(result).toBe('codex');
     });
 
-    it('should return environment variable when CLI flag not provided', () => {
-      process.env.RALPH_HARNESS = 'opencode';
-      const result = getHarnessName(undefined, '/tmp');
-      expect(result).toBe('opencode');
+    it('should return claude when CLI flag is provided', () => {
+      const result = getHarnessName('claude', '/tmp');
+      expect(result).toBe('claude');
     });
 
-    it('should return config file harness when CLI and env not provided', () => {
+    it('should return environment variable when valid and CLI flag not provided', () => {
+      process.env.RALPH_HARNESS = 'codex';
+      const result = getHarnessName(undefined, '/tmp');
+      expect(result).toBe('codex');
+    });
+
+    it('should return config file harness when valid and CLI/env not provided', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue('harness: custom-harness\n');
+      vi.mocked(fs.readFileSync).mockReturnValue('harness: codex\n');
 
       const result = getHarnessName(undefined, '/tmp');
-      expect(result).toBe('custom-harness');
+      expect(result).toBe('codex');
     });
 
-    it('should return default "claude-code" when nothing provided', () => {
+    it('should return default "claude" when nothing provided', () => {
       vi.mocked(fs.existsSync).mockReturnValue(false);
 
       const result = getHarnessName(undefined, '/tmp');
-      expect(result).toBe('claude-code');
+      expect(result).toBe('claude');
+    });
+
+    it('should return default "claude" when invalid harness provided', () => {
+      vi.mocked(fs.existsSync).mockReturnValue(false);
+
+      const result = getHarnessName('invalid-harness', '/tmp');
+      expect(result).toBe('claude');
+    });
+
+    it('should skip invalid env and use config file', () => {
+      process.env.RALPH_HARNESS = 'invalid-harness';
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue('harness: codex\n');
+
+      const result = getHarnessName(undefined, '/tmp');
+      expect(result).toBe('codex');
     });
 
     it('should prioritize CLI over env', () => {
-      process.env.RALPH_HARNESS = 'env-harness';
-      const result = getHarnessName('cli-harness', '/tmp');
-      expect(result).toBe('cli-harness');
+      process.env.RALPH_HARNESS = 'codex';
+      const result = getHarnessName('claude', '/tmp');
+      expect(result).toBe('claude');
     });
 
     it('should prioritize env over config file', () => {
-      process.env.RALPH_HARNESS = 'env-harness';
+      process.env.RALPH_HARNESS = 'codex';
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue('harness: config-harness\n');
+      vi.mocked(fs.readFileSync).mockReturnValue('harness: claude\n');
 
       const result = getHarnessName(undefined, '/tmp');
-      expect(result).toBe('env-harness');
+      expect(result).toBe('codex');
     });
 
     it('should prioritize config file over default', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue('harness: config-harness\n');
+      vi.mocked(fs.readFileSync).mockReturnValue('harness: codex\n');
 
       const result = getHarnessName(undefined, '/tmp');
-      expect(result).toBe('config-harness');
+      expect(result).toBe('codex');
     });
   });
 
@@ -75,10 +96,10 @@ describe('config-loader', () => {
 
     it('should load config from .ralph/config.yml', () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue('harness: claude-code\n');
+      vi.mocked(fs.readFileSync).mockReturnValue('harness: claude\n');
 
       const result = loadConfig('/tmp');
-      expect(result).toEqual({ harness: 'claude-code' });
+      expect(result).toEqual({ harness: 'claude' });
       expect(fs.readFileSync).toHaveBeenCalledWith('/tmp/.ralph/config.yml', 'utf-8');
     });
 
