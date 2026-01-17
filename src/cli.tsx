@@ -266,7 +266,7 @@ function main(): void {
     .option('--headless', 'Output JSON events instead of UI')
     .option('--stuck-threshold <n>', 'Iterations without progress before stuck (headless)', '3')
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'sonnet')
-    .option('--harness <name>', 'AI harness to use (claude, codex)')
+    .option('--harness <name>', 'AI harness to use (claude, codex, opencode)')
     .option('-g, --greedy', 'Complete multiple tasks per iteration until context fills')
     .action((opts) => {
       let iterations = parseInt(opts.iterations, 10);

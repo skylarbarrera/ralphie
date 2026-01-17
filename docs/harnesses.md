@@ -8,13 +8,15 @@ Ralphie supports multiple AI providers through a harness abstraction.
 |---------|----------|--------|
 | `claude` | Claude Code | Default |
 | `codex` | OpenAI Codex | Supported |
+| `opencode` | OpenCode AI | Supported |
 
 ## Usage
 
 ```bash
 ralphie run                    # Claude (default)
 ralphie run --harness codex    # Codex
-export RALPH_HARNESS=codex     # Set default
+ralphie run --harness opencode  # OpenCode
+export RALPH_HARNESS=opencode  # Set default
 ```
 
 ## API Keys
@@ -23,8 +25,13 @@ export RALPH_HARNESS=codex     # Set default
 |---------|---------------------|
 | `claude` | `ANTHROPIC_API_KEY` |
 | `codex` | `OPENAI_API_KEY` |
+| `opencode` | `OPENCODE_SERVER_URL` (optional) |
 
 Ralphie delegates auth to the underlying SDKs—never stores keys directly.
+
+OpenCode supports two modes:
+- **Local server**: Automatically starts a local OpenCode server (default)
+- **Remote server**: Connect to existing server via `OPENCODE_SERVER_URL`
 
 ## Configuration
 
@@ -36,7 +43,7 @@ Priority:
 
 ```yaml
 # .ralphie/config.yml
-harness: codex
+harness: opencode
 ```
 
 ## Architecture
@@ -51,10 +58,10 @@ harness: codex
           │ Abstraction │
           └──────┬──────┘
                  │
-    ┌────────────┼────────────┐
-    │            │            │
+     ┌────────────┼────────────┐
+     │            │            │
 ┌───▼───┐   ┌───▼───┐   ┌───▼───┐
-│Claude │   │ Codex │   │Future │
+│Claude │   │ Codex │   │OpenCode│
 └───────┘   └───────┘   └───────┘
 ```
 

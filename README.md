@@ -33,6 +33,9 @@ curl -fsSL https://anthropic.com/install-claude.sh | sh
 
 # Or Codex
 npm install -g @openai/codex && export OPENAI_API_KEY=sk-...
+
+# Or OpenCode
+npm install -g opencode-ai && opencode auth login
 ```
 
 **3. Build something**
@@ -66,7 +69,7 @@ Each iteration:
 | `ralphie init` | Add to existing project |
 | `ralphie validate` | Check SPEC format |
 
-Use `--harness codex` to switch AI providers. See [CLI Reference](docs/cli.md) for all options.
+Use `--harness codex` or `--harness opencode` to switch AI providers. See [CLI Reference](docs/cli.md) for all options.
 
 ## SPEC Format
 
@@ -102,7 +105,7 @@ Tasks get checked off as completed. See [SPEC Guide](docs/spec-guide.md) for bes
 ## Requirements
 
 - Node.js 18+
-- Claude Code CLI or OpenAI Codex CLI
+- Claude Code CLI, OpenAI Codex CLI, or OpenCode CLI
 - Git
 
 ## License
