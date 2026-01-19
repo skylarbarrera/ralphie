@@ -9,6 +9,7 @@ import { validateProject } from './run.js';
 import { createFeatureBranch } from '../lib/git.js';
 import { getSpecTitleV2 } from '../lib/spec-parser-v2.js';
 import { getHarnessName } from '../lib/config-loader.js';
+import { validateHarnessEnv } from '../lib/harness/index.js';
 import { resolvePrompt, type RunOptions } from '../cli.js';
 
 export function executeRun(options: RunOptions): void {
@@ -40,6 +41,12 @@ export function executeRun(options: RunOptions): void {
   const idleTimeoutMs = options.timeoutIdle * 1000;
 
   const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
+
+  const envValidation = validateHarnessEnv(harness ?? 'claude');
+  if (!envValidation.valid) {
+    console.error(envValidation.message);
+    process.exit(1);
+  }
 
   const { waitUntilExit, unmount } = render(
     <IterationRunner

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getHarness, claudeHarness, codexHarness, opencodeHarness } from '../../../src/lib/harness/index.js';
+import { getHarness, claudeHarness, codexHarness, opencodeHarness, validateHarnessEnv } from '../../../src/lib/harness/index.js';
 import type { HarnessEvent } from '../../../src/lib/harness/types.js';
 
 describe('harness factory', () => {
@@ -178,5 +178,81 @@ describe('API key validation', () => {
       expect(result.success).toBe(false);
       expect(events.some(e => e.type === 'thinking')).toBe(true);
     });
+  });
+});
+
+describe('validateHarnessEnv', () => {
+  let originalEnv: NodeJS.ProcessEnv;
+
+  beforeEach(() => {
+    originalEnv = { ...process.env };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  describe('claude harness', () => {
+    it('should return valid when ANTHROPIC_API_KEY is set', () => {
+      process.env.ANTHROPIC_API_KEY = 'test-key';
+      const result = validateHarnessEnv('claude');
+      expect(result.valid).toBe(true);
+      expect(result.missing).toEqual([]);
+    });
+
+    it('should return invalid when ANTHROPIC_API_KEY is missing', () => {
+      delete process.env.ANTHROPIC_API_KEY;
+      const result = validateHarnessEnv('claude');
+      expect(result.valid).toBe(false);
+      expect(result.missing).toContain('ANTHROPIC_API_KEY');
+      expect(result.message).toContain('ANTHROPIC_API_KEY');
+      expect(result.message).toContain('export');
+    });
+  });
+
+  describe('codex harness', () => {
+    it('should return valid when OPENAI_API_KEY is set', () => {
+      process.env.OPENAI_API_KEY = 'test-key';
+      const result = validateHarnessEnv('codex');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should return invalid when OPENAI_API_KEY is missing', () => {
+      delete process.env.OPENAI_API_KEY;
+      const result = validateHarnessEnv('codex');
+      expect(result.valid).toBe(false);
+      expect(result.missing).toContain('OPENAI_API_KEY');
+    });
+  });
+
+  describe('opencode harness', () => {
+    it('should return valid when OPENCODE_SERVER_URL is set', () => {
+      process.env.OPENCODE_SERVER_URL = 'http://localhost:4096';
+      delete process.env.OPENCODE_API_KEY;
+      const result = validateHarnessEnv('opencode');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should return valid when OPENCODE_API_KEY is set', () => {
+      delete process.env.OPENCODE_SERVER_URL;
+      process.env.OPENCODE_API_KEY = 'test-key';
+      const result = validateHarnessEnv('opencode');
+      expect(result.valid).toBe(true);
+    });
+
+    it('should return invalid when neither OPENCODE var is set', () => {
+      delete process.env.OPENCODE_SERVER_URL;
+      delete process.env.OPENCODE_API_KEY;
+      const result = validateHarnessEnv('opencode');
+      expect(result.valid).toBe(false);
+      expect(result.missing).toContain('OPENCODE_SERVER_URL');
+      expect(result.missing).toContain('OPENCODE_API_KEY');
+    });
+  });
+
+  it('should include shell config hint in error message', () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    const result = validateHarnessEnv('claude');
+    expect(result.message).toMatch(/zshrc|bashrc|config\.fish/i);
   });
 });

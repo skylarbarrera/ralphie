@@ -30,6 +30,7 @@ import { executeHeadlessRun as runHeadless } from './lib/headless-runner.js';
 import { validateSpecInDir, formatValidationResult } from './lib/spec-validator.js';
 import { generateSpec } from './lib/spec-generator.js';
 import { getHarnessName } from './lib/config-loader.js';
+import { validateHarnessEnv } from './lib/harness/index.js';
 import {
   runStatus,
   formatStatus,
@@ -104,6 +105,12 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
 
   const prompt = resolvePrompt(options, validation.specPath);
   const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
+
+  const envValidation = validateHarnessEnv(harness ?? 'claude');
+  if (!envValidation.valid) {
+    emitFailed(envValidation.message);
+    process.exit(1);
+  }
 
   const exitCode = await runHeadless({
     prompt,
