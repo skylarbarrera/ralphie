@@ -37,7 +37,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "bun build src/cli.tsx --outdir dist --target node --external '@anthropic-ai/claude-agent-sdk' --external '@openai/codex-sdk' --external '@opencode-ai/sdk' --external 'ink' --external 'ink-spinner' --external '@inkjs/ui' --external 'react' --external 'commander' --external 'js-yaml'",
+    "build": "bun build src/cli.tsx --outdir dist --target node --external '@anthropic-ai/claude-agent-sdk' --external '@openai/codex-sdk' --external '@opencode-ai/sdk' --external 'ink' --external 'ink-spinner' --external '@inkjs/ui' --external 'react' --external 'commander' --external 'js-yaml' --external 'dotenv'",
     "prepublishOnly": "npm run build",
     "ralphie": "bun src/cli.tsx run",
     "test": "bun x vitest run",
