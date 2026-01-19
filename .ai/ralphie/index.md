@@ -205,3 +205,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 677 passing (type check passes)
 - notes: Updated tracking files to document T004 and T005 completion; both tasks were completed in previous commits (4c781dd, 0402e9d) but tracking files were not committed with them
 - next: T006 - Handle legacy spec gracefully
+
+## e402e86 — feat: T006-T007 add legacy spec warning and integration tests
+- files: src/App.tsx, tests/App.test.tsx, specs/active/app-v2-migration.md, .ai/ralphie/plan.md
+- tests: 682 passing (5 new integration tests for V2 spec)
+- notes: T006 - Added legacySpecWarning prop flow from IterationRunner to AppInner; displays yellow warning banner when V1 spec detected; T007 - Added integration tests verifying legacy warning display, task number rendering, null spec handling, error resilience
+- next: T008 - Manual E2E testing

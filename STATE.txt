@@ -252,3 +252,12 @@
   - Both tasks were completed in previous commits (4c781dd, 0402e9d)
   - Tracking files document the completion of those tasks
   - Commit: bd50617 docs: update tracking files for T004-T005
+
+✅ 2026-01-19: Completed T006-T007 - Legacy spec warning and integration tests
+  - T006: Added legacySpecWarning state in IterationRunner, flows to App and AppInner
+  - T006: Renders yellow warning banner "⚠ Legacy SPEC format - upgrade recommended"
+  - T006: Console warning already exists, UI warning now visible to user
+  - T007: Added 5 integration tests in tests/App.test.tsx
+  - T007: Tests verify legacy warning display, task number rendering, null spec handling
+  - Tests: 682 passing (5 new), type check passes
+  - Commit: e402e86 feat: T006-T007 add legacy spec warning and integration tests
