@@ -344,11 +344,44 @@ Add a note in the spec's Notes section:
 - Next: Evaluate alternative libraries
 ```
 
-### 6.3 Stage and Commit
+### 6.3 Update index.md
+
+Prepare the index.md entry (use placeholder for commit SHA):
+
+```markdown
+## COMMIT_SHA — feat(validation): add user input validation
+
+- tasks: T003, T004, T005 (4 points)
+- files: src/validation/user.ts, src/errors/messages.ts, tests/validation/user.test.ts
+- tests: 12 passing
+- notes: Used Zod for validation, matches existing patterns
+- next: T006, T007 are ready (5 points for next iteration)
+```
+
+### 6.4 Update STATE.txt
+
+```markdown
+✅ 2026-01-18: Completed T003, T004, T005 (4 points)
+  - Added user input validation with Zod
+  - Added localized error messages
+  - Tests: 12 passing
+```
+
+### 6.5 Stage and Commit Everything
+
+**Important:** Stage ALL changed files including tracking files:
 
 ```bash
+# Stage implementation files
 git add src/validation/ src/errors/ tests/validation/
-git status  # Verify staged files
+
+# Stage spec with status updates
+git add specs/active/*.md
+
+# Stage tracking files
+git add .ai/ralphie/index.md .ai/ralphie/plan.md STATE.txt
+
+git status  # Verify all files staged
 ```
 
 Commit with conventional format:
@@ -368,35 +401,22 @@ EOF
 )"
 ```
 
-### 6.4 Update index.md
+### 6.6 Update index.md with Commit SHA
 
-Get commit SHA and append entry:
+After committing, get the SHA and update the placeholder:
 
 ```bash
 git log -1 --format='%h'
 ```
 
-```markdown
-## a1b2c3d — feat(validation): add user input validation
+Use Edit tool to replace `COMMIT_SHA` with the actual hash, then amend:
 
-- tasks: T003, T004, T005 (4 points)
-- files: src/validation/user.ts, src/errors/messages.ts, tests/validation/user.test.ts
-- tests: 12 passing
-- notes: Used Zod for validation, matches existing patterns
-- next: T006, T007 are ready (5 points for next iteration)
+```bash
+git add .ai/ralphie/index.md STATE.txt
+git commit --amend --no-edit
 ```
 
-### 6.5 Update STATE.txt
-
-```markdown
-✅ 2026-01-18: Completed T003, T004, T005 (4 points)
-  - Added user input validation with Zod
-  - Added localized error messages
-  - Tests: 12 passing
-  - Commit: a1b2c3d feat(validation): add user input validation
-```
-
-### 6.6 Complete TodoWrite
+### 6.8 Complete TodoWrite
 
 ```typescript
 TodoWrite({
@@ -442,7 +462,7 @@ pending → in_progress → passed
 | **3. Plan** | Write to `.ai/ralphie/plan.md` with task IDs |
 | **4. Implement** | Code + tests, run Verify for each task |
 | **5. Review** | Spawn review agent for significant changes |
-| **6. Commit** | Update Status to `passed`, commit, update index.md |
+| **6. Commit** | Update Status → update tracking files → commit all together |
 
 ## Iteration Validation
 
@@ -451,6 +471,5 @@ A valid iteration:
 - [ ] All selected tasks have Status: passed (or failed with notes)
 - [ ] All Verify commands pass
 - [ ] Full test suite passes
-- [ ] Commit made with task IDs in message
-- [ ] index.md updated
-- [ ] STATE.txt updated
+- [ ] Commit includes: code + spec + index.md + STATE.txt + plan.md
+- [ ] No orphaned tracking file changes after commit
