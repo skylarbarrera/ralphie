@@ -88,7 +88,7 @@ import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructur
 ---
 
 ### T005: Update IterationRunner task retrieval
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**
