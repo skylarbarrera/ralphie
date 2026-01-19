@@ -211,3 +211,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 682 passing (5 new integration tests for V2 spec)
 - notes: T006 - Added legacySpecWarning prop flow from IterationRunner to AppInner; displays yellow warning banner when V1 spec detected; T007 - Added integration tests verifying legacy warning display, task number rendering, null spec handling, error resilience
 - next: T008 - Manual E2E testing
+
+## a559c84 — test: T008 verify V2 spec integration in interactive UI
+- files: specs/active/app-v2-migration.md, .ai/ralphie/plan.md
+- tests: 682 passing (all tests pass, type check passes)
+- notes: Completed manual E2E testing verification; confirmed V2 spec loading from specs/active/, task ID display via taskNumber prop, task completion detection via status fields, legacy spec warning display; verified IterationRunner uses locateActiveSpec/parseSpecV2/getTaskForIterationV2 correctly
+- next: App V2 migration spec complete - all 8 tasks passed
