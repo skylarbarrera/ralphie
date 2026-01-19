@@ -8,7 +8,7 @@ metadata:
   author: ralphie
   version: "3.0.0"
   argument-hint: "[spec-path]"
-  install-hint: npx add-skill skillet/ralph --skill review-spec
+  install-hint: npx add-skill skylarbarrera/ralphie --skill review-spec
 ---
 
 # Review SPEC Skill (V2 Format)

@@ -12,34 +12,34 @@ license: MIT
 
 #### ralphie-spec
 Generate project specifications through structured user interviews.
-- **Install**: `npx add-skill skillet/ralph --skill ralphie-spec`
+- **Install**: `npx add-skill skylarbarrera/ralphie --skill ralphie-spec`
 - **Use**: Run `/ralphie-spec` in Claude Code when user is present
 
 #### review-spec
 Validate spec format and content quality.
-- **Install**: `npx add-skill skillet/ralph --skill review-spec`
+- **Install**: `npx add-skill skylarbarrera/ralphie --skill review-spec`
 - **Use**: Run `/review-spec` after generating a spec for quality review
 
 ### Project Management
 
 #### verify
 Pre-commit verification skill that auto-detects project tooling and runs appropriate checks.
-- **Install**: `npx add-skill skillet/ralph --skill verify`
+- **Install**: `npx add-skill skylarbarrera/ralphie --skill verify`
 - **Use**: During ralphie iterations to validate code before committing
 
 #### ralphie-iterate
 Execute autonomous coding iterations following Ralphie protocol.
-- **Install**: `npx add-skill skillet/ralph --skill ralphie-iterate`
+- **Install**: `npx add-skill skylarbarrera/ralphie --skill ralphie-iterate`
 - **Use**: To implement tasks from spec files in `specs/active/`
 
 ## Installation
 
 ```bash
 # Install all Ralphie skills
-npx add-skill skillet/ralph
+npx add-skill skylarbarrera/ralphie
 
 # Install specific skill
-npx add-skill skillet/ralph --skill ralphie-spec
+npx add-skill skylarbarrera/ralphie --skill ralphie-spec
 ```
 
 ## Usage

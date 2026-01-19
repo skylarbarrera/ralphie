@@ -41,7 +41,7 @@ npm install -g opencode-ai && opencode auth login
 **3. Install Ralphie skills** (in your AI tool)
 
 ```bash
-npx add-skill skillet/ralph
+npx add-skill skylarbarrera/ralphie
 ```
 
 **4. Build something**
@@ -97,7 +97,7 @@ Use `--harness codex` or `--harness opencode` to switch AI providers. See [CLI R
 | `/ralphie-iterate` | Execute one iteration (used by `ralphie run`) |
 | `/verify` | Pre-commit verification |
 
-Install all skills: `npx add-skill skillet/ralph`
+Install all skills: `npx add-skill skylarbarrera/ralphie`
 
 ## Spec Format
 

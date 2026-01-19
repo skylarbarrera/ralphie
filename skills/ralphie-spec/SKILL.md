@@ -8,7 +8,7 @@ metadata:
   author: ralphie
   version: "3.0.0"
   argument-hint: <project-description>
-  install-hint: npx add-skill skillet/ralph --skill ralphie-spec
+  install-hint: npx add-skill skylarbarrera/ralphie --skill ralphie-spec
 ---
 
 # Ralphie Spec Generation (V2 Format)
