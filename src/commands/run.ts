@@ -8,7 +8,6 @@ export interface ValidationResult {
   errors: string[];
   warnings: string[];
   specPath?: string;
-  isLegacySpec?: boolean;
 }
 
 function isGitRepo(cwd: string): boolean {
@@ -33,7 +32,6 @@ export function validateProject(cwd: string): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   let specPath: string | undefined;
-  let isLegacySpec = false;
 
   if (isGitRepo(cwd) && hasUncommittedChanges(cwd)) {
     errors.push('Uncommitted changes detected. Commit or stash before running Ralphie.');
@@ -42,20 +40,9 @@ export function validateProject(cwd: string): ValidationResult {
   try {
     const located = locateActiveSpec(cwd);
     specPath = located.path;
-    isLegacySpec = located.isLegacy;
-    if (located.isLegacy) {
-      // V2-only: Legacy SPEC.md is now an error, not a warning
-      errors.push(
-        'Legacy SPEC.md found at project root. Migrate to V2 format: move to specs/active/ and use task IDs (T001, T002).'
-      );
-    }
   } catch (err) {
     if (err instanceof SpecLocatorError) {
-      if (err.code === 'MULTIPLE_SPECS') {
-        errors.push(err.message);
-      } else {
-        errors.push('No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.');
-      }
+      errors.push(err.message);
     } else {
       errors.push('No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.');
     }
@@ -73,5 +60,5 @@ export function validateProject(cwd: string): ValidationResult {
 
   const valid = errors.length === 0;
 
-  return { valid, errors, warnings, specPath, isLegacySpec };
+  return { valid, errors, warnings, specPath };
 }

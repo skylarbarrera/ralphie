@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { isSpecCompleteV2, getProgressV2, parseSpecV2 } from './spec-parser-v2.js';
-import { locateActiveSpec, SpecLocatorError } from './spec-locator.js';
+import { isSpecCompleteV2, getProgressV2 } from './spec-parser-v2.js';
+import { locateActiveSpec } from './spec-locator.js';
 import { getToolCategory } from './tool-categories.js';
 import type { HeadlessIterationResult } from './types.js';
 import type { HarnessName, HarnessEvent } from './harness/types.js';
@@ -37,41 +37,6 @@ export const EXIT_CODE_COMPLETE = 0;
 export const EXIT_CODE_STUCK = 1;
 export const EXIT_CODE_MAX_ITERATIONS = 2;
 export const EXIT_CODE_ERROR = 3;
-
-/**
- * @deprecated Use getProgressV2() from spec-parser-v2.ts instead.
- * Kept for backward compatibility with V1 SPEC.md checkbox format.
- */
-export function getCompletedTaskTexts(cwd: string): string[] {
-  const specPath = join(cwd, 'SPEC.md');
-  if (!existsSync(specPath)) return [];
-
-  const content = readFileSync(specPath, 'utf-8');
-  const lines = content.split('\n');
-  const completedTasks: string[] = [];
-
-  for (const line of lines) {
-    const match = line.match(/^-\s*\[x\]\s+(.+)$/i);
-    if (match) {
-      completedTasks.push(match[1].trim());
-    }
-  }
-
-  return completedTasks;
-}
-
-/**
- * @deprecated Use getProgressV2() from spec-parser-v2.ts instead.
- * Kept for backward compatibility with V1 SPEC.md checkbox format.
- */
-export function getTotalTaskCount(cwd: string): number {
-  const specPath = join(cwd, 'SPEC.md');
-  if (!existsSync(specPath)) return 0;
-
-  const content = readFileSync(specPath, 'utf-8');
-  const allTasks = content.match(/^-\s*\[[x\s]\]\s+/gim);
-  return allTasks ? allTasks.length : 0;
-}
 
 const TODO_PATTERNS = [
   /\/\/\s*TODO:/i,
@@ -220,32 +185,12 @@ export async function executeHeadlessRun(
 ): Promise<number> {
   const harnessName = options.harness ?? 'claude';
 
-  // Try to locate V2 spec first, fall back to V1 for progress tracking
-  let specPath: string;
-  let isV2Spec = false;
-  try {
-    const located = locateActiveSpec(options.cwd);
-    specPath = located.path;
-    isV2Spec = !located.isLegacy;
-  } catch {
-    // Fall back to V1 SPEC.md path
-    specPath = join(options.cwd, 'SPEC.md');
-  }
+  // Locate active spec
+  const located = locateActiveSpec(options.cwd);
+  const specPath = located.path;
 
-  // Get initial progress using V2 parser if available, otherwise V1
-  let initialProgress = { completed: 0, total: 0 };
-  if (isV2Spec) {
-    const progress = getProgressV2(specPath);
-    if (progress) {
-      initialProgress = { completed: progress.completed, total: progress.total };
-    }
-  } else {
-    // Fall back to V1 checkbox counting
-    initialProgress = {
-      completed: getCompletedTaskTexts(options.cwd).length,
-      total: getTotalTaskCount(options.cwd),
-    };
-  }
+  // Get initial progress
+  const initialProgress = getProgressV2(specPath) ?? { completed: 0, total: 0 };
 
   emitStarted(specPath, initialProgress.total, options.model, harnessName);
 
@@ -263,16 +208,9 @@ export async function executeHeadlessRun(
       return EXIT_CODE_ERROR;
     }
 
-    // Check for newly completed tasks using appropriate parser
-    let currentCompleted = 0;
-    if (isV2Spec) {
-      const progress = getProgressV2(specPath);
-      if (progress) {
-        currentCompleted = progress.completed;
-      }
-    } else {
-      currentCompleted = getCompletedTaskTexts(options.cwd).length;
-    }
+    // Check for newly completed tasks
+    const progress = getProgressV2(specPath);
+    const currentCompleted = progress?.completed ?? 0;
 
     const newlyCompletedCount = currentCompleted - lastCompletedCount;
 
@@ -309,8 +247,8 @@ export async function executeHeadlessRun(
       return EXIT_CODE_STUCK;
     }
 
-    // Check if spec is complete (V2 format)
-    if (isV2Spec && isSpecCompleteV2(specPath)) {
+    // Check if spec is complete
+    if (isSpecCompleteV2(specPath)) {
       emitComplete(currentCompleted, Date.now() - totalStartTime);
       return EXIT_CODE_COMPLETE;
     }

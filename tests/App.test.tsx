@@ -827,37 +827,6 @@ describe('IterationRunner', () => {
       expect(output).toContain('Iteration 1/1');
     });
 
-    it('displays legacy spec warning in UI', () => {
-      // Test that App component displays warning when legacySpecWarning=true
-      const { lastFrame } = render(
-        <App
-          prompt="test"
-          iteration={1}
-          totalIterations={1}
-          _mockState={createMockState()}
-          legacySpecWarning={true}
-        />
-      );
-
-      const output = lastFrame();
-      expect(output).toContain('Legacy SPEC format - upgrade recommended');
-    });
-
-    it('does not display legacy warning when legacySpecWarning=false', () => {
-      const { lastFrame } = render(
-        <App
-          prompt="test"
-          iteration={1}
-          totalIterations={1}
-          _mockState={createMockState()}
-          legacySpecWarning={false}
-        />
-      );
-
-      const output = lastFrame();
-      expect(output).not.toContain('Legacy SPEC format - upgrade recommended');
-    });
-
     it('renders task number when provided', () => {
       const { lastFrame } = render(
         <App

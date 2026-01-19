@@ -67,7 +67,7 @@ Goal: What this achieves when complete.
 ralphie spec "REST API with user auth"
 
 # Interactive (with interview)
-# Use /spec-interactive skill in Claude Code
+# Use /ralphie-spec skill in Claude Code
 ```
 
 ## Good Tasks
@@ -170,23 +170,6 @@ New project using Express + TypeScript + PostgreSQL.
 | Task too large | Split into S/M sized tasks |
 | Stuck on same task | Check Status field, run `ralphie status` |
 | Progress slow | Use smaller tasks or increase `--budget` |
-
-## Legacy Format
-
-The V1 checkbox format is still supported but deprecated:
-
-```markdown
-# V1 (deprecated)
-- [ ] Task one
-- [x] Task two
-
-# V2 (recommended)
-### T001: Task one
-- Status: pending
-- Size: M
-```
-
-Migrate by running `ralphie init` and moving your spec to `specs/active/`.
 
 ## Further Reading
 

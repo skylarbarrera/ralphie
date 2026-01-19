@@ -35,7 +35,7 @@ How Ralphie compares to other spec-driven and autonomous AI coding tools.
 | Feature | Ralphie | ghuntley Ralph | Anthropic Plugin | Spec Kit |
 |---------|---------|----------------|------------------|----------|
 | **Spec generation** | Interview-based | Manual write | None | Manual |
-| **Spec format** | Single SPEC.md checklist | Multiple `specs/*.md` + IMPLEMENTATION_PLAN.md | None | Constitution + specs + plans |
+| **Spec format** | V2 specs in `specs/active/` with task IDs | Multiple `specs/*.md` + IMPLEMENTATION_PLAN.md | None | Constitution + specs + plans |
 | **Autonomous loop** | Yes | Yes (bash) | Yes (Stop hook) | No (human invokes each step) |
 | **Plan/Build modes** | Single mode | Separate PROMPT_plan/build | No | Separate phases |
 | **Multi-harness** | Claude + Codex | Claude only | Claude only | 15+ agents |
@@ -57,8 +57,8 @@ How Ralphie compares to other spec-driven and autonomous AI coding tools.
 - Battle-tested (months of production use, YC hackathons)
 
 **Ralphie is simpler/more accessible:**
-- Single `SPEC.md` checklist (easier to understand)
-- Interview generates spec for you (`ralphie spec "idea"`)
+- V2 spec format with task IDs and status tracking
+- Interview generates spec for you (`ralphie spec "idea"` or `/ralphie-spec` skill)
 - No bash scripting required
 - Visual TUI for monitoring progress
 - Greedy mode for faster completion
@@ -69,7 +69,7 @@ How Ralphie compares to other spec-driven and autonomous AI coding tools.
 
 | Aspect | Ralphie | Anthropic Plugin |
 |--------|---------|------------------|
-| **Specs** | Interview-generated SPEC.md | None (bring your own prompt) |
+| **Specs** | Interview-generated V2 specs | None (bring your own prompt) |
 | **Installation** | `npm install -g ralphie` | `/plugin install ralph-wiggum` |
 | **Loop control** | `--all`, `-n 5`, `--greedy` | `--max-iterations`, `--completion-promise` |
 | **Monitoring** | TUI with progress | None (runs in session) |
@@ -99,7 +99,7 @@ How Ralphie compares to other spec-driven and autonomous AI coding tools.
 
 | Tool | Mechanism | State Persistence |
 |------|-----------|-------------------|
-| **Ralphie** | SDK query loop, check SPEC.md checkboxes | Git commits + SPEC.md |
+| **Ralphie** | SDK query loop, check task status | Git commits + spec file |
 | **ghuntley** | Bash `while :; do claude; done` | Git commits + IMPLEMENTATION_PLAN.md |
 | **Anthropic Plugin** | Stop hook intercepts exit | Files + git history |
 | **Vercel** | `while(true)` + `verifyCompletion()` | Custom verification |

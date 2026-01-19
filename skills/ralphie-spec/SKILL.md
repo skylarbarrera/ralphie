@@ -1,5 +1,5 @@
 ---
-name: spec-interactive
+name: ralphie-spec
 description: Generate project specifications in V2 format through structured user interviews. Requires user presence.
 context: fork
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
@@ -8,10 +8,10 @@ metadata:
   author: ralphie
   version: "3.0.0"
   argument-hint: <project-description>
-  install-hint: npx add-skill skillet/ralph --skill spec-interactive
+  install-hint: npx add-skill skillet/ralph --skill ralphie-spec
 ---
 
-# Interactive Spec Generation (V2 Format)
+# Ralphie Spec Generation (V2 Format)
 
 Generate comprehensive specs using the V2 format with task IDs, status tracking, and size-based budgeting through structured interviews with the user.
 
@@ -23,10 +23,11 @@ Generate comprehensive specs using the V2 format with task IDs, status tracking,
 
 ## Output Location
 
-**IMPORTANT:** Write specs to `specs/active/{name}.md`, NOT to root `SPEC.md`.
+Write specs to `specs/active/{name}.md`:
 
 - Generate a kebab-case filename from the description
 - Example: "user authentication" → `specs/active/user-authentication.md`
+- Only one spec allowed in `specs/active/` at a time
 
 ## Workflow
 
@@ -347,7 +348,7 @@ The user reviews and approves. No automated review needed since user is present.
 
 | Check | Pass | Fail |
 |-------|------|------|
-| Location | `specs/active/*.md` | `SPEC.md` at root |
+| Location | `specs/active/*.md` | Missing or wrong directory |
 | Task IDs | `### T001:` | `- [ ]`, `### Task 1:` |
 | Status | `- Status: pending` | Missing or blank |
 | Size | `- Size: S\|M\|L` (user confirmed) | Missing or unconfirmed |

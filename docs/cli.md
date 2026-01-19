@@ -6,12 +6,12 @@ Complete reference for all Ralphie commands and options.
 
 ### `ralphie run`
 
-Execute iteration loops against your SPEC.
+Execute iteration loops against your spec.
 
 ```bash
 ralphie run              # Run one iteration
 ralphie run -n 5         # Run 5 iterations
-ralphie run --all        # Run until SPEC complete (max 100)
+ralphie run --all        # Run until spec complete (max 100)
 ralphie run --greedy     # Complete multiple tasks per iteration
 ```
 
@@ -20,7 +20,7 @@ ralphie run --greedy     # Complete multiple tasks per iteration
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-n, --iterations <n>` | Number of iterations to run | 1 |
-| `-a, --all` | Run until SPEC complete (max 100 iterations) | false |
+| `-a, --all` | Run until spec complete (max 100 iterations) | false |
 | `-g, --greedy` | Complete multiple tasks per iteration | false |
 | `-p, --prompt <text>` | Custom prompt to send to the AI | - |
 | `--prompt-file <path>` | Read prompt from file | - |
@@ -30,17 +30,19 @@ ralphie run --greedy     # Complete multiple tasks per iteration
 | `--no-branch` | Skip feature branch creation | false |
 | `--headless` | Output JSON events instead of UI | false |
 | `--stuck-threshold <n>` | Iterations without progress before stuck | 3 |
-| `--harness <name>` | AI harness to use: `claude`, `codex` | claude |
+| `--harness <name>` | AI harness to use: `claude`, `codex`, `opencode` | claude |
 | `-b, --budget <points>` | Task selection budget (see Budget System) | 4 |
 
 ### `ralphie spec`
 
-Generate a SPEC.md from a project description.
+Generate a spec autonomously from a project description.
 
 ```bash
 ralphie spec "Build a REST API"           # Autonomous spec generation
 ralphie spec --headless "Blog platform"   # JSON output for automation
 ```
+
+Creates spec in `specs/active/` using V2 format.
 
 #### Options
 
@@ -61,29 +63,46 @@ ralphie init
 ```
 
 Creates:
-- `.ai/ralphie/` - Working directory for plans and history
+- `specs/active/` - Directory for spec files
+- `specs/completed/` - Archive for completed specs
 - `.claude/ralphie.md` - Coding standards
-- `.claude/skills/` - Ralphie skills for Claude Code
+- `STATE.txt` - Progress log
 
 ### `ralphie validate`
 
-Check project structure and SPEC conventions.
+Check project structure and spec format.
 
 ```bash
 ralphie validate
 ```
 
 Validates:
-- Required files exist (SPEC.md, etc.)
-- SPEC follows conventions (checkboxes, structure)
+- Required files exist
+- Spec follows V2 conventions (task IDs, status, size)
 - Project structure is correct
 
-### `ralphie upgrade`
+### `ralphie status`
 
-Upgrade project to latest Ralphie version.
+Show progress of the active spec.
 
 ```bash
-ralphie upgrade
+ralphie status
+```
+
+### `ralphie spec-list`
+
+List active and completed specs.
+
+```bash
+ralphie spec-list
+```
+
+### `ralphie archive`
+
+Move completed spec to `specs/completed/`.
+
+```bash
+ralphie archive
 ```
 
 ## Greedy Mode
@@ -182,12 +201,12 @@ ralphie run --headless -n 10
 Outputs JSON events to stdout:
 
 ```json
-{"event":"started","spec":"SPEC.md","tasks":5,"timestamp":"2024-01-15T10:30:00Z"}
+{"event":"started","spec":"my-feature.md","tasks":5,"timestamp":"2024-01-15T10:30:00Z"}
 {"event":"iteration","n":1,"phase":"starting"}
 {"event":"tool","type":"read","path":"src/index.ts"}
 {"event":"tool","type":"write","path":"src/utils.ts"}
 {"event":"commit","hash":"abc1234","message":"Add utility functions"}
-{"event":"task_complete","index":0,"text":"Set up project structure"}
+{"event":"task_complete","id":"T001","title":"Set up project structure"}
 {"event":"iteration_done","n":1,"duration_ms":45000}
 {"event":"complete","tasks_done":5,"total_duration_ms":180000}
 ```
@@ -212,7 +231,7 @@ ralphie spec --headless "my project" && ralphie run --headless --all
 
 | Variable | Description |
 |----------|-------------|
-| `RALPH_HARNESS` | Default harness (claude, codex) |
+| `RALPH_HARNESS` | Default harness (claude, codex, opencode) |
 | `ANTHROPIC_API_KEY` | API key for Claude harness |
 | `OPENAI_API_KEY` | API key for Codex harness |
 

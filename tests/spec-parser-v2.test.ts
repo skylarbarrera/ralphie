@@ -124,68 +124,48 @@ describe('spec-parser-v2', () => {
   describe('parseSpecV2Content', () => {
     it('parses a valid v2 spec', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      expect(result.isV2Format).toBe(true);
+      expect(result.title).toBe('SPEC System V2');
     });
 
-    it('detects legacy format and returns warning', () => {
-      const result = parseSpecV2Content(LEGACY_SPEC);
-      expect(result.isV2Format).toBe(false);
-      if (!result.isV2Format) {
-        expect(result.warning).toContain('Legacy SPEC format');
-      }
+    it('throws on invalid checkbox format', () => {
+      expect(() => parseSpecV2Content(LEGACY_SPEC)).toThrow('Invalid spec format');
     });
 
     it('extracts title from H1', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      expect(result.isV2Format).toBe(true);
-      if (result.isV2Format) {
-        expect(result.title).toBe('SPEC System V2');
-      }
+      expect(result.title).toBe('SPEC System V2');
     });
 
     it('extracts goal from Goal: line', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      if (result.isV2Format) {
-        expect(result.goal).toContain('Overhaul Ralphie');
-      }
+      expect(result.goal).toContain('Overhaul Ralphie');
     });
 
     it('extracts context section', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      if (result.isV2Format) {
-        expect(result.context).toContain('checkbox-based task tracking');
-      }
+      expect(result.context).toContain('checkbox-based task tracking');
     });
 
     it('parses all tasks', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      if (result.isV2Format) {
-        expect(result.tasks).toHaveLength(4);
-      }
+      expect(result.tasks).toHaveLength(4);
     });
 
     it('extracts acceptance criteria', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      if (result.isV2Format) {
-        expect(result.acceptanceCriteria).toHaveLength(3);
-        expect(result.acceptanceCriteria[0]).toContain('ralphie init');
-      }
+      expect(result.acceptanceCriteria).toHaveLength(3);
+      expect(result.acceptanceCriteria[0]).toContain('ralphie init');
     });
 
     it('extracts notes section', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      if (result.isV2Format) {
-        expect(result.notes).toContain('Research Sources');
-      }
+      expect(result.notes).toContain('Research Sources');
     });
 
     it('handles minimal v2 spec', () => {
       const result = parseSpecV2Content(MINIMAL_V2_SPEC);
-      expect(result.isV2Format).toBe(true);
-      if (result.isV2Format) {
-        expect(result.tasks).toHaveLength(1);
-        expect(result.title).toBe('Minimal Spec');
-      }
+      expect(result.tasks).toHaveLength(1);
+      expect(result.title).toBe('Minimal Spec');
     });
 
     it('defaults to "Untitled Spec" if no title', () => {
@@ -201,35 +181,27 @@ describe('spec-parser-v2', () => {
 - Item
 `;
       const result = parseSpecV2Content(noTitle);
-      if (result.isV2Format) {
-        expect(result.title).toBe('Untitled Spec');
-      }
+      expect(result.title).toBe('Untitled Spec');
     });
   });
 
   describe('task parsing', () => {
     it('parses task IDs correctly', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      if (result.isV2Format) {
-        expect(result.tasks.map((t) => t.id)).toEqual(['T001', 'T002', 'T003', 'T004']);
-      }
+      expect(result.tasks.map((t) => t.id)).toEqual(['T001', 'T002', 'T003', 'T004']);
     });
 
     it('parses task titles', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      if (result.isV2Format) {
-        expect(result.tasks[0].title).toBe('Create spec folder structure');
-        expect(result.tasks[1].title).toBe('Implement new spec parser');
-      }
+      expect(result.tasks[0].title).toBe('Create spec folder structure');
+      expect(result.tasks[1].title).toBe('Implement new spec parser');
     });
 
     it('parses task status', () => {
       const result = parseSpecV2Content(SAMPLE_V2_SPEC);
-      if (result.isV2Format) {
-        expect(result.tasks[0].status).toBe('passed');
-        expect(result.tasks[1].status).toBe('in_progress');
-        expect(result.tasks[2].status).toBe('pending');
-      }
+      expect(result.tasks[0].status).toBe('passed');
+      expect(result.tasks[1].status).toBe('in_progress');
+      expect(result.tasks[2].status).toBe('pending');
     });
 
     it('parses task sizes', () => {

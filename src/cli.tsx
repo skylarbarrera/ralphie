@@ -3,7 +3,7 @@ import 'dotenv/config';
 import React from 'react';
 import { render } from 'ink';
 import { Command } from 'commander';
-import { readFileSync, existsSync, unlinkSync, copyFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -28,9 +28,7 @@ function getVersion(): string {
 import { IterationRunner } from './App.js';
 import { runInit } from './commands/init.js';
 import { validateProject } from './commands/run.js';
-import { runUpgrade, detectVersion, getVersionName, CURRENT_VERSION } from './commands/upgrade.js';
 import { createFeatureBranch } from './lib/git.js';
-import { getSpecTitle } from './lib/spec-parser.js';
 import { getSpecTitleV2 } from './lib/spec-parser-v2.js';
 import { emitFailed } from './lib/headless-emitter.js';
 import { executeHeadlessRun as runHeadless } from './lib/headless-runner.js';
@@ -186,8 +184,7 @@ export function executeRun(options: RunOptions): void {
   }
 
   if (!options.noBranch && validation.specPath) {
-    // Try V2 parser first, fall back to V1 for legacy specs
-    const title = getSpecTitleV2(validation.specPath) ?? getSpecTitle(validation.specPath);
+    const title = getSpecTitleV2(validation.specPath);
     if (title) {
       const result = createFeatureBranch(options.cwd, title);
       if (result.created) {
@@ -289,7 +286,7 @@ function main(): void {
         }
 
         console.log('\nRalphie initialized! Next steps:');
-        console.log('  1. Create SPEC.md with your project tasks');
+        console.log('  1. Create a spec in specs/active/ with your project tasks');
         console.log('  2. Run: ralphie run');
       } catch (error) {
         console.error('Error:', error instanceof Error ? error.message : error);
@@ -353,9 +350,9 @@ function main(): void {
 
   program
     .command('validate')
-    .description('Check if current directory is ready for Ralphie and validate SPEC.md conventions')
+    .description('Check if current directory is ready for Ralphie and validate spec format')
     .option('--cwd <path>', 'Working directory to check', process.cwd())
-    .option('--spec-only', 'Only validate SPEC.md content (skip project structure check)', false)
+    .option('--spec-only', 'Only validate spec content (skip project structure check)', false)
     .action((opts) => {
       const cwd = resolve(opts.cwd);
       let hasErrors = false;
@@ -374,7 +371,7 @@ function main(): void {
       }
 
       const specResult = validateSpecInDir(cwd);
-      console.log('\nSPEC.md content validation:');
+      console.log('\nSpec content validation:');
       console.log(formatValidationResult(specResult));
 
       if (!specResult.valid) {
@@ -388,7 +385,7 @@ function main(): void {
 
   program
     .command('spec')
-    .description('Generate a SPEC.md autonomously from a description')
+    .description('Generate a spec autonomously from a description')
     .argument('<description>', 'What to build (e.g., "REST API for user management")')
     .option('--cwd <path>', 'Working directory', process.cwd())
     .option('--headless', 'Output JSON events instead of UI', false)
@@ -483,125 +480,6 @@ function main(): void {
         console.log(result);
       } catch (err) {
         console.error(`Error: ${err instanceof Error ? err.message : err}`);
-        process.exit(1);
-      }
-    });
-
-  program
-    .command('upgrade')
-    .description(`Upgrade a Ralphie project to the latest version (v${CURRENT_VERSION})`)
-    .argument('[directory]', 'Target directory', process.cwd())
-    .option('--dry-run', 'Show what would be changed without making changes', false)
-    .option('--clean', 'Remove legacy files after confirming project is at latest version', false)
-    .action((directory: string, opts) => {
-      const targetDir = resolve(directory);
-
-      const detection = detectVersion(targetDir);
-
-      if (detection.detectedVersion === null) {
-        console.log('Could not detect Ralphie project version.');
-        console.log('If this is a new project, use: ralphie init');
-        return;
-      }
-
-      if (detection.isLatest && !detection.hasLegacyFiles) {
-        const claudeDir = resolve(targetDir, '.claude');
-        const ralphieMdPath = resolve(claudeDir, 'ralphie.md');
-
-        if (existsSync(ralphieMdPath)) {
-          const content = readFileSync(ralphieMdPath, 'utf-8');
-          const hasOldPatterns = /\bPRD\b/.test(content) || /\bprogress\.txt\b/.test(content);
-
-          if (hasOldPatterns) {
-            console.log(`Project is at ${getVersionName(detection.detectedVersion)} but .claude/ralphie.md has old patterns.`);
-
-            if (opts.clean) {
-              const templatesDir = resolve(__dirname, '..', 'templates');
-              const templatePath = resolve(templatesDir, '.claude', 'ralphie.md');
-              if (existsSync(templatePath)) {
-                copyFileSync(templatePath, ralphieMdPath);
-                console.log('Updated .claude/ralphie.md to v2 template.');
-              }
-            } else {
-              console.log('Run with --clean to update it.');
-            }
-            return;
-          }
-        }
-
-        console.log(`Project is already at ${getVersionName(detection.detectedVersion)} (latest)`);
-        return;
-      }
-
-      if (detection.isLatest && detection.hasLegacyFiles) {
-        console.log(`Project is at ${getVersionName(detection.detectedVersion)} but has legacy files:`);
-        for (const file of detection.legacyFiles) {
-          console.log(`  - ${file}`);
-        }
-        console.log('\nRun with --clean to remove them, or delete manually.');
-
-        if (opts.clean) {
-          console.log('\nCleaning up legacy files...');
-          for (const file of detection.legacyFiles) {
-            const filePath = resolve(targetDir, file);
-            try {
-              unlinkSync(filePath);
-              console.log(`  Removed: ${file}`);
-            } catch {
-              console.log(`  Failed to remove: ${file}`);
-            }
-          }
-          console.log('\nCleanup complete!');
-        }
-        return;
-      }
-
-      console.log(`Detected: ${getVersionName(detection.detectedVersion)}`);
-      console.log(`Target:   ${getVersionName(CURRENT_VERSION)}\n`);
-      console.log(`Found files: ${detection.foundIndicators.join(', ')}\n`);
-
-      if (opts.dryRun) {
-        console.log('Dry run - would upgrade from:');
-        console.log(`  ${getVersionName(detection.detectedVersion)} → ${getVersionName(CURRENT_VERSION)}`);
-        return;
-      }
-
-      try {
-        const result = runUpgrade(targetDir);
-
-        console.log(`Upgraded: v${result.fromVersion} → v${result.toVersion}\n`);
-
-        if (result.renamed.length > 0) {
-          console.log('Renamed:');
-          for (const { from, to } of result.renamed) {
-            console.log(`  ${from} → ${to}`);
-          }
-        }
-
-        if (result.created.length > 0) {
-          console.log('\nCreated:');
-          for (const file of result.created) {
-            console.log(`  + ${file}`);
-          }
-        }
-
-        if (result.skipped.length > 0) {
-          console.log('\nSkipped:');
-          for (const file of result.skipped) {
-            console.log(`  - ${file}`);
-          }
-        }
-
-        if (result.warnings.length > 0) {
-          console.log('\nWarnings:');
-          for (const warning of result.warnings) {
-            console.log(`  ⚠ ${warning}`);
-          }
-        }
-
-        console.log('\nUpgrade complete! Run: ralphie validate');
-      } catch (error) {
-        console.error('Error:', error instanceof Error ? error.message : error);
         process.exit(1);
       }
     });

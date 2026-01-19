@@ -33,12 +33,7 @@ export interface SpecV2 {
   isV2Format: true;
 }
 
-export interface LegacySpecWarning {
-  isV2Format: false;
-  warning: string;
-}
-
-export type ParseResult = SpecV2 | LegacySpecWarning;
+export type ParseResult = SpecV2;
 
 /**
  * Normalize spec content to handle common format variations.
@@ -71,16 +66,14 @@ export function parseSpecV2(specPath: string): ParseResult {
   return parseSpecV2Content(content);
 }
 
-export function parseSpecV2Content(content: string): ParseResult {
+export function parseSpecV2Content(content: string): SpecV2 {
   // Normalize content to handle format variations before parsing
   const normalized = normalizeSpec(content);
 
   if (isLegacyFormat(normalized)) {
-    return {
-      isV2Format: false,
-      warning:
-        'Legacy SPEC format detected (checkbox tasks). Please migrate to v2 format with task IDs (T001, T002, etc.)',
-    };
+    throw new Error(
+      'Invalid spec format: checkbox tasks detected. Specs must use V2 format with task IDs (T001, T002, etc.)'
+    );
   }
 
   const title = parseTitle(normalized);
@@ -278,28 +271,32 @@ export function isSpecV2Complete(spec: SpecV2): boolean {
 
 /**
  * Check if spec at path is complete.
- * Returns false if spec doesn't exist or is legacy format.
+ * Returns false if spec doesn't exist or has invalid format.
  */
 export function isSpecCompleteV2(specPath: string): boolean {
   if (!existsSync(specPath)) return false;
 
-  const result = parseSpecV2(specPath);
-  if (!result.isV2Format) return false;
-
-  return isSpecV2Complete(result);
+  try {
+    const spec = parseSpecV2(specPath);
+    return isSpecV2Complete(spec);
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Get progress for spec at path.
- * Returns null if spec doesn't exist or is legacy format.
+ * Returns null if spec doesn't exist or has invalid format.
  */
 export function getProgressV2(specPath: string): { completed: number; total: number; percentage: number } | null {
   if (!existsSync(specPath)) return null;
 
-  const result = parseSpecV2(specPath);
-  if (!result.isV2Format) return null;
-
-  return getSpecProgress(result);
+  try {
+    const spec = parseSpecV2(specPath);
+    return getSpecProgress(spec);
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -311,15 +308,17 @@ export function getDoneTaskCount(spec: SpecV2): number {
 
 /**
  * Get title for spec at path.
- * Returns null if spec doesn't exist or is legacy format.
+ * Returns null if spec doesn't exist or has invalid format.
  */
 export function getSpecTitleV2(specPath: string): string | null {
   if (!existsSync(specPath)) return null;
 
-  const result = parseSpecV2(specPath);
-  if (!result.isV2Format) return null;
-
-  return result.title;
+  try {
+    const spec = parseSpecV2(specPath);
+    return spec.title;
+  } catch {
+    return null;
+  }
 }
 
 /**

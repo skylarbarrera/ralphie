@@ -36,8 +36,6 @@ describe('spec-locator', () => {
       const result = locateActiveSpec(testDir);
 
       expect(result.path).toBe(join(activeDir, 'my-feature.md'));
-      expect(result.isLegacy).toBe(false);
-      expect(result.warning).toBeUndefined();
     });
 
     it('throws MULTIPLE_SPECS error when multiple specs exist', () => {
@@ -53,16 +51,6 @@ describe('spec-locator', () => {
         expect(e).toBeInstanceOf(SpecLocatorError);
         expect((e as SpecLocatorError).code).toBe('MULTIPLE_SPECS');
       }
-    });
-
-    it('falls back to legacy SPEC.md with warning', () => {
-      writeFileSync(join(testDir, 'SPEC.md'), '# Legacy Spec');
-
-      const result = locateActiveSpec(testDir);
-
-      expect(result.path).toBe(join(testDir, 'SPEC.md'));
-      expect(result.isLegacy).toBe(true);
-      expect(result.warning).toContain('legacy');
     });
 
     it('throws NO_SPEC error when no spec exists', () => {
@@ -94,17 +82,6 @@ describe('spec-locator', () => {
       const result = locateActiveSpec(testDir);
       expect(result.path).toContain('spec.md');
     });
-
-    it('prefers specs/active/ over legacy SPEC.md', () => {
-      const activeDir = join(testDir, 'specs', 'active');
-      mkdirSync(activeDir, { recursive: true });
-      writeFileSync(join(activeDir, 'active-spec.md'), '# Active');
-      writeFileSync(join(testDir, 'SPEC.md'), '# Legacy');
-
-      const result = locateActiveSpec(testDir);
-      expect(result.path).toContain('active-spec.md');
-      expect(result.isLegacy).toBe(false);
-    });
   });
 
   describe('hasActiveSpec', () => {
@@ -113,11 +90,6 @@ describe('spec-locator', () => {
       mkdirSync(activeDir, { recursive: true });
       writeFileSync(join(activeDir, 'spec.md'), '# Spec');
 
-      expect(hasActiveSpec(testDir)).toBe(true);
-    });
-
-    it('returns true for legacy spec', () => {
-      writeFileSync(join(testDir, 'SPEC.md'), '# Legacy');
       expect(hasActiveSpec(testDir)).toBe(true);
     });
 

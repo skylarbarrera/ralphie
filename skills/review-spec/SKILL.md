@@ -25,23 +25,16 @@ Locate Spec → V2 Format Checks → Content Checks → Content Critique → Rep
 
 Find the spec to review:
 
-1. Check `specs/active/*.md` first (V2 location)
-2. Fall back to `SPEC.md` at root (legacy location - warn user)
-3. Or use provided path argument
+1. Check `specs/active/*.md` (one spec at a time)
+2. Or use provided path argument
 
 ```bash
-# Check for V2 location
-ls specs/active/*.md 2>/dev/null
-
-# Or legacy location
-ls SPEC.md 2>/dev/null
+ls specs/active/*.md
 ```
-
-If found at legacy location, note: "⚠️ Spec at legacy location. Consider moving to `specs/active/`"
 
 ## Step 2: V2 Format Checks
 
-These checks are **required** for V2 specs. Legacy specs will fail these checks.
+These checks are **required** for all specs.
 
 ### 2.1 Task ID Format
 
@@ -56,7 +49,7 @@ These checks are **required** for V2 specs. Legacy specs will fail these checks.
 ```markdown
 ### Task 1: Setup project      # No T prefix, wrong format
 ### T1: Implement logic        # Only 1 digit, need 3
-- [ ] Add tests                # Checkbox format (legacy)
+- [ ] Add tests                # Checkbox format (invalid)
 ```
 
 **Check for:**
@@ -216,7 +209,7 @@ Report each violation:
 
 ## Step 3: Content Checks
 
-These checks apply to both legacy and V2 specs.
+These checks apply to all specs.
 
 ### 3.1 No Code Snippets in Tasks
 
@@ -536,7 +529,7 @@ Cannot calculate - missing Size fields on some tasks.
 ## When to Use
 
 **Use `/review-spec` when:**
-- Just generated a spec with `/spec-autonomous` or `/spec-interactive`
+- Just generated a spec with `/ralphie-spec` or `ralphie spec` CLI
 - User asks to validate a spec before starting work
 - Running `ralphie spec` (uses this for self-review)
 - Unsure if spec follows V2 conventions

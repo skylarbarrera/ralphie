@@ -25,41 +25,25 @@ export interface StatusResult {
     total: number;
   };
   nextTasks: string[];
-  isLegacy: boolean;
   warning?: string;
 }
 
 export function runStatus(cwd: string): StatusResult {
   const located = locateActiveSpec(cwd);
-  const parsed = parseSpecV2(located.path);
-
-  if (!parsed.isV2Format) {
-    return {
-      specPath: located.path,
-      title: 'Legacy Spec',
-      progress: { completed: 0, total: 0, percentage: 0 },
-      sizePoints: { completed: 0, pending: 0, total: 0 },
-      nextTasks: [],
-      isLegacy: true,
-      warning: parsed.warning,
-    };
-  }
-
-  const progress = getSpecProgress(parsed);
-  const budget = calculateBudget(parsed, { budget: 4 });
+  const spec = parseSpecV2(located.path);
+  const progress = getSpecProgress(spec);
+  const budget = calculateBudget(spec, { budget: 4 });
 
   return {
     specPath: located.path,
-    title: parsed.title,
+    title: spec.title,
     progress,
     sizePoints: {
-      completed: parsed.completedSizePoints,
-      pending: parsed.pendingSizePoints,
-      total: parsed.totalSizePoints,
+      completed: spec.completedSizePoints,
+      pending: spec.pendingSizePoints,
+      total: spec.totalSizePoints,
     },
     nextTasks: budget.selectedTasks.map((t) => `${t.id}: ${t.title} [${t.size}]`),
-    isLegacy: false,
-    warning: located.warning,
   };
 }
 
@@ -69,14 +53,6 @@ export function formatStatus(result: StatusResult): string {
   lines.push(`Spec: ${result.title}`);
   lines.push(`Path: ${result.specPath}`);
   lines.push('');
-
-  if (result.isLegacy) {
-    lines.push('⚠️  Legacy format detected');
-    if (result.warning) {
-      lines.push(`   ${result.warning}`);
-    }
-    return lines.join('\n');
-  }
 
   const bar = createProgressBar(result.progress.percentage);
   lines.push(`Progress: ${bar} ${result.progress.completed}/${result.progress.total} tasks (${result.progress.percentage}%)`);

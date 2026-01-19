@@ -27,9 +27,9 @@ V2 specs use task IDs and structured fields instead of checkboxes:
 **Verify:** `npm test -- task-name`
 ```
 
-**Key differences from legacy:**
-- Task IDs (`T001`) instead of checkboxes (`- [ ]`)
-- Status field tracks state (not `[x]` vs `[ ]`)
+**Key features:**
+- Task IDs (`T001`, `T002`) for tracking
+- Status field tracks progress (pending → in_progress → passed/failed)
 - Size field enables budget-based selection
 - Verify section provides completion check
 
@@ -49,11 +49,8 @@ V2 specs use task IDs and structured fields instead of checkboxes:
 Find the active spec:
 
 ```bash
-ls specs/active/*.md 2>/dev/null  # V2 location
-ls SPEC.md 2>/dev/null             # Legacy fallback
+ls specs/active/*.md
 ```
-
-If found at legacy location (`SPEC.md`), warn: "⚠️ Using legacy spec. Consider migrating to V2 format in `specs/active/`"
 
 ### 1.2 Parse Tasks and Select by Budget
 

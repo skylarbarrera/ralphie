@@ -128,9 +128,8 @@ describe('validateProject', () => {
       expect(result.errors).toContain('.ai/ralphie/ not found. Run `ralphie init` first.');
     });
 
-    it('should fail when legacy SPEC.md is found at root', () => {
-      // Create legacy spec at root
-      writeFileSync(join(testDir, 'SPEC.md'), '# Legacy Spec\n- [ ] Old task');
+    it('should fail when spec is not in specs/active/', () => {
+      // Spec must be in specs/active/, not at root
       mkdirSync(join(testDir, '.claude'), { recursive: true });
       writeFileSync(join(testDir, '.claude', 'ralphie.md'), '# Ralphie');
       mkdirSync(join(testDir, '.ai', 'ralphie'), { recursive: true });
@@ -138,7 +137,7 @@ describe('validateProject', () => {
       const result = validateProject(testDir);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Legacy SPEC.md found at project root. Migrate to V2 format: move to specs/active/ and use task IDs (T001, T002).');
+      expect(result.errors).toContain('No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.');
     });
   });
 });

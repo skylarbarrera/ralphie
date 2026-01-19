@@ -258,75 +258,6 @@ Track cross-spec learnings:
 **Apply when:** Writing integration tests
 ```
 
-## Migration from V1
-
-### Automatic Detection
-
-Ralphie detects legacy `SPEC.md` files and shows a warning:
-
-```
-⚠️ Using legacy SPEC.md at project root.
-   Consider migrating to specs/active/ directory.
-```
-
-### Manual Migration
-
-1. Create the folder structure:
-   ```bash
-   ralphie init  # Creates specs/ if missing
-   ```
-
-2. Move your spec:
-   ```bash
-   mv SPEC.md specs/active/my-feature.md
-   ```
-
-3. Convert format:
-   ```markdown
-   # Before (V1)
-   - [ ] Task one
-   - [x] Task two
-
-   # After (V2)
-   ### T001: Task one
-   - Status: pending
-   - Size: M
-
-   **Deliverables:**
-   - Outcome description
-
-   **Verify:** `npm test`
-
-   ---
-
-   ### T002: Task two
-   - Status: passed
-   - Size: S
-
-   **Deliverables:**
-   - Outcome description
-
-   **Verify:** `npm test`
-   ```
-
-4. Validate:
-   ```bash
-   ralphie validate
-   ```
-
-### Size Estimation Guide
-
-When migrating, estimate sizes based on:
-
-| Original Task | Likely Size |
-|--------------|-------------|
-| "Set up X" | S |
-| "Create X model/type" | S |
-| "Add X endpoint" | M |
-| "Implement X feature" | M-L |
-| "Add tests for X" | S-M |
-| "Refactor X" | M-L |
-
 ## Templates
 
 ### Feature Template
@@ -375,4 +306,4 @@ When migrating, estimate sizes based on:
 | "Multiple specs found" | Only one spec allowed in `specs/active/` |
 | Status not updating | Use Edit tool, exact format: `- Status: passed` |
 | Budget too restrictive | Use `--budget N` to increase |
-| Legacy spec warning | Migrate to `specs/active/` folder |
+| "Invalid spec format" | Specs must use V2 format with task IDs (T001, T002) |

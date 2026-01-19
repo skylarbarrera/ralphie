@@ -13,8 +13,8 @@
 Ralphie runs AI in a loop until your project is done. Based on the [Ralph Wiggum technique](https://github.com/ghuntley/how-to-ralph-wiggum): describe what you want → AI builds it task by task → each task gets committed → come back to working code.
 
 ```bash
-ralphie spec "Todo app with auth"   # AI interviews you, creates SPEC.md
-ralphie run --all                   # Builds until done
+/ralphie-spec "Todo app with auth"   # AI interviews you, creates spec
+ralphie run --all                    # Builds until done
 ```
 
 ## Quick Start
@@ -38,19 +38,31 @@ npm install -g @openai/codex && export OPENAI_API_KEY=sk-...
 npm install -g opencode-ai && opencode auth login
 ```
 
-**3. Build something**
+**3. Install Ralphie skills** (in your AI tool)
 
 ```bash
-ralphie spec "REST API with JWT auth"    # Creates SPEC.md
-ralphie run --all                         # Builds it
-git log --oneline                         # See what was built
+npx add-skill skillet/ralph
+```
+
+**4. Build something**
+
+```bash
+# Option A: Interactive (user present) - run in Claude/Codex/OpenCode:
+/ralphie-spec "REST API with JWT auth"
+
+# Option B: Autonomous (unattended) - run from CLI:
+ralphie spec "REST API with JWT auth"
+
+# Then run the loop:
+ralphie run --all                            # Builds it
+git log --oneline                            # See what was built
 ```
 
 ## How It Works
 
 Each iteration:
 1. Fresh context (no accumulated confusion)
-2. Reads SPEC.md → picks next unchecked task
+2. Reads spec → picks next pending task
 3. Implements, tests, commits
 4. Exits → loop restarts clean
 
@@ -58,34 +70,72 @@ Each iteration:
 
 ## Commands
 
+### CLI Commands
+
 | Command | Description |
 |---------|-------------|
-| `ralphie spec "desc"` | Generate SPEC via AI interview |
+| `ralphie spec "desc"` | Generate spec autonomously (no user interaction) |
 | `ralphie run` | Run one iteration |
 | `ralphie run -n 5` | Run 5 iterations |
-| `ralphie run --all` | Run until SPEC complete |
+| `ralphie run --all` | Run until spec complete |
 | `ralphie run --greedy` | Multiple tasks per iteration |
 | `ralphie run --headless` | JSON output for CI/CD |
 | `ralphie init` | Add to existing project |
-| `ralphie validate` | Check SPEC format |
+| `ralphie validate` | Check spec format |
+| `ralphie status` | Show progress of active spec |
+| `ralphie spec-list` | List active and completed specs |
+| `ralphie archive` | Move completed spec to archive |
 
 Use `--harness codex` or `--harness opencode` to switch AI providers. See [CLI Reference](docs/cli.md) for all options.
 
-## SPEC Format
+### Skills (installed via `npx add-skill`)
 
-Ralphie works from a `SPEC.md` checklist:
+| Skill | Description |
+|-------|-------------|
+| `/ralphie-spec` | Generate spec through user interview (requires user) |
+| `/review-spec` | Validate spec format and content |
+| `/ralphie-iterate` | Execute one iteration (used by `ralphie run`) |
+| `/verify` | Pre-commit verification |
+
+Install all skills: `npx add-skill skillet/ralph`
+
+## Spec Format
+
+Ralphie works from structured specs in `specs/active/`:
 
 ```markdown
 # My Project
 
-- [ ] Set up Express with TypeScript
-- [ ] Create User model with bcrypt
-- [ ] Add /auth/login endpoint
-- [ ] Add /auth/register endpoint
-- [ ] Write tests
+Goal: Build a REST API with authentication
+
+## Tasks
+
+### T001: Set up Express with TypeScript
+- Status: pending
+- Size: M
+
+**Deliverables:**
+- Initialize npm project with TypeScript
+- Configure Express server
+- Add basic health check endpoint
+
+**Verify:** `npm run build && npm test`
+
+---
+
+### T002: Create User model
+- Status: pending
+- Size: S
+
+**Deliverables:**
+- Define User interface
+- Add bcrypt password hashing
+
+**Verify:** `npm test`
 ```
 
-Tasks get checked off as completed. See [SPEC Guide](docs/spec-guide.md) for best practices.
+Tasks transition from `pending` → `in_progress` → `passed`/`failed`. See [Spec Guide](docs/spec-guide.md) for best practices.
+
 
 ## Troubleshooting
 
@@ -93,12 +143,14 @@ Tasks get checked off as completed. See [SPEC Guide](docs/spec-guide.md) for bes
 |---------|----------|
 | `command not found: ralphie` | `npm install -g ralphie` |
 | `command not found: claude` | `export PATH="$HOME/.local/bin:$PATH"` |
-| Stuck on same task | Check `- [ ]` format. Run `ralphie validate` |
+| Stuck on same task | Check task status. Run `ralphie validate` |
+| No spec found | `/ralphie-spec` (with user) or `ralphie spec` (autonomous) |
 
 ## Documentation
 
 - [CLI Reference](docs/cli.md) — All commands and options
-- [SPEC Guide](docs/spec-guide.md) — Writing effective SPECs
+- [Spec Guide](docs/spec-guide.md) — Writing effective specs
+- [Skills](skills/SKILLS.md) — Installing and using Ralphie skills
 - [Architecture](docs/architecture.md) — How the loop works
 - [Harnesses](docs/harnesses.md) — Multi-AI provider support
 

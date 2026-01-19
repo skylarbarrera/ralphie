@@ -10,18 +10,13 @@ license: MIT
 
 ### Spec Generation
 
-#### spec-interactive
+#### ralphie-spec
 Generate project specifications through structured user interviews.
-- **Install**: `npx add-skill skillet/ralph --skill spec-interactive`
-- **Use**: Run `/spec-interactive` in Claude Code when user is present
-
-#### spec-autonomous
-Generate project specifications autonomously from codebase analysis.
-- **Install**: `npx add-skill skillet/ralph --skill spec-autonomous`
-- **Use**: Autonomous mode via `ralphie spec` CLI or `/spec-autonomous` skill
+- **Install**: `npx add-skill skillet/ralph --skill ralphie-spec`
+- **Use**: Run `/ralphie-spec` in Claude Code when user is present
 
 #### review-spec
-Validate SPEC.md for format compliance and content quality.
+Validate spec format and content quality.
 - **Install**: `npx add-skill skillet/ralph --skill review-spec`
 - **Use**: Run `/review-spec` after generating a spec for quality review
 
@@ -35,7 +30,7 @@ Pre-commit verification skill that auto-detects project tooling and runs appropr
 #### ralphie-iterate
 Execute autonomous coding iterations following Ralphie protocol.
 - **Install**: `npx add-skill skillet/ralph --skill ralphie-iterate`
-- **Use**: To implement tasks from SPEC.md files
+- **Use**: To implement tasks from spec files in `specs/active/`
 
 ## Installation
 
@@ -44,7 +39,7 @@ Execute autonomous coding iterations following Ralphie protocol.
 npx add-skill skillet/ralph
 
 # Install specific skill
-npx add-skill skillet/ralph --skill spec-autonomous
+npx add-skill skillet/ralph --skill ralphie-spec
 ```
 
 ## Usage
@@ -61,9 +56,8 @@ ralphie run --all
 ### Direct Skill Invocation
 ```bash
 # In Claude Code, Codex, or OpenCode:
-/spec-interactive "Build a REST API"    # Interactive with user
-/spec-autonomous "Build a CLI tool"     # Autonomous, no interaction
-/review-spec                            # Review existing SPEC.md
+/ralphie-spec "Build a REST API"    # Interactive with user
+/review-spec                        # Review existing spec
 ```
 
 ## Cross-Platform Support

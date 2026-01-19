@@ -3,8 +3,6 @@ import { join } from 'path';
 
 export interface LocateSpecResult {
   path: string;
-  isLegacy: boolean;
-  warning?: string;
 }
 
 export class SpecLocatorError extends Error {
@@ -28,7 +26,6 @@ export function locateActiveSpec(projectDir: string = process.cwd()): LocateSpec
     if (files.length === 1) {
       return {
         path: join(specsActiveDir, files[0]),
-        isLegacy: false,
       };
     }
 
@@ -38,16 +35,6 @@ export function locateActiveSpec(projectDir: string = process.cwd()): LocateSpec
         'MULTIPLE_SPECS'
       );
     }
-  }
-
-  const legacySpecPath = join(projectDir, 'SPEC.md');
-  if (existsSync(legacySpecPath)) {
-    return {
-      path: legacySpecPath,
-      isLegacy: true,
-      warning:
-        'Using legacy SPEC.md at project root. Please migrate to specs/active/ directory.',
-    };
   }
 
   throw new SpecLocatorError(

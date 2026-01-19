@@ -46,21 +46,15 @@ export function generateTaskContext(
   const includeVerify = options.includeVerify ?? true;
 
   try {
-    const result = parseSpecV2(specPath);
-
-    if (!result.isV2Format) {
-      console.warn(`[prompt-generator] Legacy spec format detected at ${specPath}`);
-      return '';
-    }
-
-    const budgetResult = calculateBudget(result, { budget });
+    const spec = parseSpecV2(specPath);
+    const budgetResult = calculateBudget(spec, { budget });
 
     if (budgetResult.selectedTasks.length === 0) {
-      if (result.tasks.every((t) => t.status === 'passed' || t.status === 'failed')) {
+      if (spec.tasks.every((t) => t.status === 'passed' || t.status === 'failed')) {
         return '## Task Selection\n\nAll tasks completed! Run `ralphie archive` to archive this spec.';
       }
       return `## Task Selection\n\nWarning: No tasks fit in budget ${budget}. Smallest pending task requires ${
-        result.tasks
+        spec.tasks
           .filter((t) => t.status === 'pending' || t.status === 'in_progress')
           .sort((a, b) => a.sizePoints - b.sizePoints)[0]?.sizePoints ?? 'unknown'
       } points.`;
