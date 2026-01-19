@@ -1,43 +1,27 @@
 # Changelog
 
-All notable changes to Ralphie will be documented in this file.
-
 ## [1.1.0] - 2026-01-19
 
 ### Added
-- **V2 Spec Format** - Structured specs with task IDs (T001, T002), status tracking, size estimates, and deliverables
-- **Spec Locator** - Automatic discovery of specs in `specs/active/` directory
-- **Spec Archival** - `ralphie archive` moves completed specs to `specs/completed/` with timestamps
-- **Spec Status Command** - `ralphie status` shows progress of active spec
-- **Spec List Command** - `ralphie spec-list` shows active and completed specs
-- **OpenCode Harness** - Support for OpenCode AI provider
+- **V2 Spec Format**: New structured spec format with task IDs, status tracking, and acceptance criteria
+- **OpenCode Harness**: Support for OpenCode as an alternative AI backend (`--harness opencode`)
+- **Codex Harness**: Support for OpenAI Codex as an alternative AI backend (`--harness codex`)
+- **Legacy Spec Warning**: Yellow UI banner and console warning when using V1 spec format
 
 ### Changed
-- Interactive UI now uses V2 spec parser with task ID display
-- Headless runner uses V2 format with proper status transitions
-- Spec generator creates V2 format by default
+- **Component Refactoring**: Major codebase reorganization for maintainability
+  - `App.tsx` reduced from 446 lines to 72 lines
+  - Extracted `IterationView` component for UI rendering
+  - Extracted `IterationRunner` component for orchestration logic
+  - Extracted `failure-context.ts` for error context helpers
+  - Extracted `prompts.ts` for prompt constants
+  - Extracted `run-interactive.tsx` for interactive command execution
+- **Spec Parser**: Migrated to V2 parser with backwards compatibility for V1 specs
 
-### Removed
-- **V1 checkbox spec format** - Only V2 format with task IDs is now supported
+### Fixed
+- **Tool Display Names**: Tool calls now show readable names (e.g., "Writing plan.md") instead of raw JSON blobs
 
-## [1.0.0] - 2025-01-16
-
-### Added
-- **Core loop execution** - Run AI in a loop until SPEC is complete
-- **SPEC generation** - AI-powered interview to create structured specs
-- **Multi-AI support** - Harness abstraction for Claude and Codex
-- **Greedy mode** - Complete multiple tasks per iteration (`--greedy`)
-- **Headless mode** - JSON output for CI/CD automation (`--headless`)
-- **Stuck detection** - Exit when no progress after N iterations
-- **Interactive TUI** - Real-time progress display with Ink
-- **Project scaffolding** - `ralphie init` sets up project structure
-- **SPEC validation** - `ralphie validate` checks format
-
-### Harnesses
-- Claude Code (default)
-- OpenAI Codex
-
-### Requirements
-- Bun runtime
-- Claude Code CLI or Codex CLI
-- Git
+### Technical
+- 613 tests passing
+- TypeScript strict mode compliance
+- Harness abstraction layer for multi-AI support
