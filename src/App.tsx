@@ -9,53 +9,15 @@ import { StatusBar } from './components/StatusBar.js';
 import { CompletedIterationsList } from './components/CompletedIterationsList.js';
 import { useHarnessStream, type HarnessStreamState } from './hooks/useHarnessStream.js';
 import { join } from 'path';
-import type { UIIterationResult, Stats, FailureContext, ActivityItem } from './lib/types.js';
-import type { ToolGroup } from './lib/state-machine.js';
+import type { UIIterationResult, Stats } from './lib/types.js';
 import type { HarnessName } from './lib/harness/types.js';
 import { parseSpecV2, getTaskForIterationV2, isSpecCompleteV2, type SpecV2, type ParseResult } from './lib/spec-parser-v2.js';
 import { locateActiveSpec, type LocateSpecResult } from './lib/spec-locator.js';
+import { buildFailureContext } from './lib/failure-context.js';
 
 // Alias for backwards compatibility and shorter local usage
 type IterationResult = UIIterationResult;
 type StreamState = HarnessStreamState;
-
-function buildFailureContext(
-  toolGroups: ToolGroup[],
-  activityLog: ActivityItem[]
-): FailureContext | null {
-  const allTools = toolGroups.flatMap(g => g.tools);
-  const lastTool = allTools[allTools.length - 1];
-  const errorTool = allTools.find(t => t.isError) ?? lastTool;
-
-  const recentActivity = activityLog
-    .slice(-5)
-    .map(item => {
-      if (item.type === 'thought') return `💭 ${item.text.slice(0, 100)}`;
-      if (item.type === 'tool_start') return `▶ ${item.displayName}`;
-      if (item.type === 'tool_complete') {
-        const icon = item.isError ? '✗' : '✓';
-        return `${icon} ${item.displayName} (${(item.durationMs / 1000).toFixed(1)}s)`;
-      }
-      if (item.type === 'commit') return `📝 ${item.hash.slice(0, 7)} ${item.message}`;
-      return '';
-    })
-    .filter(Boolean);
-
-  return {
-    lastToolName: errorTool?.name ?? null,
-    lastToolInput: errorTool?.input ? formatToolInput(errorTool.input) : null,
-    lastToolOutput: errorTool?.output?.slice(0, 500) ?? null,
-    recentActivity,
-  };
-}
-
-function formatToolInput(input: Record<string, unknown>): string {
-  if (input.command) return `command: ${String(input.command).slice(0, 200)}`;
-  if (input.file_path) return `file: ${String(input.file_path)}`;
-  if (input.pattern) return `pattern: ${String(input.pattern)}`;
-  if (input.prompt) return `prompt: ${String(input.prompt).slice(0, 100)}`;
-  return JSON.stringify(input).slice(0, 200);
-}
 
 // Re-export for external consumers
 export type { UIIterationResult as IterationResult } from './lib/types.js';

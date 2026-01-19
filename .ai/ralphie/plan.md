@@ -1,25 +1,23 @@
-# Plan: T008 - Manual E2E testing
+# Plan: T001 - Extract failure context helpers
 
 ## Goal
-Manually verify that the interactive UI works correctly with V2 spec format
+Extract failure context helper functions from App.tsx into a dedicated module.
 
 ## Task ID
-T008
+T001
 
 ## Files
-- Create: `specs/active/test-migration.md` (temporary test spec)
-- Will be deleted after verification
+- **Create:** `src/lib/failure-context.ts` - New module for failure context helpers
+- **Modify:** `src/App.tsx` - Remove helper functions, import from new module
+- **Potentially modify:** Test files that import from App.tsx (if any)
 
 ## Tests
-Manual verification of:
-1. Create test V2 spec in specs/active/test-migration.md
-2. Run `ralphie run` (interactive mode)
-3. Verify task ID shows in UI header
-4. Verify completion is detected when task status changes
-5. Clean up test spec after
+- Run type check to ensure imports and types are correct
+- Existing tests should continue passing (no behavior change)
 
 ## Exit Criteria
-- Task ID (T001) displays correctly in the interactive UI
-- Runner detects when tasks are completed
-- Test spec is cleaned up after verification
-- Task status updated to "passed" in spec
+1. `buildFailureContext` and `formatToolInput` functions moved to `src/lib/failure-context.ts`
+2. Functions are properly typed with exported interfaces/types if needed
+3. App.tsx imports and uses functions from new module
+4. `npm run type-check` passes
+5. No behavior changes - pure refactor

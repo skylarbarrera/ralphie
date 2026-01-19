@@ -19,7 +19,7 @@ This refactor improves maintainability without changing behavior.
 ## Tasks
 
 ### T001: Extract failure context helpers
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**
