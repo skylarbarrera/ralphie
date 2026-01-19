@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { resolvePrompt, DEFAULT_PROMPT, GREEDY_PROMPT, type CliOptions } from '../src/cli.js';
+import { resolvePrompt, type CliOptions } from '../src/cli.js';
+import { DEFAULT_PROMPT, GREEDY_PROMPT } from '../src/lib/prompts.js';
 import { existsSync, readFileSync } from 'fs';
 
 vi.mock('fs', () => ({

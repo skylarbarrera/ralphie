@@ -229,3 +229,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 682 passing (type check passes)
 - notes: Created src/components/IterationView.tsx with AppInner renamed to IterationView; exported IterationViewProps; moved component logic including useEffect; removed AppInnerProps from App.tsx; cleaned up unused imports
 - next: T003 - Extract IterationRunner component
+
+## 1bc8a46 — feat: T003 extract IterationRunner component
+- files: src/IterationRunner.tsx, src/App.tsx, specs/active/component-refactor.md, .ai/ralphie/plan.md
+- tests: 682 passing (type check passes)
+- notes: Created src/IterationRunner.tsx with IterationRunner component, formatDuration, and aggregateStats helpers; App.tsx reduced from 334 to 72 lines (78% reduction); re-exports IterationRunner and IterationView for backward compatibility; achieves acceptance criteria (App.tsx under 100 lines)
+- next: T004 - Extract prompt constants

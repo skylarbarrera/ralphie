@@ -293,3 +293,17 @@
   - Tests: 682 passing, type check passes
   - Pure refactor - no behavior changes
   - Commit: dfa584d feat: T002 extract IterationView component
+
+✅ 2026-01-19: Completed T003 - Extract IterationRunner component (component-refactor spec)
+  - Created src/IterationRunner.tsx with IterationRunner component and orchestration logic
+  - Moved helper functions formatDuration and aggregateStats to new file
+  - Exported IterationRunnerProps interface from new file
+  - App.tsx now re-exports IterationRunner and IterationView for backward compatibility
+  - App.tsx reduced from 334 lines to 72 lines (78% reduction) - well under 100-line target
+  - Removed unused imports: useState, useEffect, useCallback, useApp, Box, Text, spec-parser-v2, spec-locator
+  - Added JSDoc comment to IterationRunner explaining its purpose
+  - IterationRunner handles: spec loading, iteration orchestration, completion detection, summary display
+  - Tests: 682 passing, type check passes
+  - Pure refactor - no behavior changes
+  - Achieves acceptance criteria: App.tsx under 100 lines
+  - Commit: 1bc8a46 feat: T003 extract IterationRunner component

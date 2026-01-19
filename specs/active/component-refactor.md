@@ -58,7 +58,7 @@ This refactor improves maintainability without changing behavior.
 ---
 
 ### T004: Extract prompt constants
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**
