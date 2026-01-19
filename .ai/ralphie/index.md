@@ -241,3 +241,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 682 passing (type check passes)
 - notes: Created src/lib/prompts.ts with DEFAULT_PROMPT and GREEDY_PROMPT exports (80 lines moved from cli.tsx); cli.tsx now imports from new module; updated test imports to use lib/prompts.js; pure refactor with no behavior changes
 - next: T005 - Extract interactive run command
+
+## 9f0c117 — feat: T005 extract interactive run command
+- files: src/commands/run-interactive.tsx, src/cli.tsx, specs/active/component-refactor.md, .ai/ralphie/plan.md
+- tests: 682 passing (type check passes)
+- notes: Created src/commands/run-interactive.tsx with executeRun function (54 lines moved from cli.tsx); handles validation, branch creation, prompt resolution, Ink render, signal handling; removed unused imports from cli.tsx (React, render, IterationRunner, createFeatureBranch, getSpecTitleV2); pure refactor with no behavior changes
+- next: T006 - Verify all tests pass

@@ -1,23 +1,21 @@
-# Plan: T005 Extract interactive run command
+# Plan: T006 Verify all tests pass
 
 ## Goal
-Extract executeRun function from cli.tsx to src/commands/run-interactive.ts
+Verify all tests still pass after refactoring with no behavior changes
 
 ## Task ID
-T005
+T006
 
 ## Files
-- **Create:** `src/commands/run-interactive.ts` - export executeRun function
-- **Modify:** `src/cli.tsx` - import and call executeRun from new module
+- No files to modify (verification task)
 
 ## Tests
-- No new tests needed (pure refactor)
-- Existing tests should continue to pass
-- Type check must pass
+- Run full test suite with `npm test`
+- Verify all 682+ tests pass
+- Check for any import path issues in test files
 
 ## Exit Criteria
-1. `src/commands/run-interactive.ts` exists with executeRun function
-2. `src/cli.tsx` imports from new module and calls it
-3. All logic moved (validation, branch creation, prompt resolution, render, signal handling)
-4. `npm run type-check` passes
-5. No behavior changes
+1. `npm test` runs successfully
+2. All tests pass (no failures or errors)
+3. No import path issues from refactored modules
+4. Test count is same or higher than before refactoring

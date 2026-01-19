@@ -317,3 +317,13 @@
   - Pure refactor - no behavior changes
   - Improves code organization and maintainability
   - Commit: 2e616a7 feat: T004 extract prompt constants
+
+✅ 2026-01-19: Completed T005 - Extract interactive run command (component-refactor spec)
+  - Created src/commands/run-interactive.tsx with executeRun function
+  - Moved 54 lines of interactive run logic from cli.tsx to dedicated module
+  - Function handles: project validation, feature branch creation, prompt resolution, Ink UI rendering, signal handling
+  - Removed unused imports from cli.tsx: React, render, IterationRunner, createFeatureBranch, getSpecTitleV2
+  - Tests: 682 passing, type check passes
+  - Pure refactor - no behavior changes
+  - Improves separation of concerns between CLI parsing and command execution
+  - Commit: 9f0c117 feat: T005 extract interactive run command
