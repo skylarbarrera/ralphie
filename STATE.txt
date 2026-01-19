@@ -271,3 +271,13 @@
   - Tests: 682 passing, type check passes
   - All 8 tasks in app-v2-migration spec now complete
   - Commit: a559c84 test: T008 verify V2 spec integration in interactive UI
+
+✅ 2026-01-19: Completed T001 - Extract failure context helpers (component-refactor spec)
+  - Created src/lib/failure-context.ts with buildFailureContext and formatToolInput functions
+  - Moved helper functions from App.tsx to dedicated module (lines 22-58 removed from App.tsx)
+  - Removed unused imports: FailureContext, ActivityItem, ToolGroup from App.tsx
+  - Added JSDoc comments to exported functions for better documentation
+  - App.tsx now imports buildFailureContext from new module
+  - Tests: 682 passing, type check passes
+  - Pure refactor - no behavior changes
+  - Commit: ed4abcd feat: T001 extract failure context helpers

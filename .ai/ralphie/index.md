@@ -217,3 +217,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 682 passing (all tests pass, type check passes)
 - notes: Completed manual E2E testing verification; confirmed V2 spec loading from specs/active/, task ID display via taskNumber prop, task completion detection via status fields, legacy spec warning display; verified IterationRunner uses locateActiveSpec/parseSpecV2/getTaskForIterationV2 correctly
 - next: App V2 migration spec complete - all 8 tasks passed
+
+## ed4abcd — feat: T001 extract failure context helpers
+- files: src/lib/failure-context.ts, src/App.tsx, specs/active/component-refactor.md, .ai/ralphie/plan.md
+- tests: 682 passing (type check passes)
+- notes: Created src/lib/failure-context.ts with buildFailureContext and formatToolInput; moved helper functions from App.tsx; removed unused imports (FailureContext, ActivityItem, ToolGroup); added JSDoc comments
+- next: T002 - Extract IterationView component

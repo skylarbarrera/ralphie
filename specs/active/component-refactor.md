@@ -32,7 +32,7 @@ This refactor improves maintainability without changing behavior.
 ---
 
 ### T002: Extract IterationView component
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**
