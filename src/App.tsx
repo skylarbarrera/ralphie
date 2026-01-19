@@ -75,6 +75,7 @@ export interface AppProps {
   taskNumber?: string | null;
   phaseName?: string | null;
   specTaskText?: string | null;
+  legacySpecWarning?: boolean;
 }
 
 interface AppInnerProps {
@@ -86,6 +87,7 @@ interface AppInnerProps {
   phaseName: string | null;
   completedResults: IterationResult[];
   onIterationComplete?: (result: IterationResult) => void;
+  legacySpecWarning: boolean;
 }
 
 function AppInner({
@@ -97,6 +99,7 @@ function AppInner({
   phaseName,
   completedResults,
   onIterationComplete,
+  legacySpecWarning,
 }: AppInnerProps): React.ReactElement {
   const elapsedSeconds = Math.floor(state.elapsedMs / 1000);
 
@@ -129,6 +132,11 @@ function AppInner({
         total={totalIterations}
         elapsedSeconds={elapsedSeconds}
       />
+      {legacySpecWarning && (
+        <Box marginLeft={2} marginBottom={1}>
+          <Text color="yellow">⚠ Legacy SPEC format - upgrade recommended</Text>
+        </Box>
+      )}
       <TaskTitle text={state.taskText ?? undefined} isPending={isPending} />
       <PhaseIndicator phase={state.phase} />
       <ActivityFeed activityLog={state.activityLog} />
@@ -158,6 +166,7 @@ export function App({
   taskNumber = null,
   phaseName = null,
   specTaskText = null,
+  legacySpecWarning = false,
 }: AppProps): React.ReactElement {
   const liveState = useHarnessStream({
     prompt,
@@ -180,6 +189,7 @@ export function App({
       phaseName={phaseName}
       completedResults={completedResults}
       onIterationComplete={onIterationComplete}
+      legacySpecWarning={legacySpecWarning}
     />
   );
 }
@@ -255,6 +265,7 @@ export function IterationRunner({
   const [isComplete, setIsComplete] = useState(_mockIsComplete ?? false);
   const [iterationKey, setIterationKey] = useState(0);
   const [spec, setSpec] = useState<SpecV2 | null>(null);
+  const [isLegacySpec, setIsLegacySpec] = useState(false);
 
   useEffect(() => {
     const targetDir = cwd ?? process.cwd();
@@ -263,14 +274,17 @@ export function IterationRunner({
       const result = parseSpecV2(locateResult.path);
       if (result.isV2Format) {
         setSpec(result);
+        setIsLegacySpec(false);
       } else {
         // Legacy format warning
         console.warn(result.warning);
         setSpec(null);
+        setIsLegacySpec(true);
       }
     } catch (error) {
       // No spec found - run without task context
       setSpec(null);
+      setIsLegacySpec(false);
     }
   }, [cwd]);
 
@@ -449,6 +463,7 @@ export function IterationRunner({
       taskNumber={currentTask?.taskNumber ?? null}
       phaseName={currentTask?.phaseName ?? null}
       specTaskText={currentTask?.taskText ?? null}
+      legacySpecWarning={isLegacySpec}
     />
   );
 }

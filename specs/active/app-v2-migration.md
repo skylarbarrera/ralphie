@@ -102,7 +102,7 @@ import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructur
 ---
 
 ### T006: Handle legacy spec gracefully
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**
@@ -116,7 +116,7 @@ import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructur
 ---
 
 ### T007: Add integration tests for IterationRunner V2
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**
