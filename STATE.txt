@@ -225,3 +225,24 @@
   - Tests: 677 passing (6 new for getTaskForIterationV2)
   - Type check passes
   - Commit: 521e541 feat: T001-T003 migrate App.tsx to V2 spec parser
+
+✅ 2026-01-19: Updated T004 status - IterationRunner spec loading (T004)
+  - T004 work was already completed in T001-T003 batch commit
+  - Verified all deliverables present in src/App.tsx:
+    - IterationRunner uses locateActiveSpec(cwd) + parseSpecV2() (lines 262-263)
+    - ParseResult stored and handled correctly (lines 263-270)
+    - LegacySpecWarning handled: logs warning, sets spec to null (lines 267-269)
+    - useEffect uses locateActiveSpec for spec path resolution (line 262)
+    - Completion check uses isSpecCompleteV2(specPath) (line 289)
+  - Tests: 677 passing, type check passes
+  - Commit: 4c781dd feat: T004 update IterationRunner spec loading
+
+✅ 2026-01-19: Updated T005 status - IterationRunner task retrieval (T005)
+  - T005 work was already completed in T001-T003 batch commit
+  - Verified all deliverables present in src/App.tsx:
+    - Uses getTaskForIterationV2(spec, currentIteration) (line 433)
+    - Handles null spec case with ternary operator (line 433)
+    - Type is SpecV2 | null (line 257)
+    - currentTask?.taskNumber, phaseName, taskText all work (lines 449-451)
+  - Tests: 677 passing, type check passes
+  - Commit: 0402e9d feat: T005 update IterationRunner task retrieval

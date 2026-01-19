@@ -187,3 +187,15 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 677 passing (6 new tests for getTaskForIterationV2)
 - notes: Created getTaskForIterationV2 compatibility bridge function; returns first pending/in_progress task in V1-compatible shape; updated App.tsx IterationRunner to use V2 parser (locateActiveSpec, parseSpecV2, isSpecCompleteV2); handles legacy format gracefully with warning
 - next: T004-T006 to complete IterationRunner V2 migration (legacy handling, integration tests)
+
+## 4c781dd — feat: T004 update IterationRunner spec loading
+- files: specs/active/app-v2-migration.md
+- tests: 677 passing (type check passes)
+- notes: Updated T004 status to passed - all deliverables were already completed in T001-T003 batch commit; verified IterationRunner uses locateActiveSpec + parseSpecV2, handles ParseResult correctly, uses isSpecCompleteV2
+- next: T005 - Update IterationRunner task retrieval
+
+## 0402e9d — feat: T005 update IterationRunner task retrieval
+- files: specs/active/app-v2-migration.md, .ai/ralphie/plan.md
+- tests: 677 passing (type check passes)
+- notes: Updated T005 status to passed - all deliverables were already completed in T001-T003 batch commit; verified uses getTaskForIterationV2, handles null spec case, type is SpecV2 | null, currentTask properties work correctly
+- next: T006 - Handle legacy spec gracefully
