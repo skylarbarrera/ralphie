@@ -235,3 +235,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 682 passing (type check passes)
 - notes: Created src/IterationRunner.tsx with IterationRunner component, formatDuration, and aggregateStats helpers; App.tsx reduced from 334 to 72 lines (78% reduction); re-exports IterationRunner and IterationView for backward compatibility; achieves acceptance criteria (App.tsx under 100 lines)
 - next: T004 - Extract prompt constants
+
+## 2e616a7 — feat: T004 extract prompt constants
+- files: src/lib/prompts.ts, src/cli.tsx, tests/cli.test.tsx, specs/active/component-refactor.md
+- tests: 682 passing (type check passes)
+- notes: Created src/lib/prompts.ts with DEFAULT_PROMPT and GREEDY_PROMPT exports (80 lines moved from cli.tsx); cli.tsx now imports from new module; updated test imports to use lib/prompts.js; pure refactor with no behavior changes
+- next: T005 - Extract interactive run command

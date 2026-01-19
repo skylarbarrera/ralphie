@@ -1,7 +1,5 @@
 #!/usr/bin/env tsx
 import 'dotenv/config';
-import React from 'react';
-import { render } from 'ink';
 import { Command } from 'commander';
 import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname, join } from 'path';
@@ -25,11 +23,8 @@ function getVersion(): string {
     return '1.0.0';
   }
 }
-import { IterationRunner } from './App.js';
 import { runInit } from './commands/init.js';
 import { validateProject } from './commands/run.js';
-import { createFeatureBranch } from './lib/git.js';
-import { getSpecTitleV2 } from './lib/spec-parser-v2.js';
 import { emitFailed } from './lib/headless-emitter.js';
 import { executeHeadlessRun as runHeadless } from './lib/headless-runner.js';
 import { validateSpecInDir, formatValidationResult } from './lib/spec-validator.js';
@@ -46,6 +41,7 @@ import {
 } from './commands/spec-v2.js';
 import { generateTaskContext } from './lib/prompt-generator.js';
 import { DEFAULT_PROMPT, GREEDY_PROMPT } from './lib/prompts.js';
+import { executeRun } from './commands/run-interactive.js'; // .tsx compiled to .js
 
 export interface RunOptions {
   iterations: number;
@@ -96,61 +92,6 @@ export function resolvePrompt(options: RunOptions, specPath?: string): string {
   }
 
   return basePrompt;
-}
-
-export function executeRun(options: RunOptions): void {
-  const validation = validateProject(options.cwd);
-
-  if (!validation.valid) {
-    console.error('Cannot run Ralphie:');
-    for (const error of validation.errors) {
-      console.error(`  - ${error}`);
-    }
-    process.exit(1);
-  }
-
-  if (!options.noBranch && validation.specPath) {
-    const title = getSpecTitleV2(validation.specPath);
-    if (title) {
-      const result = createFeatureBranch(options.cwd, title);
-      if (result.created) {
-        console.log(`Created branch: ${result.branchName}`);
-      } else if (result.branchName) {
-        console.log(`Using branch: ${result.branchName}`);
-      } else if (result.error) {
-        console.warn(`Warning: ${result.error}`);
-      }
-    }
-  }
-
-  const prompt = resolvePrompt(options, validation.specPath);
-  const idleTimeoutMs = options.timeoutIdle * 1000;
-
-  const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
-
-  const { waitUntilExit, unmount } = render(
-    <IterationRunner
-      prompt={prompt}
-      totalIterations={options.iterations}
-      cwd={options.cwd}
-      idleTimeoutMs={idleTimeoutMs}
-      saveJsonl={options.saveJsonl}
-      model={options.model}
-      harness={harness}
-    />
-  );
-
-  const handleSignal = (): void => {
-    unmount();
-    process.exit(0);
-  };
-
-  process.on('SIGINT', handleSignal);
-  process.on('SIGTERM', handleSignal);
-
-  waitUntilExit().then(() => {
-    process.exit(0);
-  });
 }
 
 export async function executeHeadlessRun(options: RunOptions): Promise<void> {

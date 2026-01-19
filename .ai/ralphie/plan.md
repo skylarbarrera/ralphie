@@ -1,14 +1,14 @@
-# Plan: T004 Extract prompt constants
+# Plan: T005 Extract interactive run command
 
 ## Goal
-Extract DEFAULT_PROMPT and GREEDY_PROMPT from cli.tsx to src/lib/prompts.ts
+Extract executeRun function from cli.tsx to src/commands/run-interactive.ts
 
 ## Task ID
-T004
+T005
 
 ## Files
-- **Create:** `src/lib/prompts.ts` - export DEFAULT_PROMPT and GREEDY_PROMPT constants
-- **Modify:** `src/cli.tsx` - import prompts from new module, remove inline constants
+- **Create:** `src/commands/run-interactive.ts` - export executeRun function
+- **Modify:** `src/cli.tsx` - import and call executeRun from new module
 
 ## Tests
 - No new tests needed (pure refactor)
@@ -16,8 +16,8 @@ T004
 - Type check must pass
 
 ## Exit Criteria
-1. `src/lib/prompts.ts` exists with both exported constants
-2. `src/cli.tsx` imports from `src/lib/prompts.ts`
-3. All inline prompt constants removed from cli.tsx
+1. `src/commands/run-interactive.ts` exists with executeRun function
+2. `src/cli.tsx` imports from new module and calls it
+3. All logic moved (validation, branch creation, prompt resolution, render, signal handling)
 4. `npm run type-check` passes
 5. No behavior changes

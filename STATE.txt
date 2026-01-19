@@ -307,3 +307,13 @@
   - Pure refactor - no behavior changes
   - Achieves acceptance criteria: App.tsx under 100 lines
   - Commit: 1bc8a46 feat: T003 extract IterationRunner component
+
+✅ 2026-01-19: Completed T004 - Extract prompt constants (component-refactor spec)
+  - Created src/lib/prompts.ts with DEFAULT_PROMPT and GREEDY_PROMPT exports
+  - Moved 80 lines of prompt constants from cli.tsx to dedicated module
+  - Updated cli.tsx to import from './lib/prompts.js'
+  - Updated tests/cli.test.tsx to import from '../src/lib/prompts.js'
+  - Tests: 682 passing, type check passes
+  - Pure refactor - no behavior changes
+  - Improves code organization and maintainability
+  - Commit: 2e616a7 feat: T004 extract prompt constants

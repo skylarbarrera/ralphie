@@ -71,7 +71,7 @@ This refactor improves maintainability without changing behavior.
 ---
 
 ### T005: Extract interactive run command
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**
