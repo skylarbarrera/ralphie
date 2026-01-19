@@ -246,3 +246,9 @@
     - currentTask?.taskNumber, phaseName, taskText all work (lines 449-451)
   - Tests: 677 passing, type check passes
   - Commit: 0402e9d feat: T005 update IterationRunner task retrieval
+
+✅ 2026-01-19: Updated tracking files for T004-T005
+  - Committed STATE.txt and .ai/ralphie/index.md updates for T004 and T005
+  - Both tasks were completed in previous commits (4c781dd, 0402e9d)
+  - Tracking files document the completion of those tasks
+  - Commit: bd50617 docs: update tracking files for T004-T005

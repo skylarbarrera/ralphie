@@ -199,3 +199,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 677 passing (type check passes)
 - notes: Updated T005 status to passed - all deliverables were already completed in T001-T003 batch commit; verified uses getTaskForIterationV2, handles null spec case, type is SpecV2 | null, currentTask properties work correctly
 - next: T006 - Handle legacy spec gracefully
+
+## bd50617 — docs: update tracking files for T004-T005
+- files: STATE.txt, .ai/ralphie/index.md
+- tests: 677 passing (type check passes)
+- notes: Updated tracking files to document T004 and T005 completion; both tasks were completed in previous commits (4c781dd, 0402e9d) but tracking files were not committed with them
+- next: T006 - Handle legacy spec gracefully
