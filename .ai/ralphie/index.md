@@ -181,3 +181,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 630 passing (13 new tests for skills structure validation)
 - notes: Created skills-structure.test.ts to validate skill frontmatter format for add-skill compatibility; updated README with skill installation instructions (npx add-skill), ralphie spec command modes (interactive, --auto, --headless), verify skill usage, and --harness flag documentation; Phase 7 complete
 - next: Ralphie v1.0 complete - all phases done
+
+## 521e541 — feat: T001-T003 migrate App.tsx to V2 spec parser
+- files: src/lib/spec-parser-v2.ts, tests/spec-parser-v2.test.ts, src/App.tsx, specs/active/app-v2-migration.md
+- tests: 677 passing (6 new tests for getTaskForIterationV2)
+- notes: Created getTaskForIterationV2 compatibility bridge function; returns first pending/in_progress task in V1-compatible shape; updated App.tsx IterationRunner to use V2 parser (locateActiveSpec, parseSpecV2, isSpecCompleteV2); handles legacy format gracefully with warning
+- next: T004-T006 to complete IterationRunner V2 migration (legacy handling, integration tests)

@@ -321,3 +321,38 @@ export function getSpecTitleV2(specPath: string): string | null {
 
   return result.title;
 }
+
+/**
+ * Get task for iteration (V2 compatibility bridge for IterationRunner).
+ * Returns the first pending/in_progress task, ignoring iteration number
+ * (V2 tasks are ordered, unlike V1's iteration-based approach).
+ *
+ * @param spec - The V2 spec
+ * @param iteration - Iteration number (ignored in V2, kept for API compatibility)
+ * @returns Task info matching V1 return type, or null if no pending tasks
+ */
+export function getTaskForIterationV2(
+  spec: SpecV2,
+  iteration: number
+): { taskNumber: string; phaseName: string | null; taskText: string } | null {
+  // Find first pending or in_progress task
+  const currentTask = spec.tasks.find(
+    (t) => t.status === 'pending' || t.status === 'in_progress'
+  );
+
+  if (!currentTask) {
+    return null;
+  }
+
+  // Build taskText: title + first deliverable (if exists)
+  const firstDeliverable = currentTask.deliverables[0] || '';
+  const taskText = firstDeliverable
+    ? `${currentTask.title}\n- ${firstDeliverable}`
+    : currentTask.title;
+
+  return {
+    taskNumber: currentTask.id,
+    phaseName: null, // V2 doesn't have phases
+    taskText,
+  };
+}

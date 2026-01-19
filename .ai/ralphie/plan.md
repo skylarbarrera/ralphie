@@ -1,31 +1,34 @@
-# Phase 7: Tests and Documentation
+# Plan: App.tsx V2 Migration - Batch 1
 
 ## Goal
-Complete v1.0 by adding tests for new skill/spec functionality and updating documentation to reflect new commands and skill installation workflow.
+Implement getTaskForIterationV2 function and update App.tsx imports to use V2 spec parser
 
-## Files to Change
-- tests/lib/spec-generator.test.ts (add integration test for review loop)
-- README.md (document skill installation and new commands)
-- SPEC.md (mark Phase 7 as complete)
-- STATE.txt (append completion entry)
-- .ai/ralphie/index.md (append commit entry)
+## Task IDs
+- T001 (M): Create getTaskForIterationV2 function
+- T002 (S): Add spec-parser-v2 unit tests
+- T003 (S): Update App.tsx imports
 
-## Tests to Add
-1. Integration test: Full autonomous spec generation with review loop
-   - Test that review-spec skill is called
-   - Test that refinement happens when review fails
-   - Test that loop exits after maxAttempts
-2. Test that skill directory structure works for npx add-skill
-   - Verify skills/*/SKILL.md have correct frontmatter
-   - Verify skills can be parsed by add-skill format
+## Files to Create/Modify
+- `src/lib/spec-parser-v2.ts` - Add getTaskForIterationV2 function
+- `tests/spec-parser-v2.test.ts` - Add 5 unit tests for new function
+- `src/App.tsx` - Update imports from V1 to V2
+
+## Tests
+- Unit tests for getTaskForIterationV2:
+  - Returns first pending task when iteration=1
+  - Returns first pending task when iteration=2 (ignores iteration)
+  - Returns null when all tasks are passed/failed
+  - Returns in_progress task if one exists
+  - taskText includes title and first deliverable
+- Verify commands:
+  - `npm test -- spec-parser-v2`
+  - `npm test tests/spec-parser-v2.test.ts`
+  - `npm run type-check`
 
 ## Exit Criteria
-- All existing tests pass (617)
-- New integration test added for spec generation with review loop
-- README updated with:
-  - npx add-skill installation instructions
-  - ralphie spec command documentation (interactive, --auto, --headless)
-  - --harness flag documentation
-  - verify skill usage guidance
-- No TypeScript errors
-- Committed with clear message
+- getTaskForIterationV2 function exists and returns correct shape
+- Function returns first pending/in_progress task (ignores iteration number)
+- 5 unit tests pass
+- App.tsx imports use V2 functions
+- Type check passes
+- All 3 task statuses updated to passed in spec

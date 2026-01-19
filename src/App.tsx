@@ -12,7 +12,8 @@ import { join } from 'path';
 import type { UIIterationResult, Stats, FailureContext, ActivityItem } from './lib/types.js';
 import type { ToolGroup } from './lib/state-machine.js';
 import type { HarnessName } from './lib/harness/types.js';
-import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructure } from './lib/spec-parser.js';
+import { parseSpecV2, getTaskForIterationV2, isSpecCompleteV2, type SpecV2, type ParseResult } from './lib/spec-parser-v2.js';
+import { locateActiveSpec, type LocateSpecResult } from './lib/spec-locator.js';
 
 // Alias for backwards compatibility and shorter local usage
 type IterationResult = UIIterationResult;
@@ -253,12 +254,24 @@ export function IterationRunner({
   const [results, setResults] = useState<IterationResult[]>(_mockResults ?? []);
   const [isComplete, setIsComplete] = useState(_mockIsComplete ?? false);
   const [iterationKey, setIterationKey] = useState(0);
-  const [spec, setSpec] = useState<SpecStructure | null>(null);
+  const [spec, setSpec] = useState<SpecV2 | null>(null);
 
   useEffect(() => {
     const targetDir = cwd ?? process.cwd();
-    const loadedSpec = loadSpecFromDir(targetDir);
-    setSpec(loadedSpec);
+    try {
+      const locateResult = locateActiveSpec(targetDir);
+      const result = parseSpecV2(locateResult.path);
+      if (result.isV2Format) {
+        setSpec(result);
+      } else {
+        // Legacy format warning
+        console.warn(result.warning);
+        setSpec(null);
+      }
+    } catch (error) {
+      // No spec found - run without task context
+      setSpec(null);
+    }
   }, [cwd]);
 
   const handleIterationComplete = useCallback((result: IterationResult) => {
@@ -270,16 +283,20 @@ export function IterationRunner({
     }
 
     const targetDir = cwd ?? process.cwd();
-    const specPath = join(targetDir, 'SPEC.md');
+    try {
+      const locateResult = locateActiveSpec(targetDir);
 
-    if (isSpecComplete(specPath)) {
-      setIsComplete(true);
-      return;
-    }
+      if (isSpecCompleteV2(locateResult.path)) {
+        setIsComplete(true);
+        return;
+      }
 
-    const updatedSpec = loadSpecFromDir(targetDir);
-    if (updatedSpec) {
-      setSpec(updatedSpec);
+      const result = parseSpecV2(locateResult.path);
+      if (result.isV2Format) {
+        setSpec(result);
+      }
+    } catch (error) {
+      // No spec or error - continue without updating spec
     }
 
     if (currentIteration < totalIterations) {
@@ -413,7 +430,7 @@ export function IterationRunner({
     );
   }
 
-  const currentTask = spec ? getTaskForIteration(spec, currentIteration) : null;
+  const currentTask = spec ? getTaskForIterationV2(spec, currentIteration) : null;
 
   return (
     <App

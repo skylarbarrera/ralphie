@@ -13,6 +13,7 @@ import {
   isSpecCompleteV2,
   getProgressV2,
   getDoneTaskCount,
+  getTaskForIterationV2,
   SIZE_POINTS,
   type SpecV2,
   type TaskV2,
@@ -924,6 +925,100 @@ Goal: Test normalization.
         const progress = getProgressV2(specPath);
         expect(progress?.percentage).toBe(100);
       });
+    });
+  });
+
+  describe('getTaskForIterationV2', () => {
+    it('returns first pending task when iteration=1', () => {
+      const result = parseSpecV2Content(SAMPLE_V2_SPEC);
+      if (result.isV2Format) {
+        const task = getTaskForIterationV2(result, 1);
+        expect(task).not.toBeNull();
+        expect(task?.taskNumber).toBe('T002'); // T001 is passed, T002 is in_progress
+        expect(task?.phaseName).toBeNull();
+        expect(task?.taskText).toContain('Implement new spec parser');
+      }
+    });
+
+    it('returns first pending task when iteration=2 (ignores iteration number)', () => {
+      const result = parseSpecV2Content(SAMPLE_V2_SPEC);
+      if (result.isV2Format) {
+        const task1 = getTaskForIterationV2(result, 1);
+        const task2 = getTaskForIterationV2(result, 2);
+        // Should return same task since iteration is ignored
+        expect(task1?.taskNumber).toBe(task2?.taskNumber);
+        expect(task2?.taskNumber).toBe('T002');
+      }
+    });
+
+    it('returns null when all tasks are passed/failed', () => {
+      const allDone = `# Spec
+
+## Tasks
+
+### T001: Task 1
+- Status: passed
+- Size: S
+
+**Deliverables:**
+- Item
+
+---
+
+### T002: Task 2
+- Status: failed
+- Size: M
+
+**Deliverables:**
+- Item
+`;
+      const result = parseSpecV2Content(allDone);
+      if (result.isV2Format) {
+        const task = getTaskForIterationV2(result, 1);
+        expect(task).toBeNull();
+      }
+    });
+
+    it('returns in_progress task if one exists', () => {
+      const result = parseSpecV2Content(SAMPLE_V2_SPEC);
+      if (result.isV2Format) {
+        // T002 is in_progress in SAMPLE_V2_SPEC
+        const task = getTaskForIterationV2(result, 1);
+        expect(task).not.toBeNull();
+        expect(task?.taskNumber).toBe('T002');
+        const t002 = result.tasks.find((t) => t.id === 'T002');
+        expect(t002?.status).toBe('in_progress');
+      }
+    });
+
+    it('taskText includes title and first deliverable', () => {
+      const result = parseSpecV2Content(SAMPLE_V2_SPEC);
+      if (result.isV2Format) {
+        const task = getTaskForIterationV2(result, 1);
+        expect(task).not.toBeNull();
+        expect(task?.taskText).toContain('Implement new spec parser');
+        expect(task?.taskText).toContain('Parse task IDs');
+      }
+    });
+
+    it('taskText is just title when no deliverables', () => {
+      const noDeliverables = `# Spec
+
+## Tasks
+
+### T001: Task without deliverables
+- Status: pending
+- Size: S
+
+**Deliverables:**
+`;
+      const result = parseSpecV2Content(noDeliverables);
+      if (result.isV2Format) {
+        const task = getTaskForIterationV2(result, 1);
+        expect(task).not.toBeNull();
+        expect(task?.taskText).toBe('Task without deliverables');
+        expect(task?.taskText).not.toContain('\n-');
+      }
     });
   });
 });

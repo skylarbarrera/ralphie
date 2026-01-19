@@ -27,7 +27,7 @@ import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructur
 ## Tasks
 
 ### T001: Create getTaskForIterationV2 function
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**
@@ -44,7 +44,7 @@ import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructur
 ---
 
 ### T002: Add spec-parser-v2 unit tests for getTaskForIterationV2
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**
@@ -59,7 +59,7 @@ import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructur
 ---
 
 ### T003: Update App.tsx imports
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**
