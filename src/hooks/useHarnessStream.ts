@@ -3,7 +3,7 @@ import type { HarnessEvent, HarnessName } from '../lib/harness/types.js';
 import { getHarness } from '../lib/harness/index.js';
 import type { ActivityItem, LastCommit } from '../lib/types.js';
 import type { Phase, Stats, ToolGroup, ActiveTool } from '../lib/state-machine.js';
-import { getToolCategory } from '../lib/tool-categories.js';
+import { getToolCategory, getToolDisplayName } from '../lib/tool-categories.js';
 
 export interface UseHarnessStreamOptions {
   prompt: string;
@@ -79,14 +79,24 @@ export function useHarnessStream(options: UseHarnessStreamOptions): HarnessStrea
         case 'tool_start': {
           const toolId = `tool-${toolIdRef.current++}`;
           const category = getToolCategory(event.name);
-          const displayName = event.input ?? event.name;
+
+          let parsedInput: Record<string, unknown> = {};
+          if (event.input) {
+            try {
+              parsedInput = JSON.parse(event.input);
+            } catch {
+              parsedInput = { raw: event.input };
+            }
+          }
+
+          const displayName = getToolDisplayName(event.name, parsedInput);
 
           const activeTool: ActiveTool = {
             id: toolId,
             name: event.name,
             category,
             startTime: Date.now(),
-            input: event.input ? { raw: event.input } : {},
+            input: parsedInput,
           };
 
           activeToolsMapRef.current.set(toolId, activeTool);
