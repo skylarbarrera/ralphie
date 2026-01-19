@@ -73,7 +73,7 @@ import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructur
 ---
 
 ### T004: Update IterationRunner spec loading
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**
