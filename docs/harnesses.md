@@ -6,9 +6,9 @@ Ralphie supports multiple AI providers through a harness abstraction.
 
 | Harness | Provider | Status |
 |---------|----------|--------|
-| `claude` | Claude Code | Default |
-| `codex` | OpenAI Codex | Supported |
-| `opencode` | OpenCode AI | Supported |
+| `claude` | Claude Code | Default, production-ready |
+| `codex` | OpenAI Codex | Experimental |
+| `opencode` | OpenCode AI | Experimental |
 
 ## Usage
 
@@ -19,19 +19,15 @@ ralphie run --harness opencode  # OpenCode
 export RALPH_HARNESS=opencode  # Set default
 ```
 
-## API Keys
+## Environment Variables
 
-| Harness | Environment Variable |
-|---------|---------------------|
+| Harness | Required |
+|---------|----------|
 | `claude` | `ANTHROPIC_API_KEY` |
 | `codex` | `OPENAI_API_KEY` |
-| `opencode` | `OPENCODE_SERVER_URL` (optional) |
+| `opencode` | `OPENCODE_SERVER_URL` or `OPENCODE_API_KEY` |
 
-Ralphie delegates auth to the underlying SDKs—never stores keys directly.
-
-OpenCode supports two modes:
-- **Local server**: Automatically starts a local OpenCode server (default)
-- **Remote server**: Connect to existing server via `OPENCODE_SERVER_URL`
+Missing variables are detected at startup with setup hints.
 
 ## Configuration
 

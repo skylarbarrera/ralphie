@@ -143,6 +143,8 @@ Tasks transition from `pending` → `in_progress` → `passed`/`failed`. See [Sp
 |---------|----------|
 | `command not found: ralphie` | `npm install -g ralphie` |
 | `command not found: claude` | `export PATH="$HOME/.local/bin:$PATH"` |
+| `Missing ANTHROPIC_API_KEY` | `export ANTHROPIC_API_KEY=sk-ant-...` (add to .zshrc) |
+| `Missing OPENAI_API_KEY` | `export OPENAI_API_KEY=sk-...` (add to .zshrc) |
 | Stuck on same task | Check task status. Run `ralphie validate` |
 | No spec found | `/ralphie-spec` (with user) or `ralphie spec` (autonomous) |
 
