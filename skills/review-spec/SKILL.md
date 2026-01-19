@@ -1,303 +1,424 @@
 ---
 name: review-spec
-description: Validate SPEC.md for format compliance and content quality. Checks for checkbox syntax, code snippets, file paths, and provides content critique on problem-solution fit, integration awareness, scalability, and scope.
+description: Validate specs for V2 format compliance (task IDs, status, size) and content quality. Checks structure, deliverables, and provides content critique.
 context: fork
 allowed-tools: Read, Grep, Glob
+license: MIT
+metadata:
+  author: ralphie
+  version: "3.0.0"
+  argument-hint: "[spec-path]"
+  install-hint: npx add-skill skillet/ralph --skill review-spec
 ---
 
-# Review SPEC Skill
+# Review SPEC Skill (V2 Format)
 
-Validate `SPEC.md` files for format compliance and content quality before finalizing.
+Validate spec files for V2 format compliance and content quality before finalizing.
 
 ## Workflow
 
 ```
-Read SPEC → Format Checks → Content Critique → Report
+Locate Spec → V2 Format Checks → Content Checks → Content Critique → Report
 ```
 
-## Step 1: Read SPEC.md
+## Step 1: Locate Spec
 
-Read the entire `SPEC.md` file to analyze its structure and content.
+Find the spec to review:
+
+1. Check `specs/active/*.md` first (V2 location)
+2. Fall back to `SPEC.md` at root (legacy location - warn user)
+3. Or use provided path argument
 
 ```bash
-Read SPEC.md
+# Check for V2 location
+ls specs/active/*.md 2>/dev/null
+
+# Or legacy location
+ls SPEC.md 2>/dev/null
 ```
 
-## Step 2: Format Checks
+If found at legacy location, note: "⚠️ Spec at legacy location. Consider moving to `specs/active/`"
 
-Check for format violations that break Ralphie iteration efficiency or create ambiguity.
+## Step 2: V2 Format Checks
 
-### 2.1 Checkbox Syntax
+These checks are **required** for V2 specs. Legacy specs will fail these checks.
+
+### 2.1 Task ID Format
 
 **PASS:**
 ```markdown
-- [ ] Task description
-- [x] Completed task
+### T001: Setup project structure
+### T002: Implement core logic
+### T003: Add tests
 ```
 
 **FAIL:**
 ```markdown
-- [] Missing space
-- [X] Uppercase X
-- Task without checkbox
-* Using asterisk instead of dash
+### Task 1: Setup project      # No T prefix, wrong format
+### T1: Implement logic        # Only 1 digit, need 3
+- [ ] Add tests                # Checkbox format (legacy)
 ```
 
 **Check for:**
-- All tasks use `- [ ]` or `- [x]` format
-- Lowercase `x` for completed tasks
-- Space after checkbox
-- Dash `-` prefix, not asterisk `*` or number
+- All tasks use `### T###:` format (H3, T prefix, 3 digits, colon, space)
+- Sequential numbering (T001, T002, T003...)
+- No gaps in sequence (T001, T003 - missing T002)
 
-### 2.2 No Code Snippets
+### 2.2 Status Field
 
-**FAIL - Code snippets in tasks:**
+**PASS:**
 ```markdown
-- [ ] Fix auth bug
-  - Use `bcrypt.compare()` instead of `===`
-  - Add this code:
-    ```typescript
-    const isValid = await bcrypt.compare(password, hash);
-    ```
+### T001: Task title
+- Status: pending
+```
+
+**FAIL:**
+```markdown
+### T001: Task title
+- Status: todo          # Invalid value
+- status: pending       # Lowercase "status"
+                        # Missing Status line entirely
+```
+
+**Valid values:** `pending`, `in_progress`, `passed`, `failed`
+
+**Check for:**
+- Every task has `- Status:` line (exact format)
+- Value is one of the four valid options
+- Appears immediately after task header
+
+### 2.3 Size Field
+
+**PASS:**
+```markdown
+### T001: Task title
+- Status: pending
+- Size: M
+```
+
+**FAIL:**
+```markdown
+### T001: Task title
+- Status: pending
+- Size: Medium          # Full word, not abbreviation
+- Size: XL              # Invalid size
+                        # Missing Size line
+```
+
+**Valid values:** `S`, `M`, `L`
+
+**Check for:**
+- Every task has `- Size:` line (exact format)
+- Value is S, M, or L (single uppercase letter)
+- Appears after Status line
+
+### 2.4 Deliverables Section
+
+**PASS:**
+```markdown
+### T001: Task title
+- Status: pending
+- Size: S
+
+**Deliverables:**
+- First deliverable
+- Second deliverable
+```
+
+**FAIL:**
+```markdown
+### T001: Task title
+- Status: pending
+- Size: S
+
+- First deliverable     # Missing **Deliverables:** header
+- Second deliverable
+```
+
+**Check for:**
+- `**Deliverables:**` header present for each task
+- At least one bullet under Deliverables
+- Deliverables describe WHAT not HOW
+
+### 2.5 Verify Section
+
+**PASS:**
+```markdown
+**Verify:** `npm test -- task-name`
+```
+
+**FAIL:**
+```markdown
+**Verify:** Run the tests    # No backticks, vague
+Verify: npm test             # Missing ** bold
+                             # Missing Verify section entirely
+```
+
+**Check for:**
+- `**Verify:**` present (bold, colon)
+- Contains a command or clear verification method
+- Commands should be in backticks
+
+### 2.6 Task Separators
+
+**PASS:**
+```markdown
+**Verify:** `npm test`
+
+---
+
+### T002: Next task
+```
+
+**FAIL:**
+```markdown
+**Verify:** `npm test`
+
+### T002: Next task          # Missing --- separator
+```
+
+**Check for:**
+- `---` separator between each task
+- Blank line before and after separator
+
+### V2 Format Summary
+
+Report each violation:
+
+```markdown
+## V2 Format Issues
+
+### Task IDs
+- Task 3: Uses `### Task 3:` instead of `### T003:`
+- Task sequence: Gap detected - T001, T003 (missing T002)
+
+### Status Field
+- T002: Missing Status field
+- T004: Invalid status value "todo" (use: pending, in_progress, passed, failed)
+
+### Size Field
+- T001: Missing Size field
+- T003: Invalid size "Medium" (use: S, M, L)
+
+### Deliverables
+- T002: Missing **Deliverables:** section
+- T004: Deliverables section empty
+
+### Verify
+- T001: Missing **Verify:** section
+- T003: Verify missing backticks around command
+
+### Separators
+- Between T002 and T003: Missing --- separator
+```
+
+---
+
+## Step 3: Content Checks
+
+These checks apply to both legacy and V2 specs.
+
+### 3.1 No Code Snippets in Tasks
+
+**FAIL - Code in tasks:**
+```markdown
+**Deliverables:**
+- Use `bcrypt.compare()` instead of `===`
+- Add this code:
+  ```typescript
+  const isValid = await bcrypt.compare(password, hash);
+  ```
 ```
 
 **PASS - Deliverable-focused:**
 ```markdown
-- [ ] Fix auth bug
-  - Password comparison should be timing-safe
-  - Handle comparison errors gracefully
+**Deliverables:**
+- Password comparison should be timing-safe
+- Handle comparison errors gracefully
 ```
 
-**Check for:**
-- No ` ```language ` code blocks in task descriptions
-- No inline code that shows implementation (`` `bcrypt.compare()` `` is implementation)
-- Verification sections CAN include code examples (those are test scripts, not implementation)
+**Note:** Code in `**Verify:**` sections is OK (test commands, not implementation)
 
-### 2.3 No File Paths in Tasks
+### 3.2 No File Paths in Tasks
 
-**FAIL - File paths prescribe implementation:**
+**FAIL:**
 ```markdown
-- [ ] Fix auth bug
-  - Modify src/auth/login.ts line 42
-  - Update src/middleware/validate.ts
+**Deliverables:**
+- Modify src/auth/login.ts line 42
+- Update src/middleware/validate.ts
 ```
 
-**PASS - Outcome-focused:**
+**PASS:**
 ```markdown
-- [ ] Fix auth bug
-  - Login endpoint returns 401 for invalid credentials
-  - Credentials are validated before database lookup
+**Deliverables:**
+- Login endpoint returns 401 for invalid credentials
+- Credentials validated before database lookup
 ```
 
-**Check for:**
-- No file:line references (e.g., `auth.ts:42`)
-- No specific file paths in task bullets (e.g., `src/auth/login.ts`)
-- Files belong in `.ai/ralphie/plan.md`, not SPEC.md
+### 3.3 Deliverables Are WHAT Not HOW
 
-### 2.4 Sub-Bullets Are Deliverables
-
-**FAIL - Sub-bullets as instructions:**
+**FAIL - Instructions:**
 ```markdown
-- [ ] Create user API
-  - Install express and body-parser
-  - Create routes/user.ts file
-  - Add GET and POST handlers
-  - Write tests in tests/user.test.ts
+**Deliverables:**
+- Install express and body-parser
+- Create routes/user.ts file
+- Add GET and POST handlers
 ```
 
-**PASS - Sub-bullets as deliverables:**
+**PASS - Outcomes:**
 ```markdown
-- [ ] Create user API
-  - GET /users - list all users
-  - POST /users - create new user
-  - Returns 400 for invalid input
-  - Tests cover all endpoints
+**Deliverables:**
+- GET /users returns list of users
+- POST /users creates new user
+- Returns 400 for invalid input
 ```
 
-**Check for:**
-- Sub-bullets describe WHAT not HOW
-- Sub-bullets are verifiable outcomes
-- No "Create X file" or "Add Y function" (those are plans, not requirements)
+### 3.4 Task Batching
 
-### 2.5 Task Batching
-
-**FAIL - Over-split tasks:**
+**FAIL - Over-split:**
 ```markdown
-- [ ] Create UserModel.ts
-- [ ] Create UserService.ts
-- [ ] Create UserController.ts
-- [ ] Create user.test.ts
+### T001: Create UserModel.ts
+### T002: Create UserService.ts
+### T003: Create UserController.ts
+### T004: Create user.test.ts
 ```
 
 **PASS - Properly batched:**
 ```markdown
-- [ ] Create User module (Model, Service, Controller) with tests
-  - User CRUD operations
-  - Input validation
-  - Tests cover all operations
+### T001: Implement User module
+- Status: pending
+- Size: M
+
+**Deliverables:**
+- User CRUD operations (model, service, controller)
+- Input validation
+- Tests cover all operations
 ```
 
-**Check for:**
-- Related files are batched into single tasks
-- Tasks that could be done together aren't artificially split
-- Each checkbox = one meaningful iteration (30min - 2hr of work)
+**Guideline:** 3-10 tasks total. Each task = meaningful iteration (30min - 2hr work).
 
-### Format Check Summary
+---
 
-Report each violation found:
+## Step 4: Content Critique
+
+Evaluate problem-solution fit.
+
+### 4.1 Problem-Solution Fit
+
+- Does the spec clearly state what problem it solves?
+- Are tasks aligned with solving that problem?
+- Any tasks unrelated to the stated goal?
+
+### 4.2 Integration Awareness
+
+- Does spec consider existing systems?
+- Tasks for integration points (APIs, databases)?
+- Backward compatibility considered?
+
+### 4.3 Size Point Distribution
+
+For V2 specs, check size distribution:
 
 ```markdown
-## Format Issues
+## Size Analysis
 
-### Checkbox Syntax
-- Line 42: Uses `* [ ]` instead of `- [ ]`
-- Line 58: Completed task uses `[X]` instead of `[x]`
+| Size | Count | Points |
+|------|-------|--------|
+| S | 3 | 3 |
+| M | 4 | 8 |
+| L | 1 | 4 |
+| **Total** | **8** | **15** |
 
-### Code Snippets
-- Lines 65-70: Task contains TypeScript code block
-- Line 82: Implementation detail in sub-bullet: `Use bcrypt.compare()`
-
-### File Paths
-- Line 92: References `src/auth/login.ts:42`
-- Line 105: Sub-bullet says "Modify middleware/validate.ts"
-
-### Sub-Bullets Not Deliverables
-- Line 120: "Install express and body-parser" (instruction, not deliverable)
-- Line 121: "Create routes/user.ts file" (prescribes file structure)
-
-### Task Batching
-- Lines 140-143: Four separate tasks for related User module files (should be one task)
+Estimated iterations: ~4 (at 4 pts/iteration)
 ```
 
-## Step 3: Content Critique
+**Concerns:**
+- All L tasks? Consider splitting
+- All S tasks? May be over-split
+- Mix of sizes is healthy
 
-Evaluate whether the SPEC describes a good problem-solution fit.
+### 4.4 Scope Appropriateness
 
-### 3.1 Problem-Solution Fit
+- Is spec trying to do too much?
+- Tasks that could be deferred?
+- Missing prerequisites?
 
-**Questions to ask:**
-- Does the SPEC clearly state what problem it solves?
-- Are the tasks aligned with solving that problem?
-- Are there tasks that seem unrelated to the stated goal?
+---
 
-**Example concern:**
+## Step 5: EARS Validation (Optional)
+
+If spec has `## Acceptance Criteria` with EARS patterns, validate them.
+
+### Valid EARS Patterns
+
+| Pattern | Format |
+|---------|--------|
+| Ubiquitous | "The system shall [response]" |
+| Event-driven | "WHEN [trigger], the system shall [response]" |
+| State-driven | "WHILE [state], the system shall [response]" |
+| Optional | "WHERE [feature enabled], the system shall [response]" |
+| Unwanted | "IF [condition], THEN the system shall [response]" |
+
+### EARS Concerns
+
+**FAIL:**
 ```markdown
-## Concern: Task Misalignment
-SPEC Goal: "Build a CLI tool for managing database migrations"
-Task: "Add user authentication with OAuth"
-
-This task doesn't align with the stated goal. Authentication might be needed for a web UI, but the goal describes a CLI tool.
+- When needed, the system should probably do something
 ```
 
-### 3.2 Integration Awareness
+Issues:
+- "When needed" is vague trigger
+- "should probably" is weak (use "shall")
+- "do something" has no specific response
 
-**Questions to ask:**
-- Does the SPEC consider existing systems?
-- Are there tasks for integration points (APIs, databases, services)?
-- Does it account for backward compatibility if modifying existing code?
-
-**Example concern:**
+**PASS:**
 ```markdown
-## Concern: Missing Integration
-SPEC adds a new payment endpoint but doesn't mention:
-- How it integrates with existing order system
-- Whether existing payment records need migration
-- How to handle in-flight transactions during deployment
+- WHEN user submits login form, the system shall validate credentials within 200ms
 ```
 
-### 3.3 Scalability Considerations
+---
 
-**Questions to ask:**
-- For performance-critical features, are there tasks for optimization?
-- For high-volume features, is there consideration of limits/throttling?
-- Are there tasks for monitoring or observability?
-
-**Example concern:**
-```markdown
-## Concern: Scalability Not Addressed
-SPEC adds a webhook system but doesn't include:
-- Rate limiting for incoming webhooks
-- Queue for processing high volumes
-- Retry logic for failed deliveries
-```
-
-**Note:** Not all SPECs need scalability tasks. Simple CLIs, internal tools, and MVPs can skip this.
-
-### 3.4 Scope Appropriateness
-
-**Questions to ask:**
-- Is the SPEC trying to do too much in one go?
-- Are there tasks that could be deferred to later phases?
-- Is the SPEC missing critical prerequisites?
-
-**Example concern:**
-```markdown
-## Concern: Scope Too Large
-SPEC has 45 tasks across 8 phases. Recommend:
-- Identify MVP subset (first 10-15 tasks)
-- Move nice-to-have features to Phase 2 SPEC
-- Focus on one complete workflow first
-```
-
-**Example concern:**
-```markdown
-## Concern: Missing Prerequisites
-SPEC starts with "Create admin dashboard" but has no tasks for:
-- User authentication (needed to know who's an admin)
-- Database schema (what data will the dashboard show?)
-Recommend adding prerequisite tasks first.
-```
-
-### Content Critique Summary
-
-Report concerns in priority order:
-
-```markdown
-## Content Concerns
-
-### HIGH PRIORITY
-1. **Missing Prerequisites**: Authentication tasks should come before admin dashboard
-2. **Scope Too Large**: 45 tasks is too many for one SPEC - recommend splitting into MVP and Phase 2
-
-### MEDIUM PRIORITY
-3. **Integration Gap**: No mention of how new API integrates with existing order system
-4. **Scalability Risk**: Webhook system needs rate limiting and queue (high volume expected)
-
-### LOW PRIORITY
-5. **Task Misalignment**: OAuth task seems unrelated to CLI tool goal (clarify if needed)
-```
-
-## Step 4: Generate Report
-
-Combine format checks and content critique into a final report.
+## Step 6: Generate Report
 
 ### Output Format
 
 ```markdown
 # SPEC Review: [PASS/FAIL]
 
-## Format: [PASS/FAIL]
+## V2 Format: [PASS/FAIL]
 
-[If FAIL, list all format violations from Step 2]
-[If PASS, say "No format violations found."]
+[If FAIL, list all V2 format violations]
+[If PASS, "V2 format validated: X tasks, Y total points"]
 
-## Content: [PASS/CONCERNS]
+## Content: [PASS/FAIL]
 
-[If CONCERNS, list all content issues from Step 3 in priority order]
-[If PASS, say "No content concerns. SPEC is well-structured and ready."]
+[If FAIL, list content violations (code, file paths, etc.)]
+[If PASS, "No content violations found."]
+
+## Content Critique: [PASS/CONCERNS]
+
+[If CONCERNS, list in priority order]
+[If PASS, "Spec is well-structured and ready."]
+
+## Size Summary
+
+| Size | Count | Points |
+|------|-------|--------|
+| S | X | X |
+| M | Y | 2Y |
+| L | Z | 4Z |
+| Total | N | P |
+
+Estimated iterations: ~I (at 4 pts/iteration)
 
 ## Recommendations
 
-[List actionable improvements, prioritized]
-
-1. Fix format violations (required before finalizing)
-2. Address HIGH PRIORITY content concerns
-3. Consider MEDIUM PRIORITY concerns if applicable
-4. Review LOW PRIORITY suggestions
+1. [Required fixes]
+2. [Suggested improvements]
 
 ## Summary
 
-[Overall assessment - ready to use, needs revision, or needs major rework]
+[✓ Ready / ❌ Needs revision / ⚠️ Needs discussion]
 ```
 
 ### Example: PASS Report
@@ -305,21 +426,37 @@ Combine format checks and content critique into a final report.
 ```markdown
 # SPEC Review: PASS
 
-## Format: PASS
-No format violations found.
+## V2 Format: PASS
+V2 format validated: 8 tasks, 15 total points
+- Task IDs: T001-T008 sequential ✓
+- All tasks have Status, Size, Deliverables, Verify ✓
+- Separators present between all tasks ✓
 
 ## Content: PASS
-No content concerns. SPEC is well-structured with:
+No content violations found.
+
+## Content Critique: PASS
 - Clear goal statement
-- Tasks properly batched (15 tasks across 3 phases)
-- Good integration awareness (migration tasks included)
-- Appropriate scope for MVP
+- Tasks properly batched
+- Good integration awareness
+- Appropriate scope
+
+## Size Summary
+
+| Size | Count | Points |
+|------|-------|--------|
+| S | 3 | 3 |
+| M | 4 | 8 |
+| L | 1 | 4 |
+| Total | 8 | 15 |
+
+Estimated iterations: ~4 (at 4 pts/iteration)
 
 ## Recommendations
-None. SPEC is ready to use.
+None. Spec is ready for implementation.
 
 ## Summary
-✓ SPEC follows all conventions and is ready for implementation.
+✓ Spec follows V2 format and is ready for `ralphie run`.
 ```
 
 ### Example: FAIL Report
@@ -327,64 +464,83 @@ None. SPEC is ready to use.
 ```markdown
 # SPEC Review: FAIL
 
-## Format: FAIL
+## V2 Format: FAIL
+
+### Task IDs
+- Line 45: Uses `### Task 3:` instead of `### T003:`
+
+### Status Field
+- T002: Missing Status field
+- T004: Invalid status "todo" (valid: pending, in_progress, passed, failed)
+
+### Size Field
+- T001: Missing Size field
+
+### Deliverables
+- T002: Missing **Deliverables:** section
+
+## Content: FAIL
 
 ### Code Snippets
-- Lines 65-70: Task contains TypeScript code block showing implementation
-- Line 82: Sub-bullet includes `bcrypt.compare()` implementation detail
+- T003 line 82: Contains implementation code `bcrypt.compare()`
 
 ### File Paths
-- Line 92: References specific file `src/auth/login.ts:42`
+- T001 line 55: References `src/auth/login.ts:42`
 
-### Sub-Bullets Not Deliverables
-- Line 120: "Install express and body-parser" is an instruction, not a deliverable
-- Line 121: "Create routes/user.ts file" prescribes file structure
-
-## Content: CONCERNS
+## Content Critique: CONCERNS
 
 ### HIGH PRIORITY
-1. **Missing Prerequisites**: Tasks 8-12 build admin dashboard but authentication (Task 15) comes later. Reorder so auth comes first.
-2. **Scope Too Large**: 45 tasks is too ambitious. Recommend creating MVP SPEC with first 15 tasks, defer rest to Phase 2.
+1. Missing Prerequisites: Auth tasks should come before admin dashboard
 
-### MEDIUM PRIORITY
-3. **Integration Gap**: New payment endpoint (Task 22) doesn't mention integration with existing order system or data migration.
+## Size Summary
+Cannot calculate - missing Size fields on some tasks.
 
 ## Recommendations
 
-1. **Fix format violations** (required):
-   - Remove code blocks from task descriptions
-   - Remove file:line references
-   - Rewrite sub-bullets as deliverables ("WHAT") not instructions ("HOW")
+1. **Fix V2 format** (required):
+   - Add missing Status and Size fields
+   - Fix task ID format on Task 3
+   - Add Deliverables section to T002
 
-2. **Address HIGH PRIORITY concerns**:
-   - Reorder tasks: move authentication (Task 15) to Phase 1, before admin dashboard
-   - Split SPEC: Create `SPEC-MVP.md` with first 15 tasks, `SPEC-Phase2.md` with remaining 30
+2. **Fix content** (required):
+   - Remove code from task descriptions
+   - Remove file path references
 
-3. **Consider MEDIUM concerns**:
-   - Add integration tasks for payment endpoint (migration, order system integration)
+3. **Address concerns**:
+   - Reorder tasks for prerequisites
 
 ## Summary
-❌ SPEC needs revision before use. Focus on fixing format violations and reordering tasks to address prerequisites.
+❌ Spec needs revision. Fix V2 format violations first.
 ```
+
+---
 
 ## Quick Reference
 
-| Check | Pass | Fail |
-|-------|------|------|
-| **Checkbox** | `- [ ]` or `- [x]` | `- []`, `- [X]`, `*`, numbers |
-| **Code** | No code in tasks | ` ``` ` blocks or implementation code |
-| **Files** | No file paths | `src/auth.ts:42`, specific filenames |
-| **Sub-bullets** | Deliverables (WHAT) | Instructions (HOW) |
-| **Batching** | Related work grouped | Tiny tasks split artificially |
+| V2 Check | Pass | Fail |
+|----------|------|------|
+| Task ID | `### T001:` | `### Task 1:`, `- [ ]` |
+| Status | `- Status: pending` | Missing, invalid value |
+| Size | `- Size: M` | Missing, invalid value |
+| Deliverables | `**Deliverables:**` + bullets | Missing section |
+| Verify | `**Verify:** \`cmd\`` | Missing section |
+| Separators | `---` between tasks | Missing |
 
-## When to Use This Skill
+| Content Check | Pass | Fail |
+|---------------|------|------|
+| Code | Only in Verify | In Deliverables |
+| Files | No paths | `src/file.ts:42` |
+| Deliverables | WHAT (outcomes) | HOW (instructions) |
+| Batching | 3-10 tasks | 20+ micro-tasks |
+
+## When to Use
 
 **Use `/review-spec` when:**
-- You just generated a SPEC with `/create-spec`
-- User asks you to validate a SPEC before starting work
-- You're unsure if a SPEC follows conventions
-- Running `ralphie spec --auto` (autonomous mode uses this for self-review)
+- Just generated a spec with `/spec-autonomous` or `/spec-interactive`
+- User asks to validate a spec before starting work
+- Running `ralphie spec` (uses this for self-review)
+- Unsure if spec follows V2 conventions
 
 **Don't use when:**
-- SPEC has already been validated and user is ready to start iterations
-- You're mid-iteration (use `/ralphie-iterate` instead)
+- Spec already validated and user is ready to start
+- Mid-iteration (use `/ralphie-iterate` instead)

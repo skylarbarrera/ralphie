@@ -13,6 +13,7 @@ import {
 } from '../../src/lib/headless-runner.js';
 import * as headlessEmitter from '../../src/lib/headless-emitter.js';
 import * as harnessModule from '../../src/lib/harness/index.js';
+import * as specParserV2 from '../../src/lib/spec-parser-v2.js';
 import * as fs from 'fs';
 
 vi.mock('fs', () => ({
@@ -35,6 +36,21 @@ vi.mock('../../src/lib/headless-emitter.js', () => ({
 
 vi.mock('../../src/lib/harness/index.js', () => ({
   getHarness: vi.fn(),
+}));
+
+vi.mock('../../src/lib/spec-locator.js', () => ({
+  locateActiveSpec: vi.fn(() => ({ path: '/test/specs/active/test.md', isLegacy: false })),
+  SpecLocatorError: class SpecLocatorError extends Error {
+    constructor(message: string, public code: string) {
+      super(message);
+    }
+  },
+}));
+
+vi.mock('../../src/lib/spec-parser-v2.js', () => ({
+  isSpecCompleteV2: vi.fn(() => false),
+  getProgressV2: vi.fn(() => ({ completed: 0, total: 1, percentage: 0 })),
+  parseSpecV2: vi.fn(() => ({ isV2Format: true, tasks: [] })),
 }));
 
 describe('headless-runner', () => {
@@ -250,7 +266,7 @@ describe('headless-runner', () => {
 
       await executeHeadlessRun(options);
 
-      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 1, undefined, 'claude');
+      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('/test/specs/active/test.md', 1, undefined, 'claude');
     });
 
     it('returns EXIT_CODE_ERROR on iteration error', async () => {
@@ -312,6 +328,13 @@ describe('headless-runner', () => {
         return '- [x] Task\n- [x] Done';
       });
 
+      // Mock V2 spec completion - return true after first iteration
+      let iterCount = 0;
+      vi.mocked(specParserV2.isSpecCompleteV2).mockImplementation(() => {
+        iterCount++;
+        return iterCount > 1;
+      });
+
       const mockHarness = {
         name: 'claude' as const,
         run: vi.fn().mockResolvedValue({ success: true, durationMs: 100 }),
@@ -340,6 +363,9 @@ describe('headless-runner', () => {
         const completed = '- [x] Done'.repeat(readCount);
         return `${completed}\n- [ ] Always incomplete`;
       });
+
+      // V2 spec never completes
+      vi.mocked(specParserV2.isSpecCompleteV2).mockReturnValue(false);
 
       const mockHarness = {
         name: 'claude' as const,
@@ -382,7 +408,7 @@ describe('headless-runner', () => {
       await executeHeadlessRun(options);
 
       expect(harnessModule.getHarness).toHaveBeenCalledWith('codex');
-      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 1, undefined, 'codex');
+      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('/test/specs/active/test.md', 1, undefined, 'codex');
     });
   });
 

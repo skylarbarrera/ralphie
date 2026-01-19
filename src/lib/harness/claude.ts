@@ -1,5 +1,9 @@
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import type { Harness, HarnessEvent, HarnessResult, HarnessRunOptions } from './types.js';
+import { promptAskUserQuestion, getDefaultAnswers } from './terminal-prompt.js';
+
+// Track active AskUserQuestion calls to prevent concurrency issues
+let activePromptCount = 0;
 
 /**
  * Claude harness using the official Anthropic Claude Agent SDK.
@@ -35,6 +39,47 @@ export const claudeHarness: Harness = {
           allowedTools: options.allowedTools,
           model: options.model,
           systemPrompt: options.systemPrompt,
+          canUseTool: async (toolName: string, input: Record<string, unknown>) => {
+            if (toolName === 'AskUserQuestion') {
+              // Validate the input structure for AskUserQuestion
+              if (!input || typeof input !== 'object' || !('questions' in input)) {
+                return { behavior: 'deny' as const, message: 'Invalid AskUserQuestion input: missing questions' };
+              }
+              
+              const rawInput = input as { questions: unknown };
+              if (!Array.isArray(rawInput.questions)) {
+                return { behavior: 'deny' as const, message: 'Invalid AskUserQuestion input: questions must be an array' };
+              }
+              
+              const askInput = input as { questions: Array<{ question: string; header: string; options: Array<{ label: string; description: string }>; multiSelect: boolean }> };
+
+              if (!options.interactive) {
+                // Headless mode: return defaults so skill can continue
+                const defaults = getDefaultAnswers(askInput);
+                return { behavior: 'allow' as const, updatedInput: defaults as unknown as Record<string, unknown> };
+              }
+
+              // Interactive mode: prompt user via terminal
+              if (activePromptCount > 0) {
+                return { behavior: 'deny' as const, message: 'Another prompt is already active' };
+              }
+              
+              activePromptCount++;
+              try {
+                const result = await promptAskUserQuestion(askInput);
+                return { behavior: 'allow' as const, updatedInput: result as unknown as Record<string, unknown> };
+              } catch (error) {
+                // If prompting fails, deny with specific error
+                const message = error instanceof Error ? error.message : 'Failed to prompt user';
+                return { behavior: 'deny' as const, message };
+              } finally {
+                activePromptCount--;
+              }
+            }
+
+            // Allow other tools
+            return { behavior: 'allow' as const, updatedInput: input };
+          },
         },
       });
 

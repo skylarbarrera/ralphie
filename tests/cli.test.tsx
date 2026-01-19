@@ -26,6 +26,7 @@ describe('cli', () => {
         headless: false,
         stuckThreshold: 3,
         greedy: false,
+        budget: 4,
       };
 
       expect(resolvePrompt(options)).toBe('Custom prompt text');
@@ -46,6 +47,7 @@ describe('cli', () => {
         headless: false,
         stuckThreshold: 3,
         greedy: false,
+        budget: 4,
       };
 
       expect(resolvePrompt(options)).toBe('Prompt from file content');
@@ -67,6 +69,7 @@ describe('cli', () => {
         headless: false,
         stuckThreshold: 3,
         greedy: false,
+        budget: 4,
       };
 
       expect(() => resolvePrompt(options)).toThrow('Prompt file not found: /test/missing.txt');
@@ -83,6 +86,7 @@ describe('cli', () => {
         headless: false,
         stuckThreshold: 3,
         greedy: false,
+        budget: 4,
       };
 
       expect(resolvePrompt(options)).toBe(DEFAULT_PROMPT);
@@ -104,6 +108,7 @@ describe('cli', () => {
         headless: false,
         stuckThreshold: 3,
         greedy: false,
+        budget: 4,
       };
 
       expect(resolvePrompt(options)).toBe('Direct prompt');
@@ -121,6 +126,7 @@ describe('cli', () => {
         headless: false,
         stuckThreshold: 3,
         greedy: true,
+        budget: 4,
       };
 
       expect(resolvePrompt(options)).toBe(GREEDY_PROMPT);
@@ -130,25 +136,35 @@ describe('cli', () => {
   describe('DEFAULT_PROMPT', () => {
     it('contains Ralphie loop instructions', () => {
       expect(DEFAULT_PROMPT).toContain('Ralphie');
-      expect(DEFAULT_PROMPT).toContain('SPEC.md');
+      expect(DEFAULT_PROMPT).toContain('specs/active/');
       expect(DEFAULT_PROMPT).toContain('STATE.txt');
       expect(DEFAULT_PROMPT.toLowerCase()).toContain('commit');
     });
 
     it('instructs to work on one task per iteration', () => {
-      expect(DEFAULT_PROMPT).toContain('Complete ONE checkbox');
+      expect(DEFAULT_PROMPT).toContain('Complete ONE task from specs/active/');
     });
 
     it('includes memory file instructions', () => {
       expect(DEFAULT_PROMPT).toContain('plan.md');
       expect(DEFAULT_PROMPT).toContain('index.md');
     });
+
+    it('references V2 task format', () => {
+      expect(DEFAULT_PROMPT).toContain('T001');
+      expect(DEFAULT_PROMPT).toContain('Status: pending');
+      expect(DEFAULT_PROMPT).toContain('Status: passed');
+    });
+
+    it('instructs to run Verify command', () => {
+      expect(DEFAULT_PROMPT).toContain('Verify command');
+    });
   });
 
   describe('GREEDY_PROMPT', () => {
     it('contains greedy mode instructions', () => {
       expect(GREEDY_PROMPT).toContain('GREEDY MODE');
-      expect(GREEDY_PROMPT).toContain('AS MANY checkboxes');
+      expect(GREEDY_PROMPT).toContain('AS MANY tasks as possible from specs/active/');
     });
 
     it('instructs to continue to next task', () => {

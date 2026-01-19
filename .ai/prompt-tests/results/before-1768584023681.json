@@ -1,0 +1,164 @@
+{
+  "phase": "before",
+  "timestamp": "2026-01-16T17:20:23.667Z",
+  "git_ref": "100f7496db17ec4918f74c0b2e7d05d3f519affe",
+  "results": [
+    {
+      "id": "greenfield-game-engine",
+      "name": "Greenfield: Game Engine",
+      "timestamp": "2026-01-16T17:20:21.334Z",
+      "duration_ms": 830,
+      "success": false,
+      "spec_created": false,
+      "task_count": 0,
+      "validation_passed": false,
+      "review_passed": false,
+      "has_completion_marker": false,
+      "spec_content": null,
+      "score": {
+        "structure": 0,
+        "content": 0,
+        "quality": 0,
+        "total": 0,
+        "violations": []
+      },
+      "violations": [],
+      "notes": [
+        "Setup: /tmp/ralphie-test/game-engine",
+        "Error: Command failed: npx ralphie init --headless -d \"Build a 2D game engine with sprite rendering, physics, and input handling\"\nerror: unknown option '--headless'\n"
+      ]
+    },
+    {
+      "id": "greenfield-frontend",
+      "name": "Greenfield: React Dashboard",
+      "timestamp": "2026-01-16T17:20:21.824Z",
+      "duration_ms": 489,
+      "success": false,
+      "spec_created": false,
+      "task_count": 0,
+      "validation_passed": false,
+      "review_passed": false,
+      "has_completion_marker": false,
+      "spec_content": null,
+      "score": {
+        "structure": 0,
+        "content": 0,
+        "quality": 0,
+        "total": 0,
+        "violations": []
+      },
+      "violations": [],
+      "notes": [
+        "Setup: /tmp/ralphie-test/dashboard",
+        "Error: Command failed: npx ralphie init --headless -d \"Build a React dashboard with charts, data tables, and real-time updates using WebSocket\"\nerror: unknown option '--headless'\n"
+      ]
+    },
+    {
+      "id": "greenfield-trading",
+      "name": "Greenfield: Trading Simulator",
+      "timestamp": "2026-01-16T17:20:22.315Z",
+      "duration_ms": 491,
+      "success": false,
+      "spec_created": false,
+      "task_count": 0,
+      "validation_passed": false,
+      "review_passed": false,
+      "has_completion_marker": false,
+      "spec_content": null,
+      "score": {
+        "structure": 0,
+        "content": 0,
+        "quality": 0,
+        "total": 0,
+        "violations": []
+      },
+      "violations": [],
+      "notes": [
+        "Setup: /tmp/ralphie-test/trading",
+        "Error: Command failed: npx ralphie init --headless -d \"Build a stock trading simulator with portfolio tracking, order execution, and P&L reporting\"\nerror: unknown option '--headless'\n"
+      ]
+    },
+    {
+      "id": "brownfield-feature",
+      "name": "Brownfield: Add Auth to Existing API",
+      "timestamp": "2026-01-16T17:20:22.817Z",
+      "duration_ms": 502,
+      "success": false,
+      "spec_created": false,
+      "task_count": 0,
+      "validation_passed": false,
+      "review_passed": false,
+      "has_completion_marker": false,
+      "spec_content": null,
+      "score": {
+        "structure": 0,
+        "content": 0,
+        "quality": 0,
+        "total": 0,
+        "violations": []
+      },
+      "violations": [],
+      "notes": [
+        "Setup: /tmp/ralphie-test/existing-api",
+        "Error: Command failed: npx ralphie init --headless -d \"Add JWT authentication to the existing REST API with login, logout, and protected routes\"\nerror: unknown option '--headless'\n"
+      ]
+    },
+    {
+      "id": "brownfield-refactor",
+      "name": "Brownfield: Refactor to TypeScript",
+      "timestamp": "2026-01-16T17:20:23.161Z",
+      "duration_ms": 344,
+      "success": false,
+      "spec_created": false,
+      "task_count": 0,
+      "validation_passed": false,
+      "review_passed": false,
+      "has_completion_marker": false,
+      "spec_content": null,
+      "score": {
+        "structure": 0,
+        "content": 0,
+        "quality": 0,
+        "total": 0,
+        "violations": []
+      },
+      "violations": [],
+      "notes": [
+        "Setup: /tmp/ralphie-test/js-project",
+        "Error: Command failed: npx ralphie init --headless -d \"Refactor the existing JavaScript codebase to TypeScript with proper types and separation of concerns between data layer, business logic, and API handlers\"\nerror: unknown option '--headless'\n"
+      ]
+    },
+    {
+      "id": "cli-tool",
+      "name": "Greenfield: CLI File Organizer",
+      "timestamp": "2026-01-16T17:20:23.666Z",
+      "duration_ms": 505,
+      "success": false,
+      "spec_created": false,
+      "task_count": 0,
+      "validation_passed": false,
+      "review_passed": false,
+      "has_completion_marker": false,
+      "spec_content": null,
+      "score": {
+        "structure": 0,
+        "content": 0,
+        "quality": 0,
+        "total": 0,
+        "violations": []
+      },
+      "violations": [],
+      "notes": [
+        "Setup: /tmp/ralphie-test/file-organizer",
+        "Error: Command failed: npx ralphie init --headless -d \"Build a CLI tool that organizes files by type, date, or custom rules with undo support\"\nerror: unknown option '--headless'\n"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "passed": 0,
+    "failed": 6,
+    "avg_score": 0,
+    "avg_duration_ms": 527
+  }
+}

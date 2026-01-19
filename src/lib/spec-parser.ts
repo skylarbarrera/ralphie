@@ -1,3 +1,12 @@
+/**
+ * @deprecated This module uses the V1 SPEC.md checkbox format.
+ * Use spec-parser-v2.ts for new code, which supports:
+ * - Task IDs (T001, T002, ...)
+ * - Status field (pending/in_progress/passed/failed)
+ * - Size field (S/M/L)
+ * - Spec location in specs/active/
+ */
+
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
@@ -13,6 +22,7 @@ export interface SpecStructure {
   tasks: TaskInfo[];
 }
 
+/** @deprecated Use parseSpecV2() from spec-parser-v2.ts */
 export function parseSpec(specPath: string): SpecStructure | null {
   if (!existsSync(specPath)) {
     return null;
@@ -22,6 +32,7 @@ export function parseSpec(specPath: string): SpecStructure | null {
   return parseSpecContent(content);
 }
 
+/** @deprecated Use parseSpecV2Content() from spec-parser-v2.ts */
 export function parseSpecContent(content: string): SpecStructure | null {
   const tasks: TaskInfo[] = [];
 
@@ -89,6 +100,7 @@ export function parseSpecContent(content: string): SpecStructure | null {
   };
 }
 
+/** @deprecated Use getNextPendingTasks() from spec-parser-v2.ts */
 export function getTaskForIteration(spec: SpecStructure, iteration: number): TaskInfo | null {
   const index = iteration - 1;
   if (index < 0 || index >= spec.tasks.length) {
@@ -97,11 +109,13 @@ export function getTaskForIteration(spec: SpecStructure, iteration: number): Tas
   return spec.tasks[index];
 }
 
+/** @deprecated Use locateActiveSpec() + parseSpecV2() from spec-parser-v2.ts */
 export function loadSpecFromDir(dir: string): SpecStructure | null {
   const specPath = join(dir, 'SPEC.md');
   return parseSpec(specPath);
 }
 
+/** @deprecated Use parseSpecV2() which includes title in result */
 export function parseSpecTitle(content: string): string | null {
   const lines = content.split('\n');
   for (const line of lines) {
@@ -113,6 +127,7 @@ export function parseSpecTitle(content: string): string | null {
   return null;
 }
 
+/** @deprecated Use getSpecTitleV2() from spec-parser-v2.ts */
 export function getSpecTitle(specPath: string): string | null {
   if (!existsSync(specPath)) {
     return null;
@@ -121,6 +136,7 @@ export function getSpecTitle(specPath: string): string | null {
   return parseSpecTitle(content);
 }
 
+/** @deprecated Use isSpecCompleteV2() from spec-parser-v2.ts */
 export function isSpecComplete(specPath: string): boolean {
   if (!existsSync(specPath)) {
     return false;

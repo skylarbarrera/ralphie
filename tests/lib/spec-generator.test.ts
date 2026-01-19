@@ -1,55 +1,32 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { generateSpec, type SpecGeneratorOptions } from '../../src/lib/spec-generator.js';
-import { spawn } from 'child_process';
-import { EventEmitter } from 'events';
-import { Writable, Readable } from 'stream';
 import * as fs from 'fs';
+import * as harnessModule from '../../src/lib/harness/index.js';
+import * as specValidatorModule from '../../src/lib/spec-validator.js';
+import type { HarnessResult, HarnessRunOptions, HarnessEvent } from '../../src/lib/harness/types.js';
 
-vi.mock('child_process');
 vi.mock('fs');
+vi.mock('../../src/lib/harness/index.js');
+vi.mock('../../src/lib/spec-validator.js');
 
 describe('spec-generator', () => {
-  let mockProcess: EventEmitter & {
-    stdin: Writable & { write: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> };
-    stdout: EventEmitter;
-    stderr: EventEmitter;
-    kill: ReturnType<typeof vi.fn>;
-  };
+  let harnessRunMock: ReturnType<typeof vi.fn<[string, HarnessRunOptions, (event: HarnessEvent) => void], Promise<HarnessResult>>>;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock process.stdin to return a proper readable stream
-    // Add setRawMode if it doesn't exist (test environment)
-    if (!(process.stdin as any).setRawMode) {
-      (process.stdin as any).setRawMode = () => {};
-    }
-    vi.spyOn(process.stdin, 'setRawMode' as any).mockImplementation(() => {});
-    vi.spyOn(process.stdin, 'resume').mockImplementation(() => process.stdin);
-    vi.spyOn(process.stdin, 'pause').mockImplementation(() => process.stdin);
-    vi.spyOn(process.stdin, 'pipe').mockImplementation(() => process.stdin as any);
-    vi.spyOn(process.stdin, 'unpipe').mockImplementation(() => process.stdin);
-
-    // Create proper writable stream for mock process stdin
-    const mockProcessStdin = new Writable({
-      write(chunk, encoding, callback) {
-        callback();
-      },
-    });
-    (mockProcessStdin as any).write = vi.fn((data, cb) => {
-      if (typeof cb === 'function') cb();
-      return true;
-    });
-    (mockProcessStdin as any).end = vi.fn();
-
-    mockProcess = Object.assign(new EventEmitter(), {
-      stdin: mockProcessStdin as any,
-      stdout: new EventEmitter(),
-      stderr: new EventEmitter(),
-      kill: vi.fn(),
+    harnessRunMock = vi.fn<[string, HarnessRunOptions, (event: HarnessEvent) => void], Promise<HarnessResult>>();
+    vi.mocked(harnessModule.getHarness).mockReturnValue({
+      name: 'claude',
+      run: harnessRunMock,
     });
 
-    vi.mocked(spawn).mockReturnValue(mockProcess as any);
+    vi.mocked(specValidatorModule.validateSpecInDir).mockReturnValue({
+      valid: true,
+      violations: [],
+      warnings: [],
+    });
+    vi.mocked(specValidatorModule.formatValidationResult).mockReturnValue('✓ Valid');
   });
 
   afterEach(() => {
@@ -57,7 +34,15 @@ describe('spec-generator', () => {
   });
 
   describe('generateSpec', () => {
-    it('uses /create-spec skill in interactive mode', async () => {
+    it('uses harness with /spec-autonomous skill', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue('# Test SPEC\n\n- [ ] Task 1');
+
+      harnessRunMock.mockImplementation(async (prompt, opts, onEvent) => {
+        onEvent({ type: 'message', text: 'SPEC_COMPLETE' });
+        return { success: true, durationMs: 1000 } as HarnessResult;
+      });
+
       const options: SpecGeneratorOptions = {
         description: 'Build a REST API for user management',
         cwd: '/test/path',
@@ -65,277 +50,240 @@ describe('spec-generator', () => {
         timeoutMs: 5000,
       };
 
-      // Don't await - we'll trigger close immediately
-      const promise = generateSpec(options);
+      await generateSpec(options);
 
-      // Wait a tick for spawn to be called
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(spawn).toHaveBeenCalledWith(
-        'claude',
-        expect.arrayContaining(['--dangerously-skip-permissions']),
-        expect.objectContaining({
-          cwd: '/test/path',
-          stdio: ['pipe', 'inherit', 'inherit'],
-        })
+      expect(harnessModule.getHarness).toHaveBeenCalledWith('claude');
+      expect(harnessRunMock).toHaveBeenCalledWith(
+        expect.stringContaining('/spec-autonomous'),
+        expect.objectContaining({ cwd: '/test/path' }),
+        expect.any(Function)
       );
 
-      expect(mockProcess.stdin.write).toHaveBeenCalledWith(
-        expect.stringContaining('/create-spec')
-      );
-      expect(mockProcess.stdin.write).toHaveBeenCalledWith(
-        expect.stringContaining('Build a REST API for user management')
-      );
-
-      // Simulate SPEC.md not created (to resolve promise)
-      mockProcess.emit('close', 1);
-
-      await promise;
+      const prompt = harnessRunMock.mock.calls[0][0] as string;
+      expect(prompt).toContain('Build a REST API for user management');
     });
 
-    it('uses embedded prompt in headless mode', async () => {
+    it('always passes interactive: false (CLI is headless by definition)', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue('# Test SPEC\n\n- [ ] Task 1');
+
+      harnessRunMock.mockImplementation(async (prompt, opts, onEvent) => {
+        onEvent({ type: 'message', text: 'SPEC_COMPLETE' });
+        return { success: true, durationMs: 1000 } as HarnessResult;
+      });
+
       const options: SpecGeneratorOptions = {
         description: 'Build a CLI tool',
         cwd: '/test/path',
-        headless: true,
+        headless: false,
         timeoutMs: 5000,
       };
 
-      const promise = generateSpec(options);
+      await generateSpec(options);
 
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      expect(spawn).toHaveBeenCalledWith(
-        'claude',
-        expect.arrayContaining(['--output-format', 'stream-json']),
-        expect.objectContaining({
-          cwd: '/test/path',
-          stdio: ['pipe', 'pipe', 'pipe'],
-        })
-      );
-
-      // In headless mode, the prompt should NOT include /create-spec
-      const spawnCall = vi.mocked(spawn).mock.calls[0];
-      const args = spawnCall[1] as string[];
-      const promptIndex = args.indexOf('-p');
-      const prompt = args[promptIndex + 1];
-
-      expect(prompt).not.toContain('/create-spec');
-      expect(prompt).toContain('Build a CLI tool');
-
-      mockProcess.emit('close', 1);
-      await promise;
+      const runOptions = harnessRunMock.mock.calls[0][1] as HarnessRunOptions;
+      expect(runOptions.interactive).toBe(false);
     });
 
     it('respects model option', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue('# Test SPEC\n\n- [ ] Task 1');
+
+      harnessRunMock.mockImplementation(async (prompt, opts, onEvent) => {
+        onEvent({ type: 'message', text: 'SPEC_COMPLETE' });
+        return { success: true, durationMs: 1000 } as HarnessResult;
+      });
+
       const options: SpecGeneratorOptions = {
         description: 'Test',
         cwd: '/test',
-        headless: false,
+        headless: true,
         timeoutMs: 5000,
         model: 'opus',
       };
 
-      const promise = generateSpec(options);
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await generateSpec(options);
 
-      expect(spawn).toHaveBeenCalledWith(
-        'claude',
-        expect.arrayContaining(['--model', 'opus']),
-        expect.anything()
-      );
-
-      mockProcess.emit('close', 1);
-      await promise;
+      const runOptions = harnessRunMock.mock.calls[0][1] as HarnessRunOptions;
+      expect(runOptions.model).toBe('opus');
     });
   });
 
-  describe('autonomous mode', () => {
-    beforeEach(() => {
-      // Mock fs functions for autonomous mode
+  describe('result handling', () => {
+    it('returns success when SPEC_COMPLETE marker is present', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue('# Test SPEC\n\n- [ ] Task 1');
-    });
-
-    it('runs review loop on generated spec', async () => {
-      const options: SpecGeneratorOptions = {
-        description: 'Build a REST API',
-        cwd: '/test',
-        headless: false,
-        autonomous: true,
-        timeoutMs: 5000,
-        maxAttempts: 3,
-      };
-
-      const promise = generateSpec(options);
-
-      // Wait for initial generation
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // First spawn: initial generation (headless)
-      expect(spawn).toHaveBeenCalledTimes(1);
-      mockProcess.emit('close', 0);
-
-      // Wait for review spawn
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Second spawn: review-spec
-      expect(spawn).toHaveBeenCalledTimes(2);
-      const reviewCall = vi.mocked(spawn).mock.calls[1];
-      expect(reviewCall[1]).toContain('-p');
-      const reviewPromptIndex = (reviewCall[1] as string[]).indexOf('-p');
-      const reviewPrompt = (reviewCall[1] as string[])[reviewPromptIndex + 1];
-      expect(reviewPrompt).toContain('/review-spec');
-
-      // Simulate review passing
-      mockProcess.stdout.emit('data', Buffer.from('SPEC Review: PASS\n'));
-      mockProcess.emit('close', 0);
-
-      const result = await promise;
-
-      expect(result.success).toBe(true);
-      expect(result.reviewPassed).toBe(true);
-      expect(result.attempts).toBe(1);
-    });
-
-    it('refines spec on review failure', async () => {
-      const options: SpecGeneratorOptions = {
-        description: 'Build a REST API',
-        cwd: '/test',
-        headless: false,
-        autonomous: true,
-        timeoutMs: 5000,
-        maxAttempts: 3,
-      };
-
-      const promise = generateSpec(options);
-
-      // Initial generation
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.emit('close', 0);
-
-      // First review (fail)
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.stdout.emit(
-        'data',
-        Buffer.from('SPEC Review: FAIL\n\n## Format Issues\n\n- Bad checkbox syntax')
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        '# Test SPEC\n\n- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3'
       );
-      mockProcess.emit('close', 0);
 
-      // Refinement
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.emit('close', 0);
+      harnessRunMock.mockImplementation(async (prompt, opts, onEvent) => {
+        onEvent({ type: 'message', text: 'Creating spec...' });
+        onEvent({ type: 'message', text: 'SPEC_COMPLETE\n\nSPEC.md created.' });
+        return { success: true, durationMs: 1000 } as HarnessResult;
+      });
 
-      // Second review (pass)
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.stdout.emit('data', Buffer.from('SPEC Review: PASS\n'));
-      mockProcess.emit('close', 0);
-
-      const result = await promise;
-
-      expect(result.success).toBe(true);
-      expect(result.reviewPassed).toBe(true);
-      expect(result.attempts).toBe(2);
-      expect(spawn).toHaveBeenCalledTimes(4); // gen + review1 + refine + review2
-    });
-
-    it('fails after max attempts without passing review', async () => {
       const options: SpecGeneratorOptions = {
-        description: 'Build a REST API',
-        cwd: '/test',
-        headless: false,
-        autonomous: true,
-        timeoutMs: 5000,
-        maxAttempts: 2,
-      };
-
-      const promise = generateSpec(options);
-
-      // Initial generation
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.emit('close', 0);
-
-      // First review (fail)
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.stdout.emit('data', Buffer.from('SPEC Review: FAIL\n'));
-      mockProcess.emit('close', 0);
-
-      // Refinement
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.emit('close', 0);
-
-      // Second review (fail)
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.stdout.emit('data', Buffer.from('SPEC Review: FAIL\n'));
-      mockProcess.emit('close', 0);
-
-      const result = await promise;
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Max attempts');
-      expect(result.reviewPassed).toBe(false);
-      expect(result.attempts).toBe(2);
-    });
-
-    it('parses review output correctly', async () => {
-      const options: SpecGeneratorOptions = {
-        description: 'Build a REST API',
+        description: 'Test',
         cwd: '/test',
         headless: true,
-        autonomous: true,
         timeoutMs: 5000,
-        maxAttempts: 3,
       };
 
-      const promise = generateSpec(options);
+      const result = await generateSpec(options);
 
-      // Initial generation
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.emit('close', 0);
+      expect(result.success).toBe(true);
+      expect(result.taskCount).toBe(3);
+    });
 
-      // Review with detailed feedback
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const reviewOutput = `
-SPEC Review: FAIL
+    it('returns failure when SPEC_COMPLETE marker is missing', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue(
+        '# Test SPEC\n\n- [ ] Task 1'
+      );
 
-## Format Issues
+      harnessRunMock.mockImplementation(async (prompt, opts, onEvent) => {
+        onEvent({ type: 'message', text: 'Creating spec...' });
+        // No SPEC_COMPLETE marker
+        return { success: true, durationMs: 1000 } as HarnessResult;
+      });
 
-### Checkbox Syntax
-- Line 42: Uses * [ ] instead of - [ ]
+      const options: SpecGeneratorOptions = {
+        description: 'Test',
+        cwd: '/test',
+        headless: true,
+        timeoutMs: 5000,
+      };
 
-## Content Concerns
+      const result = await generateSpec(options);
 
-### HIGH PRIORITY
-1. Missing Prerequisites: Auth needed first
+      expect(result.success).toBe(false);
+      expect(result.taskCount).toBe(1);
+    });
 
-## Recommendations
+    it('returns failure when SPEC.md is not created', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(false);
 
-1. Fix format violations
-2. Add auth tasks
-`;
-      mockProcess.stdout.emit('data', Buffer.from(reviewOutput));
-      mockProcess.emit('close', 0);
+      harnessRunMock.mockResolvedValue({
+        success: true,
+        durationMs: 1000,
+      } as HarnessResult);
 
-      // Refinement
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const refineCall = vi.mocked(spawn).mock.calls[2];
-      const refineArgs = refineCall[1] as string[];
-      const refinePromptIndex = refineArgs.indexOf('-p');
-      const refinePrompt = refineArgs[refinePromptIndex + 1];
+      const options: SpecGeneratorOptions = {
+        description: 'Test',
+        cwd: '/test',
+        headless: true,
+        timeoutMs: 5000,
+      };
 
-      // Check that concerns are included in refinement prompt
-      expect(refinePrompt).toContain('Format issues found');
-      expect(refinePrompt).toContain('Content concerns');
-      expect(refinePrompt).toContain('Recommendations');
+      const result = await generateSpec(options);
 
-      mockProcess.emit('close', 0);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('SPEC.md was not created');
+    });
 
-      // Second review (pass)
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      mockProcess.stdout.emit('data', Buffer.from('SPEC Review: PASS\n'));
-      mockProcess.emit('close', 0);
+    it('validates spec and returns validation result', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue('# Test SPEC\n\n- [ ] Task 1');
+      vi.mocked(specValidatorModule.validateSpecInDir).mockReturnValue({
+        valid: false,
+        violations: [{ type: 'code_snippet', line: 1, content: '```code```', message: 'Code not allowed' }],
+        warnings: [],
+      });
+      vi.mocked(specValidatorModule.formatValidationResult).mockReturnValue('✗ Invalid');
 
-      await promise;
+      harnessRunMock.mockImplementation(async (prompt, opts, onEvent) => {
+        onEvent({ type: 'message', text: 'SPEC_COMPLETE' });
+        return { success: true, durationMs: 1000 } as HarnessResult;
+      });
+
+      const options: SpecGeneratorOptions = {
+        description: 'Test',
+        cwd: '/test',
+        headless: true,
+        timeoutMs: 5000,
+      };
+
+      const result = await generateSpec(options);
+
+      expect(result.validationPassed).toBe(false);
+      expect(result.validationOutput).toBe('✗ Invalid');
+    });
+
+    it('returns failure when taskCount is 0', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue('# Empty SPEC\n\nNo tasks here');
+
+      harnessRunMock.mockImplementation(async (prompt, opts, onEvent) => {
+        onEvent({ type: 'message', text: 'SPEC_COMPLETE' });
+        return { success: true, durationMs: 1000 } as HarnessResult;
+      });
+
+      const options: SpecGeneratorOptions = {
+        description: 'Test',
+        cwd: '/test',
+        headless: true,
+        timeoutMs: 5000,
+      };
+
+      const result = await generateSpec(options);
+
+      expect(result.success).toBe(false);
+      expect(result.taskCount).toBe(0);
+    });
+
+    it('returns failure when harness fails', async () => {
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(fs.readFileSync).mockReturnValue('# Test SPEC\n\n- [ ] Task 1');
+
+      harnessRunMock.mockImplementation(async (prompt, opts, onEvent) => {
+        onEvent({ type: 'message', text: 'SPEC_COMPLETE' });
+        return { success: false, durationMs: 1000, error: 'Harness error' } as HarnessResult;
+      });
+
+      const options: SpecGeneratorOptions = {
+        description: 'Test',
+        cwd: '/test',
+        headless: true,
+        timeoutMs: 5000,
+      };
+
+      const result = await generateSpec(options);
+
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('error handling', () => {
+    it('returns error when harness throws', async () => {
+      harnessRunMock.mockRejectedValue(new Error('Connection failed'));
+
+      const options: SpecGeneratorOptions = {
+        description: 'Test',
+        cwd: '/test',
+        headless: true,
+        timeoutMs: 5000,
+      };
+
+      const result = await generateSpec(options);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Connection failed');
+    });
+
+    it('handles non-Error exceptions', async () => {
+      harnessRunMock.mockRejectedValue('String error');
+
+      const options: SpecGeneratorOptions = {
+        description: 'Test',
+        cwd: '/test',
+        headless: true,
+        timeoutMs: 5000,
+      };
+
+      const result = await generateSpec(options);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('String error');
     });
   });
 });

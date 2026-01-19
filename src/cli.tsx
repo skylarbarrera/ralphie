@@ -30,61 +30,94 @@ import { validateProject } from './commands/run.js';
 import { runUpgrade, detectVersion, getVersionName, CURRENT_VERSION } from './commands/upgrade.js';
 import { createFeatureBranch } from './lib/git.js';
 import { getSpecTitle } from './lib/spec-parser.js';
+import { getSpecTitleV2 } from './lib/spec-parser-v2.js';
 import { emitFailed } from './lib/headless-emitter.js';
 import { executeHeadlessRun as runHeadless } from './lib/headless-runner.js';
 import { validateSpecInDir, formatValidationResult } from './lib/spec-validator.js';
 import { generateSpec } from './lib/spec-generator.js';
 import { getHarnessName } from './lib/config-loader.js';
+import {
+  runStatus,
+  formatStatus,
+  runList,
+  formatList,
+  runArchive,
+  formatArchive,
+  runLessons,
+} from './commands/spec-v2.js';
+import { generateTaskContext } from './lib/prompt-generator.js';
 
 export const DEFAULT_PROMPT = `You are Ralphie, an autonomous coding assistant.
 
 ## Your Task
-Complete ONE checkbox from SPEC.md per iteration. Sub-bullets under a checkbox are implementation details - complete ALL of them before marking the checkbox done.
+Complete ONE task from specs/active/*.md per iteration. Tasks are identified by IDs like T001, T002, etc.
 
 ## The Loop
-1. Read SPEC.md to find the next incomplete task (check STATE.txt if unsure)
+1. Read the spec in specs/active/ to find the next task with Status: pending
 2. Write plan to .ai/ralphie/plan.md:
    - Goal: one sentence
+   - Task ID: T###
    - Files: what you'll create/modify
    - Tests: what you'll test
    - Exit criteria: how you know you're done
-3. Implement the task with tests
-4. Run tests and type checks
-5. Mark checkbox complete in SPEC.md
-6. Commit with clear message
-7. Update .ai/ralphie/index.md (append commit summary) and STATE.txt
+3. Update the task's Status field: \`- Status: pending\` → \`- Status: in_progress\`
+4. Implement the task with tests
+5. Run the task's Verify command (found in **Verify:** section)
+6. Run full test suite and type checks
+7. Update the task's Status field: \`- Status: in_progress\` → \`- Status: passed\`
+8. Commit with task ID in message (e.g., "feat: T001 add user validation")
+9. Update .ai/ralphie/index.md (append commit summary) and STATE.txt
 
-## Memory Files
-- .ai/ralphie/plan.md - Current task plan (overwrite each iteration)
-- .ai/ralphie/index.md - Commit log (append after each commit)
+## Task Format in Spec
+\`\`\`markdown
+### T001: Task title
+- Status: pending | in_progress | passed | failed
+- Size: S | M | L
+
+**Deliverables:**
+- What to build (outcomes)
+
+**Verify:** \`npm test -- task-name\`
+\`\`\`
 
 ## Rules
 - Plan BEFORE coding
-- Tests BEFORE marking complete
+- Run Verify command BEFORE marking passed
 - Commit AFTER each task
 - No TODO/FIXME stubs in completed tasks`;
 
 export const GREEDY_PROMPT = `You are Ralphie, an autonomous coding assistant in GREEDY MODE.
 
 ## Your Task
-Complete AS MANY checkboxes as possible from SPEC.md before context fills up.
+Complete AS MANY tasks as possible from specs/active/*.md before context fills up. Tasks are identified by IDs like T001, T002, etc.
 
 ## The Loop (repeat until done or context full)
-1. Read SPEC.md to find the next incomplete task
-2. Write plan to .ai/ralphie/plan.md
-3. Implement the task with tests
-4. Run tests and type checks
-5. Mark checkbox complete in SPEC.md
-6. Commit with clear message
-7. Update .ai/ralphie/index.md and STATE.txt
-8. **CONTINUE to next task** (don't stop!)
+1. Read the spec in specs/active/ to find tasks with Status: pending
+2. Write plan to .ai/ralphie/plan.md with Task ID
+3. Update task Status: \`- Status: pending\` → \`- Status: in_progress\`
+4. Implement the task with tests
+5. Run the task's Verify command
+6. Run full test suite and type checks
+7. Update task Status: \`- Status: in_progress\` → \`- Status: passed\`
+8. Commit with task ID in message
+9. Update .ai/ralphie/index.md and STATE.txt
+10. **CONTINUE to next task** (don't stop!)
 
-## Memory Files
-- .ai/ralphie/plan.md - Current task plan (overwrite each task)
-- .ai/ralphie/index.md - Commit log (append after each commit)
+## Task Format in Spec
+\`\`\`markdown
+### T001: Task title
+- Status: pending | in_progress | passed | failed
+- Size: S | M | L
+
+**Deliverables:**
+- What to build (outcomes)
+
+**Verify:** \`npm test -- task-name\`
+\`\`\`
 
 ## Rules
 - Commit after EACH task (saves progress incrementally)
+- Run Verify command BEFORE marking passed
 - Keep going until all tasks done OR context is filling up
 - No TODO/FIXME stubs in completed tasks
 - The goal is maximum throughput - don't stop after one task`;
@@ -105,13 +138,15 @@ export interface RunOptions {
   model?: string;
   harness?: string;
   greedy: boolean;
+  budget: number;
 }
 
 export type CliOptions = RunOptions;
 
 export const MAX_ALL_ITERATIONS = 100;
 
-export function resolvePrompt(options: RunOptions): string {
+export function resolvePrompt(options: RunOptions, specPath?: string): string {
+  // Custom prompts bypass task context injection
   if (options.prompt) {
     return options.prompt;
   }
@@ -124,7 +159,18 @@ export function resolvePrompt(options: RunOptions): string {
     return readFileSync(filePath, 'utf-8');
   }
 
-  return options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
+  // Get base prompt
+  const basePrompt = options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
+
+  // Generate task context from spec and budget
+  const taskContext = generateTaskContext(specPath, { budget: options.budget });
+
+  // Append task context if available
+  if (taskContext) {
+    return `${basePrompt}\n\n${taskContext}`;
+  }
+
+  return basePrompt;
 }
 
 export function executeRun(options: RunOptions): void {
@@ -138,9 +184,9 @@ export function executeRun(options: RunOptions): void {
     process.exit(1);
   }
 
-  if (!options.noBranch) {
-    const specPath = join(options.cwd, 'SPEC.md');
-    const title = getSpecTitle(specPath);
+  if (!options.noBranch && validation.specPath) {
+    // Try V2 parser first, fall back to V1 for legacy specs
+    const title = getSpecTitleV2(validation.specPath) ?? getSpecTitle(validation.specPath);
     if (title) {
       const result = createFeatureBranch(options.cwd, title);
       if (result.created) {
@@ -153,7 +199,7 @@ export function executeRun(options: RunOptions): void {
     }
   }
 
-  const prompt = resolvePrompt(options);
+  const prompt = resolvePrompt(options, validation.specPath);
   const idleTimeoutMs = options.timeoutIdle * 1000;
 
   const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
@@ -191,7 +237,7 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
     process.exit(3);
   }
 
-  const prompt = resolvePrompt(options);
+  const prompt = resolvePrompt(options, validation.specPath);
   const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
 
   const exitCode = await runHeadless({
@@ -268,6 +314,7 @@ function main(): void {
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'sonnet')
     .option('--harness <name>', 'AI harness to use (claude, codex, opencode)')
     .option('-g, --greedy', 'Complete multiple tasks per iteration until context fills')
+    .option('--budget <points>', 'Size points budget per iteration (default 4)', '4')
     .action((opts) => {
       let iterations = parseInt(opts.iterations, 10);
       const all = opts.all ?? false;
@@ -293,6 +340,7 @@ function main(): void {
         model: opts.model,
         harness: opts.harness,
         greedy: opts.greedy ?? false,
+        budget: parseInt(opts.budget, 10),
       };
 
       if (options.headless) {
@@ -343,10 +391,9 @@ function main(): void {
     .argument('<description>', 'What to build (e.g., "REST API for user management")')
     .option('--cwd <path>', 'Working directory', process.cwd())
     .option('--headless', 'Output JSON events instead of UI', false)
-    .option('--auto', 'Autonomous mode with review loop (no user interaction)', false)
     .option('--timeout <seconds>', 'Timeout for generation', '300')
-    .option('--max-attempts <n>', 'Max refinement attempts in autonomous mode', '3')
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'opus')
+    .option('--harness <name>', 'AI harness to use: claude, codex, opencode', 'claude')
     .action(async (description: string, opts) => {
       const cwd = resolve(opts.cwd);
 
@@ -354,10 +401,9 @@ function main(): void {
         description,
         cwd,
         headless: opts.headless ?? false,
-        autonomous: opts.auto ?? false,
         timeoutMs: parseInt(opts.timeout, 10) * 1000,
-        maxAttempts: parseInt(opts.maxAttempts, 10),
         model: opts.model,
+        harness: opts.harness,
       });
 
       if (!result.success) {
@@ -372,6 +418,72 @@ function main(): void {
       }
 
       process.exit(0);
+    });
+
+  program
+    .command('spec-list')
+    .description('List active and completed specs')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runList(cwd);
+        console.log(formatList(result));
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command('status')
+    .description('Show progress of active spec')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .option('--json', 'Output as JSON', false)
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runStatus(cwd);
+        if (opts.json) {
+          console.log(JSON.stringify(result, null, 2));
+        } else {
+          console.log(formatStatus(result));
+        }
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command('archive')
+    .description('Archive completed spec to specs/completed/')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runArchive(cwd);
+        console.log(formatArchive(result));
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command('lessons')
+    .description('View or add to lessons learned')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .option('--add <lesson>', 'Add a new lesson')
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runLessons(cwd, opts.add);
+        console.log(result);
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
     });
 
   program

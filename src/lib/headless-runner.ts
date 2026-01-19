@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { isSpecComplete } from './spec-parser.js';
+import { isSpecCompleteV2, getProgressV2, parseSpecV2 } from './spec-parser-v2.js';
+import { locateActiveSpec, SpecLocatorError } from './spec-locator.js';
 import { getToolCategory } from './tool-categories.js';
 import type { HeadlessIterationResult } from './types.js';
 import type { HarnessName, HarnessEvent } from './harness/types.js';
@@ -37,6 +38,10 @@ export const EXIT_CODE_STUCK = 1;
 export const EXIT_CODE_MAX_ITERATIONS = 2;
 export const EXIT_CODE_ERROR = 3;
 
+/**
+ * @deprecated Use getProgressV2() from spec-parser-v2.ts instead.
+ * Kept for backward compatibility with V1 SPEC.md checkbox format.
+ */
 export function getCompletedTaskTexts(cwd: string): string[] {
   const specPath = join(cwd, 'SPEC.md');
   if (!existsSync(specPath)) return [];
@@ -55,6 +60,10 @@ export function getCompletedTaskTexts(cwd: string): string[] {
   return completedTasks;
 }
 
+/**
+ * @deprecated Use getProgressV2() from spec-parser-v2.ts instead.
+ * Kept for backward compatibility with V1 SPEC.md checkbox format.
+ */
 export function getTotalTaskCount(cwd: string): number {
   const specPath = join(cwd, 'SPEC.md');
   if (!existsSync(specPath)) return 0;
@@ -209,14 +218,40 @@ export async function runSingleIteration(
 export async function executeHeadlessRun(
   options: HeadlessRunOptions,
 ): Promise<number> {
-  const totalTasks = getTotalTaskCount(options.cwd);
   const harnessName = options.harness ?? 'claude';
-  emitStarted('SPEC.md', totalTasks, options.model, harnessName);
+
+  // Try to locate V2 spec first, fall back to V1 for progress tracking
+  let specPath: string;
+  let isV2Spec = false;
+  try {
+    const located = locateActiveSpec(options.cwd);
+    specPath = located.path;
+    isV2Spec = !located.isLegacy;
+  } catch {
+    // Fall back to V1 SPEC.md path
+    specPath = join(options.cwd, 'SPEC.md');
+  }
+
+  // Get initial progress using V2 parser if available, otherwise V1
+  let initialProgress = { completed: 0, total: 0 };
+  if (isV2Spec) {
+    const progress = getProgressV2(specPath);
+    if (progress) {
+      initialProgress = { completed: progress.completed, total: progress.total };
+    }
+  } else {
+    // Fall back to V1 checkbox counting
+    initialProgress = {
+      completed: getCompletedTaskTexts(options.cwd).length,
+      total: getTotalTaskCount(options.cwd),
+    };
+  }
+
+  emitStarted(specPath, initialProgress.total, options.model, harnessName);
 
   let iterationsWithoutProgress = 0;
-  let tasksBefore = getCompletedTaskTexts(options.cwd);
+  let lastCompletedCount = initialProgress.completed;
   const totalStartTime = Date.now();
-  let lastCompletedCount = tasksBefore.length;
 
   for (let i = 1; i <= options.iterations; i++) {
     emitIteration(i, 'starting');
@@ -228,15 +263,25 @@ export async function executeHeadlessRun(
       return EXIT_CODE_ERROR;
     }
 
-    // Check for newly completed tasks
-    const tasksAfter = getCompletedTaskTexts(options.cwd);
-    const newlyCompleted = tasksAfter.filter(task => !tasksBefore.includes(task));
-
-    for (let j = 0; j < newlyCompleted.length; j++) {
-      emitTaskComplete(lastCompletedCount + j + 1, newlyCompleted[j]);
+    // Check for newly completed tasks using appropriate parser
+    let currentCompleted = 0;
+    if (isV2Spec) {
+      const progress = getProgressV2(specPath);
+      if (progress) {
+        currentCompleted = progress.completed;
+      }
+    } else {
+      currentCompleted = getCompletedTaskTexts(options.cwd).length;
     }
 
-    if (newlyCompleted.length > 0) {
+    const newlyCompletedCount = currentCompleted - lastCompletedCount;
+
+    // Emit task completion events
+    for (let j = 0; j < newlyCompletedCount; j++) {
+      emitTaskComplete(lastCompletedCount + j + 1, `Task ${lastCompletedCount + j + 1}`);
+    }
+
+    if (newlyCompletedCount > 0) {
       const filesWithStubs = detectTodoStubs(options.cwd);
       if (filesWithStubs.length > 0) {
         emitWarning(
@@ -245,11 +290,8 @@ export async function executeHeadlessRun(
           filesWithStubs
         );
       }
-    }
-
-    if (tasksAfter.length > tasksBefore.length) {
       iterationsWithoutProgress = 0;
-      lastCompletedCount = tasksAfter.length;
+      lastCompletedCount = currentCompleted;
     } else {
       iterationsWithoutProgress++;
     }
@@ -267,14 +309,11 @@ export async function executeHeadlessRun(
       return EXIT_CODE_STUCK;
     }
 
-    // Check if SPEC is complete
-    const specPath = join(options.cwd, 'SPEC.md');
-    if (isSpecComplete(specPath)) {
-      emitComplete(tasksAfter.length, Date.now() - totalStartTime);
+    // Check if spec is complete (V2 format)
+    if (isV2Spec && isSpecCompleteV2(specPath)) {
+      emitComplete(currentCompleted, Date.now() - totalStartTime);
       return EXIT_CODE_COMPLETE;
     }
-
-    tasksBefore = tasksAfter;
   }
 
   // Max iterations reached without completion

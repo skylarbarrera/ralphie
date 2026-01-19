@@ -1,176 +1,125 @@
 ---
 name: ralphie-iterate
-description: Execute one Ralphie iteration - load context, explore codebase, plan implementation, write code with tests, review changes, and commit. Use this skill to run a single autonomous coding iteration following the Ralphie protocol.
+description: Execute one Ralphie iteration using V2 spec format - load context, select tasks by budget, plan, implement, verify, update status, and commit.
 context: fork
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, TodoWrite, LSP
 ---
 
-# Ralphie Iteration Protocol
+# Ralphie Iteration Protocol (V2 Format)
 
-Execute ONE complete Ralphie iteration: read SPEC, plan, implement, test, review, commit.
+Execute ONE complete Ralphie iteration: read spec, select tasks by budget, plan, implement, verify, update status, commit.
 
 **For coding standards** (language, style, testing, git, security), see `ralphie.md`.
 
-## Claude Code Native Features
+## V2 Spec Format Overview
 
-This skill leverages Claude Code's native capabilities:
+V2 specs use task IDs and structured fields instead of checkboxes:
+
+```markdown
+### T001: Task title
+- Status: pending | in_progress | passed | failed
+- Size: S (1pt) | M (2pt) | L (4pt)
+
+**Deliverables:**
+- Outcome 1
+- Outcome 2
+
+**Verify:** `npm test -- task-name`
+```
+
+**Key differences from legacy:**
+- Task IDs (`T001`) instead of checkboxes (`- [ ]`)
+- Status field tracks state (not `[x]` vs `[ ]`)
+- Size field enables budget-based selection
+- Verify section provides completion check
+
+## Claude Code Native Features
 
 | Feature | Tool | When Used |
 |---------|------|-----------|
-| **Codebase Exploration** | `Task(Explore)` | Step 2 - understand code before planning |
+| **Codebase Exploration** | `Task(scout)` | Step 2 - understand code before planning |
 | **Progress Tracking** | `TodoWrite` | Steps 1-6 - track sub-task completion |
 | **Code Review** | `Task(general-purpose)` | Step 5 - pre-commit review |
 | **Iteration Validation** | Stop Hook | After Step 6 - verify iteration complete |
 
-## Creating SPECs
+## Step 1: Load Context and Select Tasks
 
-**Use the `/create-spec` skill** for creating new SPECs. It provides:
-- Structured interview process
-- Proper task batching
-- LLM-based review before finalizing
+### 1.1 Locate Spec
 
-This skill (`ralphie-iterate`) is for **executing** iterations, not creating specs.
+Find the active spec:
 
-## Writing SPECs
+```bash
+ls specs/active/*.md 2>/dev/null  # V2 location
+ls SPEC.md 2>/dev/null             # Legacy fallback
+```
 
-Optimize for **iteration efficiency**. Each checkbox = one Ralphie iteration.
+If found at legacy location (`SPEC.md`), warn: "⚠️ Using legacy spec. Consider migrating to V2 format in `specs/active/`"
 
-### Batch Related Tasks
+### 1.2 Parse Tasks and Select by Budget
+
+Read the spec and identify tasks to work on:
+
+1. **Find pending/in_progress tasks** - Look for `- Status: pending` or `- Status: in_progress`
+2. **Calculate budget** - Default: 4 points per iteration
+3. **Select tasks that fit** - Prioritize `in_progress` first, then `pending`
+
+**Size points:**
+- S = 1 point
+- M = 2 points
+- L = 4 points
+
+**Selection example (budget 4):**
+```
+T003 (in_progress, M=2) → Selected (2 pts used)
+T004 (pending, S=1) → Selected (3 pts used)
+T005 (pending, S=1) → Selected (4 pts used)
+T006 (pending, M=2) → Skipped (would exceed budget)
+```
+
+### 1.3 Mark Selected Tasks as in_progress
+
+For each task you're starting, update its Status:
 
 ```markdown
-# BAD - 4 iterations
-- [ ] Create UserModel.ts
-- [ ] Create UserService.ts
-- [ ] Create UserController.ts
-- [ ] Create user.test.ts
+# Before
+### T004: Add input validation
+- Status: pending
+- Size: S
 
-# GOOD - 1 iteration
-- [ ] Create User module (Model, Service, Controller) with tests
+# After
+### T004: Add input validation
+- Status: in_progress
+- Size: S
 ```
 
-**Batch when:**
-- Same directory or tightly coupled files
-- Similar structure (4 similar components = 1 task)
-- Tests go with implementation
+**Use Edit tool** to change `Status: pending` to `Status: in_progress`.
 
-**Don't batch when:**
-- Different areas of codebase
-- Complex logic needing focus
-- Independent failure modes
+### 1.4 Read Context Files
 
-### What SPECs Should NOT Include
+**Read if they exist:**
+- `specs/lessons.md` - Past learnings to apply
+- `.ai/ralphie/index.md` (last 3-5 entries) - Recent changes and recommendations
+- `STATE.txt` - If unsure about partial completion
 
-SPECs describe **requirements**, not solutions. Implementation details belong in `.ai/ralphie/plan.md`.
+### 1.5 Break Down with TodoWrite
 
-**Never include in SPEC.md:**
-- Code snippets or fix approaches
-- Specific file:line references (e.g., `setup.ts:150`)
-- Root cause analysis ("The bug is in X because...")
-- Technical implementation notes or "Technical Notes" sections
-- Shell commands or CLI invocations
-- "How to fix" instructions
-
-**Sub-bullets are deliverables, not instructions:**
-
-```markdown
-# BAD - prescribes implementation
-- [ ] Fix PR creation
-  - Use `git rev-list` to check unpushed commits
-  - Remove the early return at line 152
-  - Add `--token` flag to gh command
-
-# GOOD - describes deliverables
-- [ ] Fix PR creation flow
-  - Detect unpushed commits (not uncommitted changes)
-  - Push and create PR when commits exist
-  - Pass auth token correctly to gh CLI
-```
-
-**Why this matters:**
-- The implementer figures out HOW during Step 2 (Explore) and Step 3 (Plan)
-- Over-specified SPECs constrain solutions and hide better approaches
-- Requirements should be testable outcomes, not implementation checklists
-
-**Run `ralphie validate` to check your SPEC for violations.**
-
-## Step 1: Load Context
-
-### 1.1 Read SPEC.md
-
-Find the next incomplete task:
-- Look for the first unchecked checkbox: `- [ ]`
-- Skip checked items: `- [x]`
-- A batched checkbox counts as ONE task (e.g., "Create components A, B, C" = 1 task)
-
-```
-Read SPEC.md → Find first `- [ ]` → This is your task for this iteration
-```
-
-### 1.2 Check STATE.txt (if needed)
-
-Read `STATE.txt` when:
-- Unsure if a task was partially completed
-- Need to understand blockers from previous iterations
-- Want to verify what was done vs what SPEC shows
-
-Look for:
-- ✅ entries (completed work)
-- ⚠️ entries (blockers or issues)
-- Last completion timestamp
-
-### 1.3 Read Recent Context
-
-Read **last 3-5 entries** from `.ai/ralphie/index.md`:
-- Extract file patterns (what files were recently changed)
-- Note "next:" hints (what the previous iteration recommended)
-- Understand recent architectural decisions
-
-**Don't read the entire index** — only recent entries to stay context-efficient.
-
-### 1.4 Break Down with TodoWrite
-
-If the task has **3+ steps**, use TodoWrite to track sub-tasks:
+If total selected work has **3+ steps**, use TodoWrite:
 
 ```typescript
 TodoWrite({
   todos: [
-    {
-      content: "Read existing auth code",
-      activeForm: "Reading existing auth code",
-      status: "pending"
-    },
-    {
-      content: "Create login endpoint",
-      activeForm: "Creating login endpoint",
-      status: "pending"
-    },
-    {
-      content: "Add input validation",
-      activeForm: "Adding input validation",
-      status: "pending"
-    },
-    {
-      content: "Write unit tests",
-      activeForm: "Writing unit tests",
-      status: "pending"
-    }
+    { content: "T003: Complete user validation", activeForm: "Completing user validation", status: "in_progress" },
+    { content: "T004: Add input validation", activeForm: "Adding input validation", status: "pending" },
+    { content: "T005: Add error messages", activeForm: "Adding error messages", status: "pending" },
+    { content: "Run tests and verify", activeForm: "Running tests", status: "pending" },
+    { content: "Commit changes", activeForm: "Committing", status: "pending" }
   ]
 })
 ```
 
-**Required fields:**
-- `content`: Imperative form (what to do)
-- `activeForm`: Present continuous (what's happening)
-- `status`: "pending" | "in_progress" | "completed"
-
-**Skip TodoWrite when:**
-- Task is atomic (single file, single change)
-- Task is documentation-only
-- Task can be completed in under 3 steps
-
 ## Step 2: Explore (if needed)
 
-Before writing your plan, spawn parallel exploration agents to understand unfamiliar parts of the codebase. This is faster than reading files sequentially and helps you make better architectural decisions.
+Before writing your plan, spawn exploration agents to understand unfamiliar code.
 
 ### 2.1 When to Explore
 
@@ -178,559 +127,239 @@ Before writing your plan, spawn parallel exploration agents to understand unfami
 - Working in a new area of the codebase
 - Task involves multiple interconnected modules
 - Unsure about existing patterns or conventions
-- Need to understand how similar features were implemented
 
 **Skip when:**
 - Working on files you've modified recently
 - Simple changes to isolated functions
-- Task specifies exact file paths in SPEC
 - Documentation-only changes
 
 ### 2.2 Spawn Parallel Agents
 
-Use the Task tool with `subagent_type='Explore'` to spawn agents that search the codebase in parallel. **Send all Task calls in a single message** to run them concurrently:
+Use `Task(scout)` to explore in parallel:
 
 ```typescript
-// Example: Exploring for an authentication feature
-// Spawn all agents in ONE message (parallel execution)
-
 Task({
-  subagent_type: 'Explore',
-  description: 'Find auth patterns',
-  prompt: 'Find how authentication is implemented. Look for middleware, JWT handling, session management. Report file paths and key patterns.'
+  subagent_type: 'scout',
+  description: 'Find validation patterns',
+  prompt: 'Find input validation patterns. Look for validation libraries, error formatting, common patterns. Report file paths and examples.'
 })
 
 Task({
-  subagent_type: 'Explore',
+  subagent_type: 'scout',
   description: 'Find test patterns',
-  prompt: 'Find testing patterns for API endpoints. Look for test setup, mocking strategies, assertion patterns. Report examples I can follow.'
-})
-
-Task({
-  subagent_type: 'Explore',
-  description: 'Find error handling',
-  prompt: 'Find error handling patterns. Look for custom error classes, error middleware, response formatting. Report the conventions used.'
+  prompt: 'Find testing patterns for validation. Look for test setup, assertion patterns, error case testing.'
 })
 ```
 
-### 2.3 What to Explore
+### 2.3 Using Exploration Results
 
-Tailor your exploration prompts to your task:
-
-| Need | Prompt Focus |
-|------|--------------|
-| **Architecture** | "How is [feature] structured? What files/modules are involved?" |
-| **Patterns** | "What patterns are used for [X]? Show me examples." |
-| **Dependencies** | "What does [module] depend on? What depends on it?" |
-| **Conventions** | "What naming/file structure conventions are used?" |
-| **Similar features** | "How is [existing similar feature] implemented?" |
-
-### 2.4 Using Exploration Results
-
-Once all agents complete:
-
-1. **Wait for completion** — don't proceed until all agents return
-2. **Extract file paths** — incorporate discovered paths into your plan's Files section
-3. **Follow patterns** — use patterns the agents identify (don't invent new ones)
-4. **Note concerns** — document any blockers or risks in your plan
-5. **Update sub-tasks** — add/remove TodoWrite items based on findings
-
-```
-Exploration Results → Informs Plan → Guides Implementation
-```
+1. Wait for all agents to complete
+2. Extract file paths for your plan
+3. Follow discovered patterns
+4. Update TodoWrite if needed
 
 ## Step 3: Plan
 
-Write your plan to `.ai/ralphie/plan.md` **before writing any code**. The plan is your contract for this iteration — it defines scope, prevents creep, and provides a clear completion target.
+Write your plan to `.ai/ralphie/plan.md` **before writing any code**.
 
-### 3.1 Write the Goal
-
-The Goal is a **single sentence** that describes what this iteration accomplishes. It should be:
-- **Specific**: Name the feature, component, or fix
-- **Completable**: Something achievable in one iteration
-- **Verifiable**: You can objectively confirm it's done
-
-**Good goals:**
-```markdown
-## Goal
-Add JWT token refresh endpoint that returns a new access token when given a valid refresh token.
-```
+### 3.1 Plan Format
 
 ```markdown
 ## Goal
-Fix race condition in WebSocket reconnection that causes duplicate message handlers.
-```
+Single sentence: what this iteration accomplishes.
 
-**Bad goals (too vague):**
-```markdown
-## Goal
-Improve authentication.  ← What specifically? Add? Fix? Refactor?
-```
+## Tasks (from spec)
+- T003: Complete user validation [M]
+- T004: Add input validation [S]
+- T005: Add error messages [S]
 
-```markdown
-## Goal
-Work on the API.  ← Which endpoint? What change?
-```
-
-### 3.2 List the Files
-
-List every file you plan to create or modify with a brief note about what changes:
-
-```markdown
-## Files
-- src/auth/refresh.ts - create token refresh endpoint
-- src/auth/middleware.ts - add refresh token validation
-- src/auth/types.ts - add RefreshTokenPayload type
-- tests/auth/refresh.test.ts - unit tests for refresh flow
-```
-
-**Guidelines:**
-- **Be explicit** — list actual file paths, not "auth files"
-- **Include tests** — every implementation file should have a corresponding test file
-- **Note the action** — "create", "modify", "add", "fix", "remove"
-- **Use exploration results** — if Step 2 found patterns in specific files, reference them
-
-If you're unsure which files need changes, your exploration in Step 2 was incomplete. Go back and explore more before planning.
-
-### 3.3 Define the Tests
-
-List specific test scenarios that prove your implementation works. These become your acceptance criteria:
-
-```markdown
-## Tests
-- Returns new access token when refresh token is valid
-- Returns 401 when refresh token is expired
-- Returns 401 when refresh token is revoked
-- Returns 400 when refresh token is malformed
-- Rotates refresh token on successful refresh (one-time use)
-```
-
-**Guidelines:**
-- **Cover happy path** — at least one test for the success case
-- **Cover error cases** — invalid input, edge cases, failures
-- **Be specific** — "handles errors" is not a test; "returns 404 when user not found" is
-- **Match existing patterns** — look at how similar features are tested in the codebase
-
-**Skip when:**
-- Task is documentation-only
-- Task is configuration/setup (no logic to test)
-- Existing tests already cover the change
-
-### 3.4 Set Exit Criteria
-
-Exit criteria are the **checkboxes you must check** before committing. They combine your goal, tests, and any additional requirements:
-
-```markdown
-## Exit Criteria
-- Refresh endpoint returns new tokens for valid requests
-- All 5 test scenarios pass
-- Type checking passes (`npm run type-check`)
-- No new linting errors
-- Changes committed with conventional message
-```
-
-**Standard exit criteria (include most of these):**
-- Feature/fix works as described in Goal
-- Tests pass with good coverage (80%+ for new code)
-- Type checking passes (if TypeScript)
-- No linting errors
-- Changes committed
-
-**Additional criteria (when applicable):**
-- Documentation updated (for public APIs)
-- Migration added (for database changes)
-- Environment variables documented (for new config)
-
-### Complete Plan Example
-
-```markdown
-## Goal
-Add JWT token refresh endpoint that returns a new access token when given a valid refresh token.
+Total: 4 points
 
 ## Files
-- src/auth/refresh.ts - create token refresh endpoint
-- src/auth/middleware.ts - add refresh token validation helper
-- src/auth/types.ts - add RefreshTokenPayload interface
-- tests/auth/refresh.test.ts - unit tests
+- src/validation/user.ts - add validation rules
+- src/errors/messages.ts - add error messages
+- tests/validation/user.test.ts - unit tests
 
 ## Tests
-- Returns new access token when refresh token is valid
-- Returns 401 when refresh token is expired
-- Returns 401 when refresh token is revoked
-- Returns 400 when refresh token is malformed
-- Rotates refresh token on successful refresh
+- Validates email format
+- Rejects invalid phone numbers
+- Returns localized error messages
+- Handles edge cases (empty, null)
 
 ## Exit Criteria
-- Refresh endpoint works for valid requests
-- All 5 test scenarios pass
-- Type checking passes
+- All selected tasks pass their Verify commands
+- Tests pass with 80%+ coverage
+- Type check passes
 - Changes committed
 ```
 
-### After Writing the Plan
+### 3.2 Include Verify Commands
 
-1. **Review scope** — Is this achievable in one iteration? If not, split the task.
-2. **Update TodoWrite** — Add sub-tasks based on your Files list if not done in Step 1.
-3. **Proceed to implementation** — Only start coding after the plan is written.
+For each task, note its Verify command from the spec:
+
+```markdown
+## Verification Commands
+- T003: `npm test -- user-validation`
+- T004: `npm test -- input-validation`
+- T005: `npm test -- error-messages`
+```
 
 ## Step 4: Implement
 
-Now execute your plan. Write the code, write the tests, and verify everything works before proceeding to review.
+Execute your plan for each selected task.
 
-### 4.1 Write the Code
+### 4.1 Implementation Order
 
-Follow your plan's Files section. For each file:
+For multiple tasks, implement in order (T003 → T004 → T005):
 
-1. **Read first** — Understand existing code before modifying
-2. **Follow patterns** — Match the codebase's style, conventions, and architecture
-3. **Keep it simple** — Don't over-engineer or add features beyond the plan
-4. **Update TodoWrite** — Mark sub-task as `in_progress` when you start
+1. **Start task** - Update TodoWrite to `in_progress`
+2. **Read existing code** - Understand before modifying
+3. **Write code** - Follow existing patterns
+4. **Write tests** - Cover all planned scenarios
+5. **Run task's Verify command** - Confirm it passes
+6. **Complete task** - Update TodoWrite to `completed`
 
-```typescript
-// Before starting a sub-task:
-TodoWrite({
-  todos: [
-    { content: "Create login endpoint", activeForm: "Creating login endpoint", status: "in_progress" },
-    { content: "Add input validation", activeForm: "Adding input validation", status: "pending" },
-    // ...
-  ]
-})
-```
+### 4.2 Run Verify Commands
 
-**Implementation order:**
-1. Types/interfaces first (if TypeScript)
-2. Core logic
-3. Integration points (exports, routes, etc.)
-4. Tests (or write alongside — see 4.2)
-
-**Avoid:**
-- Adding comments unless truly necessary (code should be self-documenting)
-- Creating new patterns when existing patterns work
-- Scope creep — if you discover something outside the plan, note it for the next iteration
-
-### 4.2 Write the Tests
-
-Write tests that match your plan's Tests section. Each test scenario becomes a test case.
-
-**Test structure:**
-```typescript
-describe('RefreshToken', () => {
-  describe('refresh', () => {
-    it('returns new access token when refresh token is valid', async () => {
-      // Arrange - set up test data
-      const refreshToken = createValidRefreshToken();
-
-      // Act - call the function
-      const result = await refresh(refreshToken);
-
-      // Assert - verify the outcome
-      expect(result.accessToken).toBeDefined();
-      expect(result.expiresIn).toBe(3600);
-    });
-
-    it('returns 401 when refresh token is expired', async () => {
-      const expiredToken = createExpiredRefreshToken();
-
-      await expect(refresh(expiredToken))
-        .rejects.toThrow(UnauthorizedError);
-    });
-  });
-});
-```
-
-**Guidelines:**
-- **One assertion per test** (when practical) — easier to debug failures
-- **Descriptive names** — test name should describe the scenario
-- **Cover the plan** — every test in your Tests section should become a real test
-- **Match existing patterns** — look at how similar features are tested
-
-**Update TodoWrite after writing tests:**
-```typescript
-TodoWrite({
-  todos: [
-    { content: "Create login endpoint", activeForm: "Creating login endpoint", status: "completed" },
-    { content: "Add input validation", activeForm: "Adding input validation", status: "completed" },
-    { content: "Write unit tests", activeForm: "Writing unit tests", status: "in_progress" },
-    // ...
-  ]
-})
-```
-
-### 4.3 Run Tests
-
-Run the full test suite to verify your implementation:
+After implementing each task, run its Verify command:
 
 ```bash
-# Standard commands (use project-specific if different)
-npm test                    # Run all tests
-npm test -- --coverage      # Run with coverage report
-npm test -- path/to/file    # Run specific test file
+# From spec: **Verify:** `npm test -- user-validation`
+npm test -- user-validation
 ```
 
-**What to check:**
-- All tests pass (especially your new ones)
-- No regressions in existing tests
-- Coverage meets requirements (80%+ for new code)
+**If Verify fails:**
+1. Fix the issue
+2. Re-run Verify
+3. Don't proceed until it passes
 
-**If tests fail:**
-1. Read the error message carefully
-2. Fix the failing test or implementation
-3. Re-run tests
-4. Don't proceed until all tests pass
+### 4.3 Run Full Test Suite
 
-### 4.4 Run Type Check
-
-For TypeScript projects, verify types before proceeding:
+After all tasks implemented:
 
 ```bash
-npm run type-check          # or: npx tsc --noEmit
+npm test                # All tests
+npm run type-check      # TypeScript
 ```
 
-**Common type errors and fixes:**
-
-| Error | Fix |
-|-------|-----|
-| `Property does not exist` | Add the property to the interface or check for typos |
-| `Type X is not assignable to Y` | Fix the type mismatch or add proper type casting |
-| `Cannot find module` | Check import path or add missing dependency |
-| `Argument of type X is not assignable` | Update function signature or caller |
-
-**Don't proceed with type errors.** They often indicate real bugs.
-
-### 4.5 Handle Failures
-
-If tests or type checking fail repeatedly:
-
-1. **Don't force it** — Repeated failures signal a deeper issue
-2. **Check your plan** — Did you miss something in the Files section?
-3. **Revisit exploration** — Maybe you need more context
-4. **Scope down** — Can you complete a smaller portion of the task?
-
-**If blocked:**
-```typescript
-// Update TodoWrite to reflect the blocker
-TodoWrite({
-  todos: [
-    { content: "Create login endpoint", activeForm: "Creating login endpoint", status: "completed" },
-    { content: "Fix type error in auth middleware", activeForm: "Fixing type error", status: "in_progress" },
-    // Don't mark as completed if you can't finish it
-  ]
-})
-```
-
-If you can't complete the task:
-- Don't commit partial/broken code
-- Document the blocker in STATE.txt
-- Stop the iteration — the next iteration will pick it up
-
-### Implementation Checklist
-
-Before proceeding to Review:
-
-- [ ] All planned files created/modified
-- [ ] Code follows existing patterns
-- [ ] Tests written for all planned scenarios
-- [ ] `npm test` passes
-- [ ] `npm run type-check` passes (TypeScript)
-- [ ] TodoWrite sub-tasks marked as completed
-
-## Step 5: Review
-
-Before committing, spawn a review agent to catch bugs, verify patterns, and ensure quality. This step prevents shipping broken code and helps maintain codebase consistency.
-
-### 5.1 When to Review
-
-**Review when:**
-- You wrote more than 20 lines of new code
-- You modified existing business logic
-- You added or changed API endpoints
-- You made security-relevant changes (auth, validation, encryption)
-- You're uncertain about your implementation approach
-
-**Skip when:**
-- Task is documentation-only
-- Changes are config/setup files only
-- Changes are purely stylistic (formatting, renaming)
-- You only deleted code without adding anything new
-
-### 5.2 Spawn Review Agent
-
-Use the Task tool with `subagent_type='general-purpose'` to spawn a review agent. Provide context about the task and list the files you changed:
-
-```typescript
-Task({
-  subagent_type: 'general-purpose',
-  description: 'Review code changes',
-  prompt: `Review the following code changes for: [TASK DESCRIPTION]
-
-## Files Changed
-- [file1.ts] - [what was changed]
-- [file2.ts] - [what was changed]
-- [file.test.ts] - [tests added]
-
-## Review Checklist
-Please check for:
-1. **Bugs** - Logic errors, off-by-one, null handling, race conditions
-2. **Test coverage** - Are edge cases tested? Any missing scenarios?
-3. **Patterns** - Does the code follow existing codebase patterns?
-4. **Security** - Input validation, injection risks, auth bypasses
-5. **Performance** - N+1 queries, unnecessary loops, memory leaks
-
-## Response Format
-Respond with ONE of:
-- **CRITICAL**: Must-fix issues that would cause bugs or security problems
-- **SUGGESTIONS**: Optional improvements (style, naming, minor optimizations)
-- **APPROVED**: Code is ready to commit
-
-If CRITICAL, list each issue with file:line and a brief fix description.`
-})
-```
-
-**Customize the prompt for your task:**
-- For API changes, emphasize validation and error handling
-- For database changes, emphasize migrations and query performance
-- For auth changes, emphasize security review
-- For UI changes, emphasize user experience and accessibility
-
-### 5.3 Handle Review Feedback
-
-The review agent will respond with one of three outcomes:
-
-| Response | Action |
-|----------|--------|
-| **CRITICAL** | **Must fix** - Address every critical issue before committing |
-| **SUGGESTIONS** | **Optional** - Address if quick (<5 min), otherwise note for future |
-| **APPROVED** | **Proceed** - Move to Step 6 (Commit) |
-
-**Handling CRITICAL feedback:**
-
-1. **Read the issues** - Each critical issue should include file:line and description
-2. **Fix in priority order** - Security > Bugs > Breaking changes
-3. **Re-run tests** - Ensure fixes didn't break anything
-4. **Re-run type check** - Ensure fixes don't introduce type errors
-5. **Request re-review** - Spawn another review agent to verify fixes
-
-```typescript
-// After fixing critical issues, re-review:
-Task({
-  subagent_type: 'general-purpose',
-  description: 'Re-review fixes',
-  prompt: `Re-review after fixing critical issues.
-
-## Original Issues (now fixed)
-- [Issue 1]: Fixed by [change]
-- [Issue 2]: Fixed by [change]
-
-## Files Changed
-- [file1.ts] - [original change + fix]
-
-Verify fixes are correct. Respond: CRITICAL, SUGGESTIONS, or APPROVED.`
-})
-```
-
-**Handling SUGGESTIONS:**
-
-Suggestions are optional but valuable:
-- Address if the fix is quick (< 5 minutes)
-- Skip if the suggestion is stylistic preference
-- Note valuable suggestions in your commit message or index.md for future iterations
-
-### 5.4 Review Flow Example
-
-```
-Implementation Complete
-         │
-         ▼
-┌─────────────────────┐
-│  Spawn Review Agent │
-└─────────────────────┘
-         │
-         ▼
-    ┌─────────┐
-    │ RESULT? │
-    └─────────┘
-         │
-    ┌────┼────┬────────────┐
-    │    │    │            │
-    ▼    │    ▼            ▼
-CRITICAL │  SUGGESTIONS  APPROVED
-    │    │    │            │
-    ▼    │    ▼            ▼
-  Fix    │  Optional    Proceed
- Issues  │   Fixes      to Commit
-    │    │    │            │
-    ▼    │    ▼            │
-Re-review│  Proceed        │
-    │    │    │            │
-    └────┴────┴────────────┘
-                   │
-                   ▼
-            Step 6: Commit
-```
-
-### 5.5 Update TodoWrite
-
-After review completes, update your sub-tasks:
+### 4.4 Update TodoWrite Progress
 
 ```typescript
 TodoWrite({
   todos: [
-    { content: "Write implementation code", activeForm: "Writing code", status: "completed" },
-    { content: "Write unit tests", activeForm: "Writing tests", status: "completed" },
-    { content: "Run tests and type check", activeForm: "Running verification", status: "completed" },
-    { content: "Code review", activeForm: "Reviewing code", status: "completed" },
+    { content: "T003: Complete user validation", activeForm: "Completed", status: "completed" },
+    { content: "T004: Add input validation", activeForm: "Completed", status: "completed" },
+    { content: "T005: Add error messages", activeForm: "Completed", status: "completed" },
+    { content: "Run tests and verify", activeForm: "Running tests", status: "in_progress" },
     { content: "Commit changes", activeForm: "Committing", status: "pending" }
   ]
 })
 ```
 
-### Review Checklist
+## Step 5: Review
 
-Before proceeding to Commit:
+Before committing, spawn a review agent for significant changes.
 
-- [ ] Review agent spawned with appropriate context
-- [ ] All CRITICAL issues addressed
-- [ ] Tests still pass after any fixes
-- [ ] Type check still passes after any fixes
-- [ ] Response is APPROVED or SUGGESTIONS-only
+### 5.1 When to Review
 
-## Step 6: Commit
+**Review when:**
+- More than 20 lines of new code
+- Modified business logic
+- Security-relevant changes
 
-After your implementation passes review, commit your changes and update the tracking files. This step completes the iteration and leaves a clean trail for the next one.
+**Skip when:**
+- Documentation-only
+- Config/setup only
+- Purely stylistic
 
-### 6.1 Stage Your Changes
+### 5.2 Spawn Review Agent
 
-Stage only the files listed in your plan. Don't stage unrelated changes:
+```typescript
+Task({
+  subagent_type: 'general-purpose',
+  description: 'Review code changes',
+  prompt: `Review changes for tasks T003, T004, T005.
 
-```bash
-# Stage specific files (preferred)
-git add src/auth/refresh.ts src/auth/types.ts tests/auth/refresh.test.ts
+## Files Changed
+- src/validation/user.ts - validation rules
+- src/errors/messages.ts - error messages
+- tests/validation/user.test.ts - tests
 
-# Or stage all tracked changes if you're certain
-git add -A
+## Check for:
+1. Bugs - logic errors, null handling
+2. Test coverage - edge cases tested?
+3. Patterns - follows existing conventions?
+4. Security - input validation complete?
+
+Respond: CRITICAL, SUGGESTIONS, or APPROVED`
+})
 ```
 
-**Pre-stage checklist:**
-- [ ] Only files from your plan's Files section
-- [ ] No temporary files, logs, or build artifacts
-- [ ] No `.env` files or secrets
-- [ ] No unintended formatting changes in other files
+### 5.3 Handle Feedback
 
-**Check what you're committing:**
-```bash
-git status        # See staged files
-git diff --staged # Review staged changes
+| Response | Action |
+|----------|--------|
+| **CRITICAL** | Fix all issues, re-review |
+| **SUGGESTIONS** | Fix if quick, otherwise note for later |
+| **APPROVED** | Proceed to commit |
+
+## Step 6: Commit and Update Status
+
+### 6.1 Update Task Status to Passed
+
+For each completed task, update Status in the spec:
+
+```markdown
+# Before
+### T003: Complete user validation
+- Status: in_progress
+- Size: M
+
+# After
+### T003: Complete user validation
+- Status: passed
+- Size: M
 ```
 
-### 6.2 Write the Commit Message
+**Use Edit tool** to change `Status: in_progress` to `Status: passed`.
 
-Use [Conventional Commits](https://www.conventionalcommits.org/) format. Always use a HEREDOC for proper multi-line formatting:
+### 6.2 If Task Failed
+
+If a task couldn't be completed:
+
+```markdown
+### T003: Complete user validation
+- Status: failed
+- Size: M
+```
+
+Add a note in the spec's Notes section:
+
+```markdown
+## Notes
+
+### T003 Failed (2026-01-18)
+- Issue: Validation library incompatible with existing schema
+- Attempted: Custom validation but hit type conflicts
+- Next: Evaluate alternative libraries
+```
+
+### 6.3 Stage and Commit
+
+```bash
+git add src/validation/ src/errors/ tests/validation/
+git status  # Verify staged files
+```
+
+Commit with conventional format:
 
 ```bash
 git commit -m "$(cat <<'EOF'
-type(scope): brief description
+feat(validation): add user input validation and error messages
 
-Longer explanation if needed.
+- T003: Complete user validation
+- T004: Add input validation
+- T005: Add error messages
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -739,221 +368,89 @@ EOF
 )"
 ```
 
-**Commit types:**
-| Type | Use for |
-|------|---------|
-| `feat` | New feature or functionality |
-| `fix` | Bug fix |
-| `refactor` | Code change that doesn't add feature or fix bug |
-| `test` | Adding or updating tests |
-| `docs` | Documentation only |
-| `chore` | Maintenance tasks, dependency updates |
+### 6.4 Update index.md
 
-**Examples:**
-```
-feat(auth): add JWT token refresh endpoint
-fix(api): handle null response from user service
-refactor(utils): extract validation into shared module
-test(auth): add edge case tests for token expiry
-docs(readme): add API documentation
-```
+Get commit SHA and append entry:
 
-**Scope guidelines:**
-- Use the feature area or module name: `auth`, `api`, `ui`, `db`
-- Keep it lowercase and short (1-2 words)
-- Be consistent with existing commits in the repo
-
-### 6.3 Update index.md
-
-After committing, append an entry to `.ai/ralphie/index.md`. This creates a searchable history of what each iteration accomplished.
-
-**Get your commit SHA:**
 ```bash
-git log -1 --format='%h'  # Short SHA (7 chars)
+git log -1 --format='%h'
 ```
-
-**Entry format:**
-```markdown
-## {sha} — {commit message}
-- files: {list of changed files}
-- tests: {test count} passing
-- notes: {key decisions, patterns used, gotchas}
-- next: {logical follow-up task or recommendation}
-```
-
-**Example entry:**
-```markdown
-## a1b2c3d — feat(auth): add JWT token refresh endpoint
-- files: src/auth/refresh.ts, src/auth/types.ts, tests/auth/refresh.test.ts
-- tests: 8 passing
-- notes: Used existing JWT library, added refresh token rotation for security
-- next: Add token revocation endpoint for logout
-```
-
-**Guidelines:**
-- **Keep it concise** — 5-7 lines max per entry
-- **files**: List actual filenames, not directories
-- **tests**: Include count (get from `npm test` output)
-- **notes**: Capture decisions future iterations need to know
-- **next**: Suggest what should come next (helps the next iteration)
-
-### 6.4 Update SPEC.md
-
-Check off the completed task in `SPEC.md`:
 
 ```markdown
-# Before
-- [ ] Add JWT token refresh endpoint with tests
+## a1b2c3d — feat(validation): add user input validation
 
-# After
-- [x] Add JWT token refresh endpoint with tests
+- tasks: T003, T004, T005 (4 points)
+- files: src/validation/user.ts, src/errors/messages.ts, tests/validation/user.test.ts
+- tests: 12 passing
+- notes: Used Zod for validation, matches existing patterns
+- next: T006, T007 are ready (5 points for next iteration)
 ```
-
-**Rules:**
-- Only check off tasks that are **fully complete**
-- One checkbox = one iteration (don't check multiple)
-- If you couldn't complete the task, leave it unchecked
 
 ### 6.5 Update STATE.txt
 
-Append a completion record to `STATE.txt`:
-
 ```markdown
-✅ YYYY-MM-DD: {Brief description of what was done}
-  - {Key detail 1}
-  - {Key detail 2}
-  - Tests: {count} passing
-  - Commit: {sha} {commit message}
+✅ 2026-01-18: Completed T003, T004, T005 (4 points)
+  - Added user input validation with Zod
+  - Added localized error messages
+  - Tests: 12 passing
+  - Commit: a1b2c3d feat(validation): add user input validation
 ```
 
-**Example:**
-```markdown
-✅ 2026-01-12: Added JWT token refresh endpoint
-  - Created refresh.ts with token validation and rotation
-  - Added RefreshTokenPayload interface to types.ts
-  - Tests: 8 passing (refresh.test.ts)
-  - Commit: a1b2c3d feat(auth): add JWT token refresh endpoint
-```
-
-**If task was blocked:**
-```markdown
-⚠️ 2026-01-12: JWT token refresh - BLOCKED
-  - Issue: Existing JWT library doesn't support refresh tokens
-  - Attempted: Custom implementation but hit type conflicts
-  - Next: Evaluate alternative JWT libraries
-```
-
-### 6.6 Update TodoWrite
-
-Complete all sub-tasks:
+### 6.6 Complete TodoWrite
 
 ```typescript
 TodoWrite({
   todos: [
-    { content: "Write implementation code", activeForm: "Writing code", status: "completed" },
-    { content: "Write unit tests", activeForm: "Writing tests", status: "completed" },
-    { content: "Run tests and type check", activeForm: "Running verification", status: "completed" },
-    { content: "Code review", activeForm: "Reviewing code", status: "completed" },
-    { content: "Commit changes", activeForm: "Committing", status: "completed" }
+    { content: "T003: Complete user validation", status: "completed", activeForm: "Completed" },
+    { content: "T004: Add input validation", status: "completed", activeForm: "Completed" },
+    { content: "T005: Add error messages", status: "completed", activeForm: "Completed" },
+    { content: "Run tests and verify", status: "completed", activeForm: "Completed" },
+    { content: "Commit changes", status: "completed", activeForm: "Completed" }
   ]
 })
 ```
 
-**After updating:**
-- All sub-tasks should be `completed`
-- The TodoWrite list shows the user the iteration is done
-- Clear the list for the next iteration (or let the next iteration reset it)
-
-### Commit Checklist
-
-Before considering this iteration complete:
-
-- [ ] All planned files are staged
-- [ ] No unintended files staged (run `git status`)
-- [ ] Commit message follows conventional format
-- [ ] Commit message uses HEREDOC (no escaping issues)
-- [ ] `.ai/ralphie/index.md` has new entry with correct SHA
-- [ ] `SPEC.md` task is checked off: `- [x]`
-- [ ] `STATE.txt` has completion record
-- [ ] TodoWrite sub-tasks marked completed
-
-### Commit Flow Example
+## Status Transitions
 
 ```
-Tests Pass + Review Approved
-           │
-           ▼
-┌────────────────────────┐
-│  git add [files]       │
-│  git status (verify)   │
-└────────────────────────┘
-           │
-           ▼
-┌────────────────────────┐
-│  git commit with       │
-│  HEREDOC message       │
-└────────────────────────┘
-           │
-           ▼
-┌────────────────────────┐
-│  Get SHA: git log -1   │
-│  Append to index.md    │
-└────────────────────────┘
-           │
-           ▼
-┌────────────────────────┐
-│  Update SPEC.md        │
-│  - [ ] → - [x]         │
-└────────────────────────┘
-           │
-           ▼
-┌────────────────────────┐
-│  Update STATE.txt      │
-│  ✅ completion record  │
-└────────────────────────┘
-           │
-           ▼
-┌────────────────────────┐
-│  TodoWrite: all        │
-│  status: "completed"   │
-└────────────────────────┘
-           │
-           ▼
-      ITERATION DONE
+pending → in_progress → passed
+                     → failed
 ```
+
+| Transition | When |
+|------------|------|
+| `pending → in_progress` | Starting work on task |
+| `in_progress → passed` | Task complete, Verify passes |
+| `in_progress → failed` | Task blocked, can't complete |
+
+**Never skip states** - Always go through `in_progress` first.
 
 ## Hard Rules
 
-- ONE task per iteration (batched checkbox = one task)
-- Plan BEFORE coding
-- Tests MUST pass before commit
-- No commit = no index entry
-- Mark SPEC task complete only after commit
+- **Budget**: Don't exceed 4 points (or configured budget) per iteration
+- **Status**: Update Status field, not checkboxes
+- **Verify**: Run each task's Verify command before marking passed
+- **One iteration**: Complete selected tasks, then stop
+- **No partial**: Either all selected tasks pass, or mark failed ones
 
-## Hooks Configuration
+## Quick Reference
 
-Ralphie uses a **Stop hook** to validate iteration completion. Configure in `.claude/settings.json`:
+| Step | V2 Action |
+|------|-----------|
+| **1. Load** | Find `specs/active/*.md`, select tasks by budget |
+| **2. Explore** | Use `Task(scout)` for unfamiliar code |
+| **3. Plan** | Write to `.ai/ralphie/plan.md` with task IDs |
+| **4. Implement** | Code + tests, run Verify for each task |
+| **5. Review** | Spawn review agent for significant changes |
+| **6. Commit** | Update Status to `passed`, commit, update index.md |
 
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "type": "prompt",
-        "promptFile": "scripts/validate-iteration.md"
-      }
-    ]
-  }
-}
-```
+## Iteration Validation
 
-**What the hook validates:**
-1. Task implemented (code changes made)
-2. Tests pass (`npm test`)
-3. Type check passes (`npm run type-check`)
-4. Commit made with conventional message
-5. `index.md` updated with new entry
-6. `SPEC.md` task checked off
-7. `STATE.txt` has completion record
-
-**If validation fails:** Fix the issue before the next iteration starts.
+A valid iteration:
+- [ ] Selected tasks fit within budget
+- [ ] All selected tasks have Status: passed (or failed with notes)
+- [ ] All Verify commands pass
+- [ ] Full test suite passes
+- [ ] Commit made with task IDs in message
+- [ ] index.md updated
+- [ ] STATE.txt updated

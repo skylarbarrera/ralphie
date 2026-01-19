@@ -1,11 +1,14 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+import { locateActiveSpec, SpecLocatorError } from '../lib/spec-locator.js';
 
 export interface ValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
+  specPath?: string;
+  isLegacySpec?: boolean;
 }
 
 function isGitRepo(cwd: string): boolean {
@@ -29,14 +32,33 @@ function hasUncommittedChanges(cwd: string): boolean {
 export function validateProject(cwd: string): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
+  let specPath: string | undefined;
+  let isLegacySpec = false;
 
   if (isGitRepo(cwd) && hasUncommittedChanges(cwd)) {
     errors.push('Uncommitted changes detected. Commit or stash before running Ralphie.');
   }
 
-  const specPath = join(cwd, 'SPEC.md');
-  if (!existsSync(specPath)) {
-    errors.push('SPEC.md not found. Create a SPEC.md with your project tasks.');
+  try {
+    const located = locateActiveSpec(cwd);
+    specPath = located.path;
+    isLegacySpec = located.isLegacy;
+    if (located.isLegacy) {
+      // V2-only: Legacy SPEC.md is now an error, not a warning
+      errors.push(
+        'Legacy SPEC.md found at project root. Migrate to V2 format: move to specs/active/ and use task IDs (T001, T002).'
+      );
+    }
+  } catch (err) {
+    if (err instanceof SpecLocatorError) {
+      if (err.code === 'MULTIPLE_SPECS') {
+        errors.push(err.message);
+      } else {
+        errors.push('No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.');
+      }
+    } else {
+      errors.push('No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.');
+    }
   }
 
   const ralphieMdPath = join(cwd, '.claude', 'ralphie.md');
@@ -51,5 +73,5 @@ export function validateProject(cwd: string): ValidationResult {
 
   const valid = errors.length === 0;
 
-  return { valid, errors, warnings };
+  return { valid, errors, warnings, specPath, isLegacySpec };
 }

@@ -31,14 +31,14 @@ ralphie run --greedy     # Complete multiple tasks per iteration
 | `--headless` | Output JSON events instead of UI | false |
 | `--stuck-threshold <n>` | Iterations without progress before stuck | 3 |
 | `--harness <name>` | AI harness to use: `claude`, `codex` | claude |
+| `-b, --budget <points>` | Task selection budget (see Budget System) | 4 |
 
 ### `ralphie spec`
 
 Generate a SPEC.md from a project description.
 
 ```bash
-ralphie spec "Build a REST API"           # Interactive mode (default)
-ralphie spec --auto "Todo app"            # Autonomous with review loop
+ralphie spec "Build a REST API"           # Autonomous spec generation
 ralphie spec --headless "Blog platform"   # JSON output for automation
 ```
 
@@ -46,8 +46,10 @@ ralphie spec --headless "Blog platform"   # JSON output for automation
 
 | Option | Description |
 |--------|-------------|
-| `--auto` | Generate spec autonomously with review loop, no human interaction |
 | `--headless` | Output JSON events, great for automation |
+| `--timeout <seconds>` | Timeout for generation (default: 300) |
+| `-m, --model <name>` | Claude model to use (sonnet, opus, haiku) |
+| `--harness <name>` | AI harness to use: claude, codex, opencode (default: claude) |
 
 ### `ralphie init`
 
@@ -108,6 +110,66 @@ ralphie run --greedy --all     # Maximum throughput
 **Use greedy for:** Related tasks, scaffolding, bulk refactoring, maximum speed.
 
 **Use default for:** Unrelated tasks, complex features, debugging, precise tracking.
+
+## Budget System
+
+The budget system controls how many tasks are selected per iteration based on task size.
+
+### Task Sizes
+
+Specs use the V2 format with task IDs and sizes:
+
+```markdown
+### T001: Setup database
+- Status: pending
+- Size: S
+
+### T002: Implement API
+- Status: pending
+- Size: M
+```
+
+Size point values:
+- **S (Small)**: 1 point - Simple tasks, quick fixes
+- **M (Medium)**: 2 points - Standard features
+- **L (Large)**: 4 points - Complex implementations
+
+### Budget Selection
+
+```bash
+ralphie run --budget 2     # Select only S-sized tasks (1+1 = 2 points max)
+ralphie run --budget 4     # S+M or single L task (default)
+ralphie run --budget 8     # Multiple tasks (S+M+L, M+M+M+M, etc.)
+```
+
+The budget calculator selects pending tasks in order until the budget is exhausted.
+
+### Budget + Greedy Interaction
+
+| Mode | Behavior |
+|------|----------|
+| Default (`-b 4`) | Select tasks up to 4 points, complete **one** per iteration |
+| Greedy (`--greedy -b 4`) | Select tasks up to 4 points, complete **all selected** per iteration |
+| Greedy large (`--greedy -b 8`) | Select more tasks, complete all in one iteration |
+
+```bash
+# Complete one small task per iteration
+ralphie run --budget 1 -n 5
+
+# Complete multiple tasks per iteration (max 6 points worth)
+ralphie run --greedy --budget 6 -n 3
+
+# Maximum throughput - large budget, greedy mode
+ralphie run --greedy --budget 10 --all
+```
+
+### Task Status Flow
+
+```
+pending → in_progress → passed|failed
+```
+
+When all tasks are `passed` or `failed`, the spec is complete and the runner exits with code 0.
 
 ## Headless Mode
 
