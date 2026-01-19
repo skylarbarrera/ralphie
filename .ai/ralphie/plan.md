@@ -1,23 +1,24 @@
-# Plan: T002 - Extract IterationView component
+# Plan: T003 - Extract IterationRunner component
 
 ## Goal
-Extract the AppInner component from App.tsx and rename it to IterationView in a dedicated file.
+Extract the IterationRunner component from App.tsx to a dedicated file, making App.tsx a thin wrapper.
 
 ## Task ID
-T002
+T003
 
 ## Files
-- **Create:** `src/components/IterationView.tsx` - New component file with AppInner renamed to IterationView
-- **Modify:** `src/App.tsx` - Remove AppInner component, import IterationView from new file
-- **Potentially modify:** Test files that reference AppInner (if any)
+- **Create:** `src/IterationRunner.tsx` - New file with IterationRunner component and helper functions
+- **Modify:** `src/App.tsx` - Remove IterationRunner, re-export it and supporting types from new file
+- **Potentially modify:** Test files that import IterationRunner (if any)
 
 ## Tests
-- Run type check to ensure component exports and props are correct
+- Run type check to ensure exports and imports are correct
 - Existing tests should continue passing (no behavior change)
 
 ## Exit Criteria
-1. AppInner component moved to `src/components/IterationView.tsx` and renamed to IterationView
-2. Props interface (AppInnerProps → IterationViewProps) exported from new file
-3. App.tsx imports and uses IterationView component
-4. `npm run type-check` passes
-5. No behavior changes - pure refactor
+1. IterationRunner component moved to `src/IterationRunner.tsx`
+2. Helper functions (formatDuration, aggregateStats) moved with IterationRunner
+3. IterationRunnerProps interface exported from new file
+4. App.tsx becomes thin wrapper that re-exports IterationRunner and related components
+5. All tests pass and type check succeeds
+6. No behavior changes - pure refactor

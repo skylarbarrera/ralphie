@@ -281,3 +281,15 @@
   - Tests: 682 passing, type check passes
   - Pure refactor - no behavior changes
   - Commit: ed4abcd feat: T001 extract failure context helpers
+
+✅ 2026-01-19: Completed T002 - Extract IterationView component (component-refactor spec)
+  - Created src/components/IterationView.tsx with AppInner component renamed to IterationView
+  - Exported IterationViewProps interface (formerly AppInnerProps) for type safety
+  - Moved complete component logic including useEffect hook for iteration completion
+  - App.tsx now imports and uses IterationView instead of local AppInner component
+  - Removed AppInnerProps interface from App.tsx (now in IterationView.tsx)
+  - Cleaned up unused imports: StatusMessage, individual component imports moved to IterationView
+  - Added JSDoc comment to IterationView component explaining its purpose
+  - Tests: 682 passing, type check passes
+  - Pure refactor - no behavior changes
+  - Commit: dfa584d feat: T002 extract IterationView component

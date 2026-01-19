@@ -45,7 +45,7 @@ This refactor improves maintainability without changing behavior.
 ---
 
 ### T003: Extract IterationRunner component
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**

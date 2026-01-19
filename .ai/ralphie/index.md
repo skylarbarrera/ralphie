@@ -223,3 +223,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 682 passing (type check passes)
 - notes: Created src/lib/failure-context.ts with buildFailureContext and formatToolInput; moved helper functions from App.tsx; removed unused imports (FailureContext, ActivityItem, ToolGroup); added JSDoc comments
 - next: T002 - Extract IterationView component
+
+## dfa584d — feat: T002 extract IterationView component
+- files: src/components/IterationView.tsx, src/App.tsx, specs/active/component-refactor.md, .ai/ralphie/plan.md
+- tests: 682 passing (type check passes)
+- notes: Created src/components/IterationView.tsx with AppInner renamed to IterationView; exported IterationViewProps; moved component logic including useEffect; removed AppInnerProps from App.tsx; cleaned up unused imports
+- next: T003 - Extract IterationRunner component
