@@ -131,7 +131,7 @@ import { loadSpecFromDir, getTaskForIteration, isSpecComplete, type SpecStructur
 ---
 
 ### T008: Manual E2E testing
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**

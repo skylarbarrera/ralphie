@@ -1,44 +1,25 @@
-# Plan: T006 + T007 - Legacy spec handling and integration tests
+# Plan: T008 - Manual E2E testing
 
 ## Goal
-Add visual legacy spec warning to IterationRunner UI and comprehensive integration tests for V2 spec system.
+Manually verify that the interactive UI works correctly with V2 spec format
 
-## Task IDs
-- T006 (S): Handle legacy spec gracefully
-- T007 (M): Add integration tests for IterationRunner V2
+## Task ID
+T008
 
 ## Files
-
-### T006
-- `src/App.tsx` - Add state for legacy warning, pass to AppInner, render warning UI
-
-### T007
-- `tests/App.test.tsx` - Add integration tests for IterationRunner with V2 specs
+- Create: `specs/active/test-migration.md` (temporary test spec)
+- Will be deleted after verification
 
 ## Tests
-
-### T006
-- Manual: Verify type-check passes
-- Manual: Visual check that warning appears in UI for legacy spec
-
-### T007
-- `npm test tests/App.test.tsx`
-- Tests: V2 spec loading, task ID display, completion detection, legacy warning
+Manual verification of:
+1. Create test V2 spec in specs/active/test-migration.md
+2. Run `ralphie run` (interactive mode)
+3. Verify task ID shows in UI header
+4. Verify completion is detected when task status changes
+5. Clean up test spec after
 
 ## Exit Criteria
-
-### T006
-- [ ] IterationRunner tracks legacy warning state
-- [ ] Legacy warning UI renders in header/status area
-- [ ] Warning text: "Legacy SPEC format - upgrade recommended"
-- [ ] Type check passes
-- [ ] Task status updated to passed in spec
-
-### T007
-- [ ] Integration tests cover V2 spec loading
-- [ ] Integration tests verify task ID display
-- [ ] Integration tests check completion detection
-- [ ] Integration tests verify legacy warning appears
-- [ ] All tests pass (`npm test tests/App.test.tsx`)
-- [ ] Type check passes
-- [ ] Task status updated to passed in spec
+- Task ID (T001) displays correctly in the interactive UI
+- Runner detects when tasks are completed
+- Test spec is cleaned up after verification
+- Task status updated to "passed" in spec
