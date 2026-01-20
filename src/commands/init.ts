@@ -6,7 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 function getTemplatesDir(): string {
-  return join(__dirname, '..', '..', 'templates');
+  // From dist/cli.js, templates is at ../templates
+  return join(__dirname, '..', 'templates');
 }
 
 function copyRecursive(src: string, dest: string, created: string[], skipped: string[]): void {
