@@ -38,7 +38,7 @@ npm install -g @openai/codex && export OPENAI_API_KEY=sk-...
 npm install -g opencode-ai && opencode auth login
 ```
 
-**3. Install Ralphie skills** (in your AI tool)
+**3. Install Ralphie skills** via [add-skill](https://github.com/vercel-labs/add-skill)
 
 ```bash
 npx add-skill skylarbarrera/ralphie
@@ -88,7 +88,7 @@ Each iteration:
 
 Use `--harness codex` or `--harness opencode` to switch AI providers. See [CLI Reference](docs/cli.md) for all options.
 
-### Skills (installed via `npx add-skill`)
+### Skills (via [add-skill](https://github.com/vercel-labs/add-skill))
 
 | Skill | Description |
 |-------|-------------|
