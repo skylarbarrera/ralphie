@@ -28,14 +28,14 @@ npm install -g ralphie
 **2. Set up your AI provider**
 
 ```bash
-# Claude (default) - install Claude Code CLI
-export ANTHROPIC_API_KEY=sk-ant-...
+# Claude (default)
+curl -fsSL https://anthropic.com/install-claude.sh | sh
 
-# Or Codex (experimental)
-export OPENAI_API_KEY=sk-...
+# Or Codex
+npm install -g @openai/codex && export OPENAI_API_KEY=sk-...
 
-# Or OpenCode (experimental)
-export OPENCODE_API_KEY=...
+# Or OpenCode
+npm install -g opencode-ai && opencode auth login
 ```
 
 **3. Install Ralphie skills** (in your AI tool)
@@ -86,7 +86,7 @@ Each iteration:
 | `ralphie spec-list` | List active and completed specs |
 | `ralphie archive` | Move completed spec to archive |
 
-Use `--harness codex` or `--harness opencode` to switch AI providers (experimental). See [CLI Reference](docs/cli.md) for all options.
+Use `--harness codex` or `--harness opencode` to switch AI providers. See [CLI Reference](docs/cli.md) for all options.
 
 ### Skills (installed via `npx add-skill`)
 
@@ -159,8 +159,8 @@ Tasks transition from `pending` → `in_progress` → `passed`/`failed`. See [Sp
 ## Requirements
 
 - Node.js 18+
+- Claude Code CLI, OpenAI Codex CLI, or OpenCode CLI
 - Git
-- One of: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `OPENCODE_API_KEY`
 
 ## License
 
