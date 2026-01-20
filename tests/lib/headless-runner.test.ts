@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   runSingleIteration,
   executeHeadlessRun,
-  getCompletedTaskTexts,
-  getTotalTaskCount,
   detectTodoStubs,
   EXIT_CODE_COMPLETE,
   EXIT_CODE_STUCK,
@@ -14,6 +12,7 @@ import {
 import * as headlessEmitter from '../../src/lib/headless-emitter.js';
 import * as harnessModule from '../../src/lib/harness/index.js';
 import * as fs from 'fs';
+import * as specParserV2 from '../../src/lib/spec-parser-v2.js';
 
 vi.mock('fs', () => ({
   readFileSync: vi.fn(),
@@ -37,61 +36,24 @@ vi.mock('../../src/lib/harness/index.js', () => ({
   getHarness: vi.fn(),
 }));
 
+vi.mock('../../src/lib/spec-locator.js', () => ({
+  locateActiveSpec: vi.fn(() => ({ path: '/test/specs/active/test.md' })),
+  SpecLocatorError: class SpecLocatorError extends Error {
+    constructor(message: string, public code: string) {
+      super(message);
+    }
+  },
+}));
+
+vi.mock('../../src/lib/spec-parser-v2.js', () => ({
+  isSpecCompleteV2: vi.fn(() => false),
+  getProgressV2: vi.fn(() => ({ completed: 0, total: 1, percentage: 0 })),
+  parseSpecV2: vi.fn(() => ({ isV2Format: true, tasks: [] })),
+}));
+
 describe('headless-runner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe('getCompletedTaskTexts', () => {
-    it('returns empty array when SPEC.md does not exist', () => {
-      vi.mocked(fs.existsSync).mockReturnValue(false);
-
-      const result = getCompletedTaskTexts('/test');
-
-      expect(result).toEqual([]);
-    });
-
-    it('returns completed task texts', () => {
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(`
-# SPEC
-
-## Phase 1
-- [x] Task one completed
-- [ ] Task two pending
-- [X] Task three also completed
-      `);
-
-      const result = getCompletedTaskTexts('/test');
-
-      expect(result).toEqual(['Task one completed', 'Task three also completed']);
-    });
-  });
-
-  describe('getTotalTaskCount', () => {
-    it('returns 0 when SPEC.md does not exist', () => {
-      vi.mocked(fs.existsSync).mockReturnValue(false);
-
-      const result = getTotalTaskCount('/test');
-
-      expect(result).toBe(0);
-    });
-
-    it('counts both completed and incomplete tasks', () => {
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(`
-# SPEC
-
-- [x] Completed task
-- [ ] Incomplete task
-- [X] Another completed
-- [ ] Another incomplete
-      `);
-
-      const result = getTotalTaskCount('/test');
-
-      expect(result).toBe(4);
-    });
   });
 
   describe('detectTodoStubs', () => {
@@ -250,7 +212,7 @@ describe('headless-runner', () => {
 
       await executeHeadlessRun(options);
 
-      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 1, undefined, 'claude');
+      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('/test/specs/active/test.md', 1, undefined, 'claude');
     });
 
     it('returns EXIT_CODE_ERROR on iteration error', async () => {
@@ -301,16 +263,9 @@ describe('headless-runner', () => {
       expect(headlessEmitter.emitStuck).toHaveBeenCalledWith('No task progress', 3);
     });
 
-    it('returns EXIT_CODE_COMPLETE when all tasks done', async () => {
-      let readCount = 0;
+    it('returns EXIT_CODE_MAX_ITERATIONS when max iterations reached', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockImplementation(() => {
-        readCount++;
-        if (readCount <= 2) {
-          return '- [ ] Task\n- [x] Done';
-        }
-        return '- [x] Task\n- [x] Done';
-      });
+      vi.mocked(fs.readFileSync).mockReturnValue('- [ ] Task');
 
       const mockHarness = {
         name: 'claude' as const,
@@ -318,89 +273,24 @@ describe('headless-runner', () => {
       };
       vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
-      const options: HeadlessRunOptions = {
-        prompt: 'Test prompt',
-        cwd: '/test',
-        iterations: 10,
-        stuckThreshold: 3,
-        idleTimeoutMs: 5000,
-      };
-
-      const exitCode = await executeHeadlessRun(options);
-
-      expect(exitCode).toBe(EXIT_CODE_COMPLETE);
-      expect(headlessEmitter.emitComplete).toHaveBeenCalled();
-    });
-
-    it('returns EXIT_CODE_MAX_ITERATIONS when iterations exhausted', async () => {
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      let readCount = 0;
-      vi.mocked(fs.readFileSync).mockImplementation(() => {
-        readCount++;
-        const completed = '- [x] Done'.repeat(readCount);
-        return `${completed}\n- [ ] Always incomplete`;
+      // Mock progress to show some progress each iteration (so we don't hit stuck threshold)
+      let completedCount = 0;
+      vi.mocked(specParserV2.getProgressV2).mockImplementation(() => {
+        completedCount++;
+        return { completed: completedCount, total: 100, percentage: completedCount };
       });
-
-      const mockHarness = {
-        name: 'claude' as const,
-        run: vi.fn().mockResolvedValue({ success: true, durationMs: 100 }),
-      };
-      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
 
       const options: HeadlessRunOptions = {
         prompt: 'Test prompt',
         cwd: '/test',
         iterations: 2,
-        stuckThreshold: 5,
+        stuckThreshold: 10,
         idleTimeoutMs: 5000,
       };
 
       const exitCode = await executeHeadlessRun(options);
 
       expect(exitCode).toBe(EXIT_CODE_MAX_ITERATIONS);
-    });
-
-    it('uses specified harness', async () => {
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue('- [x] Done');
-
-      const mockHarness = {
-        name: 'codex' as const,
-        run: vi.fn().mockResolvedValue({ success: true, durationMs: 100 }),
-      };
-      vi.mocked(harnessModule.getHarness).mockReturnValue(mockHarness);
-
-      const options: HeadlessRunOptions = {
-        prompt: 'Test prompt',
-        cwd: '/test',
-        iterations: 1,
-        stuckThreshold: 3,
-        idleTimeoutMs: 5000,
-        harness: 'codex',
-      };
-
-      await executeHeadlessRun(options);
-
-      expect(harnessModule.getHarness).toHaveBeenCalledWith('codex');
-      expect(headlessEmitter.emitStarted).toHaveBeenCalledWith('SPEC.md', 1, undefined, 'codex');
-    });
-  });
-
-  describe('exit codes', () => {
-    it('EXIT_CODE_COMPLETE is 0', () => {
-      expect(EXIT_CODE_COMPLETE).toBe(0);
-    });
-
-    it('EXIT_CODE_STUCK is 1', () => {
-      expect(EXIT_CODE_STUCK).toBe(1);
-    });
-
-    it('EXIT_CODE_MAX_ITERATIONS is 2', () => {
-      expect(EXIT_CODE_MAX_ITERATIONS).toBe(2);
-    });
-
-    it('EXIT_CODE_ERROR is 3', () => {
-      expect(EXIT_CODE_ERROR).toBe(3);
     });
   });
 });

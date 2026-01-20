@@ -6,19 +6,20 @@ How Ralphie works under the hood.
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  You: ralphie spec "my idea"                    │
+│  You: /ralphie-spec "my idea"                   │
 │       ↓                                         │
-│  AI interviews → generates SPEC.md              │
+│  AI interviews → generates spec in specs/active │
 │       ↓                                         │
 │  You: ralphie run --all                         │
 │       ↓                                         │
 │  ┌──────────────────────────────────────────┐   │
 │  │  Loop:                                   │   │
-│  │    1. Read SPEC.md                       │   │
-│  │    2. Pick next unchecked task           │   │
+│  │    1. Read spec from specs/active/       │   │
+│  │    2. Pick next pending task             │   │
 │  │    3. Implement + test                   │   │
-│  │    4. Commit                             │   │
-│  │    5. Exit (fresh restart)               │   │
+│  │    4. Update status to passed/failed     │   │
+│  │    5. Commit                             │   │
+│  │    6. Exit (fresh restart)               │   │
 │  └──────────────────────────────────────────┘   │
 │       ↓                                         │
 │  Done: working code in git history              │
@@ -39,18 +40,20 @@ After `ralphie init`:
 
 ```
 your-project/
-├── SPEC.md              # Task checklist (the contract)
+├── specs/
+│   ├── active/          # Current specs
+│   │   └── my-feature.md
+│   └── completed/       # Archived specs
 ├── STATE.txt            # Progress log
-└── .ai/ralphie/
-    ├── plan.md          # Current task plan
-    └── index.md         # History across iterations
+└── .claude/
+    └── ralphie.md       # Coding standards
 ```
 
 | File | Purpose |
 |------|---------|
-| `SPEC.md` | Tasks with `- [ ]` checkboxes. Ralphie checks them off. |
+| `specs/active/*.md` | Tasks with IDs (T001, T002). Status transitions tracked. |
+| `specs/completed/` | Archived specs after completion. |
 | `STATE.txt` | What's done, what failed, context for next iteration. |
-| `.ai/ralphie/plan.md` | Current iteration's implementation plan. |
 
 ## Stuck Detection
 

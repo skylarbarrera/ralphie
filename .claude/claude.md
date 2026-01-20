@@ -254,16 +254,15 @@ npx bundlephobia <package>
 
 ### Required Reading
 Before starting work in a Ralphie loop:
-- **Always read:** `SPEC.md` - Project requirements and task list
+- **Always read:** Active spec in `specs/active/` - Project requirements and task list
 - **Read if needed:** `STATE.txt` - Check if unsure what's already done
-- **Read if needed:** `.ai/ralphie/index.md` - Last 3-5 commits for context
 
-Lazy load context. SPEC has the tasks; only read progress/index if you need to verify state.
+Lazy load context. Spec has the tasks; only read STATE.txt if you need to verify progress.
 
 ### Iteration Protocol
 
 For the full iteration protocol (loading context, exploring codebase, planning, implementing, reviewing, and committing), use the `/ralphie-iterate` skill. It contains detailed guidance for:
-- Creating SPECs with structured interviews
+- Creating specs with structured interviews
 - Using Task(Explore) agents for codebase understanding
 - Writing plans to `.ai/ralphie/plan.md`
 - Code review before committing

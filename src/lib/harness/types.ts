@@ -44,6 +44,8 @@ export interface HarnessRunOptions {
   model?: string;
   /** Additional system prompt (optional) */
   systemPrompt?: string;
+  /** Enable interactive mode (handle AskUserQuestion via terminal) */
+  interactive?: boolean;
 }
 
 /**
@@ -71,4 +73,4 @@ export interface Harness {
   ): Promise<HarnessResult>;
 }
 
-export type HarnessName = 'claude' | 'codex';
+export type HarnessName = 'claude' | 'codex' | 'opencode';

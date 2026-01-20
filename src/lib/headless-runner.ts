@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { isSpecComplete } from './spec-parser.js';
+import { isSpecCompleteV2, getProgressV2 } from './spec-parser-v2.js';
+import { locateActiveSpec } from './spec-locator.js';
 import { getToolCategory } from './tool-categories.js';
 import type { HeadlessIterationResult } from './types.js';
 import type { HarnessName, HarnessEvent } from './harness/types.js';
@@ -36,33 +37,6 @@ export const EXIT_CODE_COMPLETE = 0;
 export const EXIT_CODE_STUCK = 1;
 export const EXIT_CODE_MAX_ITERATIONS = 2;
 export const EXIT_CODE_ERROR = 3;
-
-export function getCompletedTaskTexts(cwd: string): string[] {
-  const specPath = join(cwd, 'SPEC.md');
-  if (!existsSync(specPath)) return [];
-
-  const content = readFileSync(specPath, 'utf-8');
-  const lines = content.split('\n');
-  const completedTasks: string[] = [];
-
-  for (const line of lines) {
-    const match = line.match(/^-\s*\[x\]\s+(.+)$/i);
-    if (match) {
-      completedTasks.push(match[1].trim());
-    }
-  }
-
-  return completedTasks;
-}
-
-export function getTotalTaskCount(cwd: string): number {
-  const specPath = join(cwd, 'SPEC.md');
-  if (!existsSync(specPath)) return 0;
-
-  const content = readFileSync(specPath, 'utf-8');
-  const allTasks = content.match(/^-\s*\[[x\s]\]\s+/gim);
-  return allTasks ? allTasks.length : 0;
-}
 
 const TODO_PATTERNS = [
   /\/\/\s*TODO:/i,
@@ -209,14 +183,20 @@ export async function runSingleIteration(
 export async function executeHeadlessRun(
   options: HeadlessRunOptions,
 ): Promise<number> {
-  const totalTasks = getTotalTaskCount(options.cwd);
   const harnessName = options.harness ?? 'claude';
-  emitStarted('SPEC.md', totalTasks, options.model, harnessName);
+
+  // Locate active spec
+  const located = locateActiveSpec(options.cwd);
+  const specPath = located.path;
+
+  // Get initial progress
+  const initialProgress = getProgressV2(specPath) ?? { completed: 0, total: 0 };
+
+  emitStarted(specPath, initialProgress.total, options.model, harnessName);
 
   let iterationsWithoutProgress = 0;
-  let tasksBefore = getCompletedTaskTexts(options.cwd);
+  let lastCompletedCount = initialProgress.completed;
   const totalStartTime = Date.now();
-  let lastCompletedCount = tasksBefore.length;
 
   for (let i = 1; i <= options.iterations; i++) {
     emitIteration(i, 'starting');
@@ -229,14 +209,17 @@ export async function executeHeadlessRun(
     }
 
     // Check for newly completed tasks
-    const tasksAfter = getCompletedTaskTexts(options.cwd);
-    const newlyCompleted = tasksAfter.filter(task => !tasksBefore.includes(task));
+    const progress = getProgressV2(specPath);
+    const currentCompleted = progress?.completed ?? 0;
 
-    for (let j = 0; j < newlyCompleted.length; j++) {
-      emitTaskComplete(lastCompletedCount + j + 1, newlyCompleted[j]);
+    const newlyCompletedCount = currentCompleted - lastCompletedCount;
+
+    // Emit task completion events
+    for (let j = 0; j < newlyCompletedCount; j++) {
+      emitTaskComplete(lastCompletedCount + j + 1, `Task ${lastCompletedCount + j + 1}`);
     }
 
-    if (newlyCompleted.length > 0) {
+    if (newlyCompletedCount > 0) {
       const filesWithStubs = detectTodoStubs(options.cwd);
       if (filesWithStubs.length > 0) {
         emitWarning(
@@ -245,11 +228,8 @@ export async function executeHeadlessRun(
           filesWithStubs
         );
       }
-    }
-
-    if (tasksAfter.length > tasksBefore.length) {
       iterationsWithoutProgress = 0;
-      lastCompletedCount = tasksAfter.length;
+      lastCompletedCount = currentCompleted;
     } else {
       iterationsWithoutProgress++;
     }
@@ -267,14 +247,11 @@ export async function executeHeadlessRun(
       return EXIT_CODE_STUCK;
     }
 
-    // Check if SPEC is complete
-    const specPath = join(options.cwd, 'SPEC.md');
-    if (isSpecComplete(specPath)) {
-      emitComplete(tasksAfter.length, Date.now() - totalStartTime);
+    // Check if spec is complete
+    if (isSpecCompleteV2(specPath)) {
+      emitComplete(currentCompleted, Date.now() - totalStartTime);
       return EXIT_CODE_COMPLETE;
     }
-
-    tasksBefore = tasksAfter;
   }
 
   // Max iterations reached without completion

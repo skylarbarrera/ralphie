@@ -1,0 +1,74 @@
+{
+  "timestamp": "2026-01-16T18:20:40.464Z",
+  "before": {
+    "timestamp": "2026-01-16T17:51:09.554Z",
+    "git_ref": "100f7496db17ec4918f74c0b2e7d05d3f519affe",
+    "summary": {
+      "total": 6,
+      "passed": 0,
+      "failed": 6,
+      "avg_score": 59.7,
+      "avg_duration_ms": 274774
+    }
+  },
+  "after": {
+    "timestamp": "2026-01-16T18:18:22.306Z",
+    "git_ref": "100f7496db17ec4918f74c0b2e7d05d3f519affe",
+    "summary": {
+      "total": 6,
+      "passed": 0,
+      "failed": 6,
+      "avg_score": 56.8,
+      "avg_duration_ms": 268466
+    }
+  },
+  "improvement": {
+    "passed_delta": 0,
+    "score_delta": -2.9000000000000057,
+    "duration_delta": -6308
+  },
+  "per_test": [
+    {
+      "id": "greenfield-game-engine",
+      "name": "Greenfield: Game Engine",
+      "before_score": 60,
+      "after_score": 75,
+      "delta": 15
+    },
+    {
+      "id": "greenfield-frontend",
+      "name": "Greenfield: React Dashboard",
+      "before_score": 75,
+      "after_score": 60,
+      "delta": -15
+    },
+    {
+      "id": "greenfield-trading",
+      "name": "Greenfield: Trading Simulator",
+      "before_score": 66,
+      "after_score": 76,
+      "delta": 10
+    },
+    {
+      "id": "brownfield-feature",
+      "name": "Brownfield: Add Auth to Existing API",
+      "before_score": 50,
+      "after_score": 40,
+      "delta": -10
+    },
+    {
+      "id": "brownfield-refactor",
+      "name": "Brownfield: Refactor to TypeScript",
+      "before_score": 41,
+      "after_score": 30,
+      "delta": -11
+    },
+    {
+      "id": "cli-tool",
+      "name": "Greenfield: CLI File Organizer",
+      "before_score": 66,
+      "after_score": 60,
+      "delta": -6
+    }
+  ]
+}

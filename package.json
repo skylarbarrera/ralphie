@@ -1,12 +1,12 @@
 {
   "name": "ralphie",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Autonomous AI coding loops - let AI build your project task by task",
   "author": "Skylar Barrera",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/skylarbarrera/ralphie.git"
+    "url": "git+https://github.com/skylarbarrera/ralphie.git"
   },
   "bugs": {
     "url": "https://github.com/skylarbarrera/ralphie/issues"
@@ -17,6 +17,7 @@
     "automation",
     "claude",
     "codex",
+    "opencode",
     "coding-assistant",
     "autonomous",
     "loop"
@@ -24,7 +25,7 @@
   "type": "module",
   "main": "dist/cli.js",
   "bin": {
-    "ralphie": "./bin/ralphie"
+    "ralphie": "bin/ralphie"
   },
   "files": [
     "bin",
@@ -36,7 +37,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "bun build src/cli.tsx --outdir dist --target node --external '@anthropic-ai/claude-agent-sdk' --external '@openai/codex-sdk' --external 'ink' --external 'ink-spinner' --external '@inkjs/ui' --external 'react' --external 'commander' --external 'js-yaml'",
+    "build": "bun build src/cli.tsx --outdir dist --target node --external '@anthropic-ai/claude-agent-sdk' --external '@openai/codex-sdk' --external '@opencode-ai/sdk' --external 'ink' --external 'ink-spinner' --external '@inkjs/ui' --external 'react' --external 'commander' --external 'js-yaml' --external 'dotenv'",
     "prepublishOnly": "npm run build",
     "ralphie": "bun src/cli.tsx run",
     "test": "bun x vitest run",
@@ -48,8 +49,10 @@
     "@anthropic-ai/claude-agent-sdk": "0.2.7",
     "@inkjs/ui": "^2.0.0",
     "@openai/codex-sdk": "0.86.0",
+    "@opencode-ai/sdk": "^1.1.25",
     "@types/js-yaml": "^4.0.9",
     "commander": "^11.1.0",
+    "dotenv": "^17.2.3",
     "ink": "^5.0.1",
     "ink-spinner": "^5.0.0",
     "js-yaml": "^4.1.0",
@@ -63,5 +66,10 @@
     "ink-testing-library": "^4.0.0",
     "typescript": "^5.3.0",
     "vitest": "^1.2.0"
+  },
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
   }
 }

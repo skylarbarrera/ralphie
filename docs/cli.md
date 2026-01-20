@@ -6,12 +6,12 @@ Complete reference for all Ralphie commands and options.
 
 ### `ralphie run`
 
-Execute iteration loops against your SPEC.
+Execute iteration loops against your spec.
 
 ```bash
 ralphie run              # Run one iteration
 ralphie run -n 5         # Run 5 iterations
-ralphie run --all        # Run until SPEC complete (max 100)
+ralphie run --all        # Run until spec complete (max 100)
 ralphie run --greedy     # Complete multiple tasks per iteration
 ```
 
@@ -20,7 +20,7 @@ ralphie run --greedy     # Complete multiple tasks per iteration
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-n, --iterations <n>` | Number of iterations to run | 1 |
-| `-a, --all` | Run until SPEC complete (max 100 iterations) | false |
+| `-a, --all` | Run until spec complete (max 100 iterations) | false |
 | `-g, --greedy` | Complete multiple tasks per iteration | false |
 | `-p, --prompt <text>` | Custom prompt to send to the AI | - |
 | `--prompt-file <path>` | Read prompt from file | - |
@@ -30,24 +30,28 @@ ralphie run --greedy     # Complete multiple tasks per iteration
 | `--no-branch` | Skip feature branch creation | false |
 | `--headless` | Output JSON events instead of UI | false |
 | `--stuck-threshold <n>` | Iterations without progress before stuck | 3 |
-| `--harness <name>` | AI harness to use: `claude`, `codex` | claude |
+| `--harness <name>` | AI harness to use: `claude`, `codex`, `opencode` | claude |
+| `-b, --budget <points>` | Task selection budget (see Budget System) | 4 |
 
 ### `ralphie spec`
 
-Generate a SPEC.md from a project description.
+Generate a spec autonomously from a project description.
 
 ```bash
-ralphie spec "Build a REST API"           # Interactive mode (default)
-ralphie spec --auto "Todo app"            # Autonomous with review loop
+ralphie spec "Build a REST API"           # Autonomous spec generation
 ralphie spec --headless "Blog platform"   # JSON output for automation
 ```
+
+Creates spec in `specs/active/` using V2 format.
 
 #### Options
 
 | Option | Description |
 |--------|-------------|
-| `--auto` | Generate spec autonomously with review loop, no human interaction |
 | `--headless` | Output JSON events, great for automation |
+| `--timeout <seconds>` | Timeout for generation (default: 300) |
+| `-m, --model <name>` | Claude model to use (sonnet, opus, haiku) |
+| `--harness <name>` | AI harness to use: claude, codex, opencode (default: claude) |
 
 ### `ralphie init`
 
@@ -59,29 +63,46 @@ ralphie init
 ```
 
 Creates:
-- `.ai/ralphie/` - Working directory for plans and history
+- `specs/active/` - Directory for spec files
+- `specs/completed/` - Archive for completed specs
 - `.claude/ralphie.md` - Coding standards
-- `.claude/skills/` - Ralphie skills for Claude Code
+- `STATE.txt` - Progress log
 
 ### `ralphie validate`
 
-Check project structure and SPEC conventions.
+Check project structure and spec format.
 
 ```bash
 ralphie validate
 ```
 
 Validates:
-- Required files exist (SPEC.md, etc.)
-- SPEC follows conventions (checkboxes, structure)
+- Required files exist
+- Spec follows V2 conventions (task IDs, status, size)
 - Project structure is correct
 
-### `ralphie upgrade`
+### `ralphie status`
 
-Upgrade project to latest Ralphie version.
+Show progress of the active spec.
 
 ```bash
-ralphie upgrade
+ralphie status
+```
+
+### `ralphie spec-list`
+
+List active and completed specs.
+
+```bash
+ralphie spec-list
+```
+
+### `ralphie archive`
+
+Move completed spec to `specs/completed/`.
+
+```bash
+ralphie archive
 ```
 
 ## Greedy Mode
@@ -109,6 +130,66 @@ ralphie run --greedy --all     # Maximum throughput
 
 **Use default for:** Unrelated tasks, complex features, debugging, precise tracking.
 
+## Budget System
+
+The budget system controls how many tasks are selected per iteration based on task size.
+
+### Task Sizes
+
+Specs use the V2 format with task IDs and sizes:
+
+```markdown
+### T001: Setup database
+- Status: pending
+- Size: S
+
+### T002: Implement API
+- Status: pending
+- Size: M
+```
+
+Size point values:
+- **S (Small)**: 1 point - Simple tasks, quick fixes
+- **M (Medium)**: 2 points - Standard features
+- **L (Large)**: 4 points - Complex implementations
+
+### Budget Selection
+
+```bash
+ralphie run --budget 2     # Select only S-sized tasks (1+1 = 2 points max)
+ralphie run --budget 4     # S+M or single L task (default)
+ralphie run --budget 8     # Multiple tasks (S+M+L, M+M+M+M, etc.)
+```
+
+The budget calculator selects pending tasks in order until the budget is exhausted.
+
+### Budget + Greedy Interaction
+
+| Mode | Behavior |
+|------|----------|
+| Default (`-b 4`) | Select tasks up to 4 points, complete **one** per iteration |
+| Greedy (`--greedy -b 4`) | Select tasks up to 4 points, complete **all selected** per iteration |
+| Greedy large (`--greedy -b 8`) | Select more tasks, complete all in one iteration |
+
+```bash
+# Complete one small task per iteration
+ralphie run --budget 1 -n 5
+
+# Complete multiple tasks per iteration (max 6 points worth)
+ralphie run --greedy --budget 6 -n 3
+
+# Maximum throughput - large budget, greedy mode
+ralphie run --greedy --budget 10 --all
+```
+
+### Task Status Flow
+
+```
+pending → in_progress → passed|failed
+```
+
+When all tasks are `passed` or `failed`, the spec is complete and the runner exits with code 0.
+
 ## Headless Mode
 
 For automation and CI/CD integration:
@@ -120,12 +201,12 @@ ralphie run --headless -n 10
 Outputs JSON events to stdout:
 
 ```json
-{"event":"started","spec":"SPEC.md","tasks":5,"timestamp":"2024-01-15T10:30:00Z"}
+{"event":"started","spec":"my-feature.md","tasks":5,"timestamp":"2024-01-15T10:30:00Z"}
 {"event":"iteration","n":1,"phase":"starting"}
 {"event":"tool","type":"read","path":"src/index.ts"}
 {"event":"tool","type":"write","path":"src/utils.ts"}
 {"event":"commit","hash":"abc1234","message":"Add utility functions"}
-{"event":"task_complete","index":0,"text":"Set up project structure"}
+{"event":"task_complete","id":"T001","title":"Set up project structure"}
 {"event":"iteration_done","n":1,"duration_ms":45000}
 {"event":"complete","tasks_done":5,"total_duration_ms":180000}
 ```
@@ -150,7 +231,7 @@ ralphie spec --headless "my project" && ralphie run --headless --all
 
 | Variable | Description |
 |----------|-------------|
-| `RALPH_HARNESS` | Default harness (claude, codex) |
+| `RALPH_HARNESS` | Default harness (claude, codex, opencode) |
 | `ANTHROPIC_API_KEY` | API key for Claude harness |
 | `OPENAI_API_KEY` | API key for Codex harness |
 

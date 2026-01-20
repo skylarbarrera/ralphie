@@ -1,8 +1,7 @@
 #!/usr/bin/env tsx
-import React from 'react';
-import { render } from 'ink';
+import 'dotenv/config';
 import { Command } from 'commander';
-import { readFileSync, existsSync, unlinkSync, copyFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -24,70 +23,26 @@ function getVersion(): string {
     return '1.0.0';
   }
 }
-import { IterationRunner } from './App.js';
 import { runInit } from './commands/init.js';
 import { validateProject } from './commands/run.js';
-import { runUpgrade, detectVersion, getVersionName, CURRENT_VERSION } from './commands/upgrade.js';
-import { createFeatureBranch } from './lib/git.js';
-import { getSpecTitle } from './lib/spec-parser.js';
 import { emitFailed } from './lib/headless-emitter.js';
 import { executeHeadlessRun as runHeadless } from './lib/headless-runner.js';
 import { validateSpecInDir, formatValidationResult } from './lib/spec-validator.js';
 import { generateSpec } from './lib/spec-generator.js';
 import { getHarnessName } from './lib/config-loader.js';
-
-export const DEFAULT_PROMPT = `You are Ralphie, an autonomous coding assistant.
-
-## Your Task
-Complete ONE checkbox from SPEC.md per iteration. Sub-bullets under a checkbox are implementation details - complete ALL of them before marking the checkbox done.
-
-## The Loop
-1. Read SPEC.md to find the next incomplete task (check STATE.txt if unsure)
-2. Write plan to .ai/ralphie/plan.md:
-   - Goal: one sentence
-   - Files: what you'll create/modify
-   - Tests: what you'll test
-   - Exit criteria: how you know you're done
-3. Implement the task with tests
-4. Run tests and type checks
-5. Mark checkbox complete in SPEC.md
-6. Commit with clear message
-7. Update .ai/ralphie/index.md (append commit summary) and STATE.txt
-
-## Memory Files
-- .ai/ralphie/plan.md - Current task plan (overwrite each iteration)
-- .ai/ralphie/index.md - Commit log (append after each commit)
-
-## Rules
-- Plan BEFORE coding
-- Tests BEFORE marking complete
-- Commit AFTER each task
-- No TODO/FIXME stubs in completed tasks`;
-
-export const GREEDY_PROMPT = `You are Ralphie, an autonomous coding assistant in GREEDY MODE.
-
-## Your Task
-Complete AS MANY checkboxes as possible from SPEC.md before context fills up.
-
-## The Loop (repeat until done or context full)
-1. Read SPEC.md to find the next incomplete task
-2. Write plan to .ai/ralphie/plan.md
-3. Implement the task with tests
-4. Run tests and type checks
-5. Mark checkbox complete in SPEC.md
-6. Commit with clear message
-7. Update .ai/ralphie/index.md and STATE.txt
-8. **CONTINUE to next task** (don't stop!)
-
-## Memory Files
-- .ai/ralphie/plan.md - Current task plan (overwrite each task)
-- .ai/ralphie/index.md - Commit log (append after each commit)
-
-## Rules
-- Commit after EACH task (saves progress incrementally)
-- Keep going until all tasks done OR context is filling up
-- No TODO/FIXME stubs in completed tasks
-- The goal is maximum throughput - don't stop after one task`;
+import { validateHarnessEnv } from './lib/harness/index.js';
+import {
+  runStatus,
+  formatStatus,
+  runList,
+  formatList,
+  runArchive,
+  formatArchive,
+  runLessons,
+} from './commands/spec-v2.js';
+import { generateTaskContext } from './lib/prompt-generator.js';
+import { DEFAULT_PROMPT, GREEDY_PROMPT } from './lib/prompts.js';
+import { executeRun } from './commands/run-interactive.js'; // .tsx compiled to .js
 
 export interface RunOptions {
   iterations: number;
@@ -105,13 +60,15 @@ export interface RunOptions {
   model?: string;
   harness?: string;
   greedy: boolean;
+  budget: number;
 }
 
 export type CliOptions = RunOptions;
 
 export const MAX_ALL_ITERATIONS = 100;
 
-export function resolvePrompt(options: RunOptions): string {
+export function resolvePrompt(options: RunOptions, specPath?: string): string {
+  // Custom prompts bypass task context injection
   if (options.prompt) {
     return options.prompt;
   }
@@ -124,63 +81,18 @@ export function resolvePrompt(options: RunOptions): string {
     return readFileSync(filePath, 'utf-8');
   }
 
-  return options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
-}
+  // Get base prompt
+  const basePrompt = options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
 
-export function executeRun(options: RunOptions): void {
-  const validation = validateProject(options.cwd);
+  // Generate task context from spec and budget
+  const taskContext = generateTaskContext(specPath, { budget: options.budget });
 
-  if (!validation.valid) {
-    console.error('Cannot run Ralphie:');
-    for (const error of validation.errors) {
-      console.error(`  - ${error}`);
-    }
-    process.exit(1);
+  // Append task context if available
+  if (taskContext) {
+    return `${basePrompt}\n\n${taskContext}`;
   }
 
-  if (!options.noBranch) {
-    const specPath = join(options.cwd, 'SPEC.md');
-    const title = getSpecTitle(specPath);
-    if (title) {
-      const result = createFeatureBranch(options.cwd, title);
-      if (result.created) {
-        console.log(`Created branch: ${result.branchName}`);
-      } else if (result.branchName) {
-        console.log(`Using branch: ${result.branchName}`);
-      } else if (result.error) {
-        console.warn(`Warning: ${result.error}`);
-      }
-    }
-  }
-
-  const prompt = resolvePrompt(options);
-  const idleTimeoutMs = options.timeoutIdle * 1000;
-
-  const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
-
-  const { waitUntilExit, unmount } = render(
-    <IterationRunner
-      prompt={prompt}
-      totalIterations={options.iterations}
-      cwd={options.cwd}
-      idleTimeoutMs={idleTimeoutMs}
-      saveJsonl={options.saveJsonl}
-      model={options.model}
-      harness={harness}
-    />
-  );
-
-  const handleSignal = (): void => {
-    unmount();
-    process.exit(0);
-  };
-
-  process.on('SIGINT', handleSignal);
-  process.on('SIGTERM', handleSignal);
-
-  waitUntilExit().then(() => {
-    process.exit(0);
-  });
+  return basePrompt;
 }
 
 export async function executeHeadlessRun(options: RunOptions): Promise<void> {
@@ -191,8 +103,14 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
     process.exit(3);
   }
 
-  const prompt = resolvePrompt(options);
+  const prompt = resolvePrompt(options, validation.specPath);
   const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
+
+  const envValidation = validateHarnessEnv(harness ?? 'claude');
+  if (!envValidation.valid) {
+    emitFailed(envValidation.message);
+    process.exit(1);
+  }
 
   const exitCode = await runHeadless({
     prompt,
@@ -242,7 +160,7 @@ function main(): void {
         }
 
         console.log('\nRalphie initialized! Next steps:');
-        console.log('  1. Create SPEC.md with your project tasks');
+        console.log('  1. Create a spec in specs/active/ with your project tasks');
         console.log('  2. Run: ralphie run');
       } catch (error) {
         console.error('Error:', error instanceof Error ? error.message : error);
@@ -266,8 +184,9 @@ function main(): void {
     .option('--headless', 'Output JSON events instead of UI')
     .option('--stuck-threshold <n>', 'Iterations without progress before stuck (headless)', '3')
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'sonnet')
-    .option('--harness <name>', 'AI harness to use (claude, codex)')
+    .option('--harness <name>', 'AI harness to use (claude, codex, opencode)')
     .option('-g, --greedy', 'Complete multiple tasks per iteration until context fills')
+    .option('--budget <points>', 'Size points budget per iteration (default 4)', '4')
     .action((opts) => {
       let iterations = parseInt(opts.iterations, 10);
       const all = opts.all ?? false;
@@ -293,6 +212,7 @@ function main(): void {
         model: opts.model,
         harness: opts.harness,
         greedy: opts.greedy ?? false,
+        budget: parseInt(opts.budget, 10),
       };
 
       if (options.headless) {
@@ -304,9 +224,9 @@ function main(): void {
 
   program
     .command('validate')
-    .description('Check if current directory is ready for Ralphie and validate SPEC.md conventions')
+    .description('Check if current directory is ready for Ralphie and validate spec format')
     .option('--cwd <path>', 'Working directory to check', process.cwd())
-    .option('--spec-only', 'Only validate SPEC.md content (skip project structure check)', false)
+    .option('--spec-only', 'Only validate spec content (skip project structure check)', false)
     .action((opts) => {
       const cwd = resolve(opts.cwd);
       let hasErrors = false;
@@ -325,7 +245,7 @@ function main(): void {
       }
 
       const specResult = validateSpecInDir(cwd);
-      console.log('\nSPEC.md content validation:');
+      console.log('\nSpec content validation:');
       console.log(formatValidationResult(specResult));
 
       if (!specResult.valid) {
@@ -339,14 +259,13 @@ function main(): void {
 
   program
     .command('spec')
-    .description('Generate a SPEC.md autonomously from a description')
+    .description('Generate a spec autonomously from a description')
     .argument('<description>', 'What to build (e.g., "REST API for user management")')
     .option('--cwd <path>', 'Working directory', process.cwd())
     .option('--headless', 'Output JSON events instead of UI', false)
-    .option('--auto', 'Autonomous mode with review loop (no user interaction)', false)
     .option('--timeout <seconds>', 'Timeout for generation', '300')
-    .option('--max-attempts <n>', 'Max refinement attempts in autonomous mode', '3')
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'opus')
+    .option('--harness <name>', 'AI harness to use: claude, codex, opencode', 'claude')
     .action(async (description: string, opts) => {
       const cwd = resolve(opts.cwd);
 
@@ -354,10 +273,9 @@ function main(): void {
         description,
         cwd,
         headless: opts.headless ?? false,
-        autonomous: opts.auto ?? false,
         timeoutMs: parseInt(opts.timeout, 10) * 1000,
-        maxAttempts: parseInt(opts.maxAttempts, 10),
         model: opts.model,
+        harness: opts.harness,
       });
 
       if (!result.success) {
@@ -375,120 +293,67 @@ function main(): void {
     });
 
   program
-    .command('upgrade')
-    .description(`Upgrade a Ralphie project to the latest version (v${CURRENT_VERSION})`)
-    .argument('[directory]', 'Target directory', process.cwd())
-    .option('--dry-run', 'Show what would be changed without making changes', false)
-    .option('--clean', 'Remove legacy files after confirming project is at latest version', false)
-    .action((directory: string, opts) => {
-      const targetDir = resolve(directory);
-
-      const detection = detectVersion(targetDir);
-
-      if (detection.detectedVersion === null) {
-        console.log('Could not detect Ralphie project version.');
-        console.log('If this is a new project, use: ralphie init');
-        return;
-      }
-
-      if (detection.isLatest && !detection.hasLegacyFiles) {
-        const claudeDir = resolve(targetDir, '.claude');
-        const ralphieMdPath = resolve(claudeDir, 'ralphie.md');
-
-        if (existsSync(ralphieMdPath)) {
-          const content = readFileSync(ralphieMdPath, 'utf-8');
-          const hasOldPatterns = /\bPRD\b/.test(content) || /\bprogress\.txt\b/.test(content);
-
-          if (hasOldPatterns) {
-            console.log(`Project is at ${getVersionName(detection.detectedVersion)} but .claude/ralphie.md has old patterns.`);
-
-            if (opts.clean) {
-              const templatesDir = resolve(__dirname, '..', 'templates');
-              const templatePath = resolve(templatesDir, '.claude', 'ralphie.md');
-              if (existsSync(templatePath)) {
-                copyFileSync(templatePath, ralphieMdPath);
-                console.log('Updated .claude/ralphie.md to v2 template.');
-              }
-            } else {
-              console.log('Run with --clean to update it.');
-            }
-            return;
-          }
-        }
-
-        console.log(`Project is already at ${getVersionName(detection.detectedVersion)} (latest)`);
-        return;
-      }
-
-      if (detection.isLatest && detection.hasLegacyFiles) {
-        console.log(`Project is at ${getVersionName(detection.detectedVersion)} but has legacy files:`);
-        for (const file of detection.legacyFiles) {
-          console.log(`  - ${file}`);
-        }
-        console.log('\nRun with --clean to remove them, or delete manually.');
-
-        if (opts.clean) {
-          console.log('\nCleaning up legacy files...');
-          for (const file of detection.legacyFiles) {
-            const filePath = resolve(targetDir, file);
-            try {
-              unlinkSync(filePath);
-              console.log(`  Removed: ${file}`);
-            } catch {
-              console.log(`  Failed to remove: ${file}`);
-            }
-          }
-          console.log('\nCleanup complete!');
-        }
-        return;
-      }
-
-      console.log(`Detected: ${getVersionName(detection.detectedVersion)}`);
-      console.log(`Target:   ${getVersionName(CURRENT_VERSION)}\n`);
-      console.log(`Found files: ${detection.foundIndicators.join(', ')}\n`);
-
-      if (opts.dryRun) {
-        console.log('Dry run - would upgrade from:');
-        console.log(`  ${getVersionName(detection.detectedVersion)} → ${getVersionName(CURRENT_VERSION)}`);
-        return;
-      }
-
+    .command('spec-list')
+    .description('List active and completed specs')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
       try {
-        const result = runUpgrade(targetDir);
+        const result = runList(cwd);
+        console.log(formatList(result));
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
+    });
 
-        console.log(`Upgraded: v${result.fromVersion} → v${result.toVersion}\n`);
-
-        if (result.renamed.length > 0) {
-          console.log('Renamed:');
-          for (const { from, to } of result.renamed) {
-            console.log(`  ${from} → ${to}`);
-          }
+  program
+    .command('status')
+    .description('Show progress of active spec')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .option('--json', 'Output as JSON', false)
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runStatus(cwd);
+        if (opts.json) {
+          console.log(JSON.stringify(result, null, 2));
+        } else {
+          console.log(formatStatus(result));
         }
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
+    });
 
-        if (result.created.length > 0) {
-          console.log('\nCreated:');
-          for (const file of result.created) {
-            console.log(`  + ${file}`);
-          }
-        }
+  program
+    .command('archive')
+    .description('Archive completed spec to specs/completed/')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runArchive(cwd);
+        console.log(formatArchive(result));
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
+    });
 
-        if (result.skipped.length > 0) {
-          console.log('\nSkipped:');
-          for (const file of result.skipped) {
-            console.log(`  - ${file}`);
-          }
-        }
-
-        if (result.warnings.length > 0) {
-          console.log('\nWarnings:');
-          for (const warning of result.warnings) {
-            console.log(`  ⚠ ${warning}`);
-          }
-        }
-
-        console.log('\nUpgrade complete! Run: ralphie validate');
-      } catch (error) {
-        console.error('Error:', error instanceof Error ? error.message : error);
+  program
+    .command('lessons')
+    .description('View or add to lessons learned')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .option('--add <lesson>', 'Add a new lesson')
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runLessons(cwd, opts.add);
+        console.log(result);
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
         process.exit(1);
       }
     });

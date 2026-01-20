@@ -254,11 +254,10 @@ npx bundlephobia <package>
 
 ### Required Reading
 Before starting work in a Ralphie loop:
-- **Always read:** `SPEC.md` - Project requirements and task list
+- **Always read:** Active spec in `specs/active/` - Project requirements and task list
 - **Read if needed:** `STATE.txt` - Check if unsure what's already done
-- **Read if needed:** `.ai/ralphie/index.md` - Last 3-5 commits for context
 
-Lazy load context. SPEC has the tasks; only read progress/index if you need to verify state.
+Lazy load context. Spec has the tasks; only read STATE.txt if you need to verify progress.
 
 ### Integration Verification
 
@@ -322,7 +321,7 @@ You: Any specific dotfiles it must support, or auto-discover from home directory
 [Generate SPEC after gathering sufficient detail]
 ```
 
-**Important:** When starting a new project, replace the existing SPEC.md entirely. Each SPEC represents one project or feature set.
+**Important:** When starting a new project, create a new spec file in `specs/active/`. Each spec represents one project or feature set.
 
 ### Writing SPECs
 

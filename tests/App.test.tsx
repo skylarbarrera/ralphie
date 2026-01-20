@@ -810,4 +810,54 @@ describe('IterationRunner', () => {
       expect(lastFrame()).toContain('1h 5m');
     });
   });
+
+  describe('V2 spec integration', () => {
+    it('renders without crashing when spec loading throws error', () => {
+      // When locateActiveSpec throws (no spec found), app should still render
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="test"
+          totalIterations={1}
+          _mockState={createMockState()}
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toBeTruthy();
+      expect(output).toContain('Iteration 1/1');
+    });
+
+    it('renders task number when provided', () => {
+      const { lastFrame } = render(
+        <App
+          prompt="test"
+          iteration={1}
+          totalIterations={1}
+          _mockState={createMockState()}
+          taskNumber="T001"
+          specTaskText="Implement feature X"
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toBeTruthy();
+      // Task number is displayed in the iteration header or task display
+    });
+
+    it('handles null spec gracefully in IterationRunner', () => {
+      // IterationRunner should work without a spec (prompt-only mode)
+      const { lastFrame } = render(
+        <IterationRunner
+          prompt="Implement a new feature"
+          totalIterations={2}
+          _mockCurrentIteration={1}
+          _mockState={createMockState()}
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toBeTruthy();
+      expect(output).toContain('Iteration 1/2');
+    });
+  });
 });

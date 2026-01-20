@@ -1,11 +1,11 @@
 # Using Ralphie
 
-Ralphie is an autonomous AI coding loop. You write a SPEC, Ralphie works through it task by task.
+Ralphie is an autonomous AI coding loop. You write a spec, Ralphie works through it task by task.
 
 ## Quick Start
 
-1. **Create a SPEC.md** with your project requirements and tasks
-2. **Run Ralphie**: `ralphie run` or `ralphie run -n 5` for multiple iterations
+1. **Create a spec** in `specs/active/` with your project requirements
+2. **Run Ralphie**: `ralphie run` or `ralphie run --all` to complete all tasks
 
 ## Project Structure
 
@@ -14,87 +14,115 @@ Ralphie expects this structure:
 ```
 your-project/
 ├── .claude/
-│   └── ralphie.md      # Coding standards (auto-created)
-├── .ai/ralphie/
-│   ├── plan.md       # Current task plan (Ralphie writes this)
-│   └── index.md      # Commit history (Ralphie appends here)
-├── SPEC.md            # YOUR requirements (you write this)
-├── STATE.txt      # Progress log (Ralphie updates this)
-└── src/              # Your code
+│   └── ralphie.md        # Coding standards (auto-created)
+├── specs/
+│   ├── active/           # Current specs (you write here)
+│   │   └── my-feature.md
+│   └── completed/        # Archived specs (auto-moved)
+├── STATE.txt             # Progress log (Ralphie updates this)
+└── src/                  # Your code
 ```
 
-## Writing a SPEC
+## Writing a Spec (V2 Format)
 
-Your SPEC.md should have checkboxes for tasks. **Each checkbox = one Ralphie iteration**, so batch related work together.
+Specs use task IDs and status tracking:
 
 ```markdown
-# My Project
+# My Feature
 
-## Overview
-Brief description of what you're building.
+Goal: Brief description of what you're building.
 
-## Phase 1: Setup
-- [ ] Initialize project with TypeScript, testing, and linting
-- [ ] Set up database models and migrations
-  - User model with email, password hash, timestamps
-  - Post model with title, body, author reference
-  - Comment model with body, author, post reference
+## Context
 
-## Phase 2: Core Features
-- [ ] Implement authentication system
-  - POST /auth/register - create user with hashed password
-  - POST /auth/login - validate credentials, return JWT
-  - POST /auth/logout - invalidate token
-  - Middleware for protected routes
-  - Tests for all auth flows
+Background information for the AI implementing this spec.
 
-- [ ] Build posts API with full CRUD
-  - GET/POST/PUT/DELETE endpoints
-  - Authorization (only author can edit/delete)
-  - Pagination for list endpoint
-  - Tests for all operations
+## Tasks
+
+### T001: Initialize project with TypeScript and testing
+- Status: pending
+- Size: M
+
+**Deliverables:**
+- TypeScript configuration with strict mode
+- Vitest setup with coverage
+- Basic project structure
+
+**Verify:** `npm run type-check && npm test`
+
+---
+
+### T002: Set up database models
+- Status: pending
+- Size: M
+
+**Deliverables:**
+- User model with email, password hash, timestamps
+- Post model with title, body, author reference
+- Migration scripts
+
+**Verify:** `npm run migrate && npm test`
+
+---
+
+### T003: Implement authentication system
+- Status: pending
+- Size: L
+
+**Deliverables:**
+- POST /auth/register endpoint
+- POST /auth/login endpoint with JWT
+- Auth middleware for protected routes
+- Tests for all auth flows
+
+**Verify:** `npm test -- auth`
+
+---
+
+## Acceptance Criteria
+
+- WHEN user registers, THEN account is created with hashed password
+- WHEN user logs in with valid credentials, THEN JWT is returned
 ```
 
 ### Task Design Principles
 
-**One checkbox = one iteration.** Sub-bullets are implementation details, not separate tasks.
+**One task = one logical unit of work.** Deliverables are implementation details.
 
-| Pattern | Iterations | Throughput |
-|---------|------------|------------|
-| `- [ ] Create db.ts`<br>`- [ ] Create redis.ts`<br>`- [ ] Create queue.ts` | 3 | Low |
-| `- [ ] Create data layer (db.ts, redis.ts, queue.ts)` | 1 | High |
+| Size | Points | Description |
+|------|--------|-------------|
+| S | 1 | Single file, < 50 lines |
+| M | 2 | Multiple files, 50-200 lines |
+| L | 4 | Complex feature, 200+ lines |
 
 **Batching heuristics:**
-- Same verb? Batch them. ("Create X, Create Y" → "Create X and Y")
-- Same feature? Batch them. (model + API + tests = one task)
-- Files that import each other? Batch them.
-- Sweet spot: 3-7 files or ~200-500 lines per task
-
-**Include with each task:**
-- Implementation AND tests
-- Related files that depend on each other
-- All sub-components of a feature
+- Same feature? One task. (model + API + tests = T001)
+- Files that import each other? One task.
+- Sweet spot: 3-7 files per task
 
 ## Commands
 
 ```bash
 ralphie run              # Run one iteration
+ralphie run --all        # Run until spec complete
 ralphie run -n 5         # Run 5 iterations
-ralphie run --help       # See all options
+ralphie status           # Show progress
+ralphie archive          # Move completed spec to archive
+ralphie --help           # See all options
 ```
 
 ## The Loop
 
 Each iteration, Ralphie:
-1. Reads SPEC.md to find the next incomplete task
-2. Writes a plan to .ai/ralphie/plan.md
-3. Implements the task with tests
+1. Reads spec from `specs/active/` to find pending tasks
+2. Implements the task with tests
+3. Updates task status to `passed` or `failed`
 4. Commits changes
-5. Updates STATE.txt and .ai/ralphie/index.md
+5. Updates STATE.txt
 
 ## Tips
 
 - **Clean git state**: Ralphie requires no uncommitted changes before running
-- **One task per iteration**: Don't expect multiple checkboxes done at once
-- **Check STATE.txt**: See what's been done if you're unsure
-- **Edit SPEC anytime**: Add/remove/reorder tasks between runs
+- **One task per iteration**: Tasks transition pending → in_progress → passed/failed
+- **Check status**: Run `ralphie status` to see progress
+- **Edit spec anytime**: Add/remove/reorder tasks between runs
+

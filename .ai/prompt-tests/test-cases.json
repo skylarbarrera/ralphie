@@ -1,0 +1,109 @@
+{
+  "version": "1.0",
+  "description": "Test cases for spec generation prompt comparison",
+  "test_cases": [
+    {
+      "id": "greenfield-game-engine",
+      "name": "Greenfield: Game Engine",
+      "category": "greenfield",
+      "description": "Build a 2D game engine with sprite rendering, physics, and input handling",
+      "cwd": "/tmp/ralphie-test/game-engine",
+      "setup": "mkdir -p /tmp/ralphie-test/game-engine && cd /tmp/ralphie-test/game-engine && npm init -y",
+      "expected": {
+        "min_tasks": 3,
+        "max_tasks": 8,
+        "must_contain": ["render", "physics", "input"],
+        "must_not_contain": ["npm install", "```typescript"]
+      }
+    },
+    {
+      "id": "greenfield-frontend",
+      "name": "Greenfield: React Dashboard",
+      "category": "greenfield",
+      "description": "Build a React dashboard with charts, data tables, and real-time updates using WebSocket",
+      "cwd": "/tmp/ralphie-test/dashboard",
+      "setup": "mkdir -p /tmp/ralphie-test/dashboard && cd /tmp/ralphie-test/dashboard && npm init -y && echo '{\"dependencies\":{\"react\":\"^18\"}}' > package.json",
+      "expected": {
+        "min_tasks": 3,
+        "max_tasks": 10,
+        "must_contain": ["chart", "table", "WebSocket"],
+        "must_not_contain": ["npm install", "```tsx"]
+      }
+    },
+    {
+      "id": "greenfield-trading",
+      "name": "Greenfield: Trading Simulator",
+      "category": "greenfield",
+      "description": "Build a stock trading simulator with portfolio tracking, order execution, and P&L reporting",
+      "cwd": "/tmp/ralphie-test/trading",
+      "setup": "mkdir -p /tmp/ralphie-test/trading && cd /tmp/ralphie-test/trading && npm init -y",
+      "expected": {
+        "min_tasks": 4,
+        "max_tasks": 10,
+        "must_contain": ["portfolio", "order", "P&L"],
+        "must_not_contain": ["npm install", "```"]
+      }
+    },
+    {
+      "id": "brownfield-feature",
+      "name": "Brownfield: Add Auth to Existing API",
+      "category": "brownfield",
+      "description": "Add JWT authentication to the existing REST API with login, logout, and protected routes",
+      "cwd": "/tmp/ralphie-test/existing-api",
+      "setup": "mkdir -p /tmp/ralphie-test/existing-api/src/routes && echo 'export const userRoutes = {}' > /tmp/ralphie-test/existing-api/src/routes/users.ts && npm init -y",
+      "expected": {
+        "min_tasks": 2,
+        "max_tasks": 6,
+        "must_contain": ["JWT", "login", "protected"],
+        "must_not_contain": ["npm install", "```typescript"]
+      }
+    },
+    {
+      "id": "brownfield-refactor",
+      "name": "Brownfield: Refactor to TypeScript",
+      "category": "brownfield",
+      "description": "Refactor the existing JavaScript codebase to TypeScript with proper types and separation of concerns between data layer, business logic, and API handlers",
+      "cwd": "/tmp/ralphie-test/js-project",
+      "setup": "mkdir -p /tmp/ralphie-test/js-project/src && echo 'module.exports = { getUser: (id) => ({id, name: \"test\"}) }' > /tmp/ralphie-test/js-project/src/db.js && echo 'const db = require(\"./db\"); module.exports = { handler: (req, res) => res.json(db.getUser(req.params.id)) }' > /tmp/ralphie-test/js-project/src/api.js",
+      "expected": {
+        "min_tasks": 2,
+        "max_tasks": 6,
+        "must_contain": ["TypeScript", "type", "separate"],
+        "must_not_contain": ["npm install typescript", "```typescript"]
+      }
+    },
+    {
+      "id": "cli-tool",
+      "name": "Greenfield: CLI File Organizer",
+      "category": "greenfield",
+      "description": "Build a CLI tool that organizes files by type, date, or custom rules with undo support",
+      "cwd": "/tmp/ralphie-test/file-organizer",
+      "setup": "mkdir -p /tmp/ralphie-test/file-organizer && npm init -y",
+      "expected": {
+        "min_tasks": 3,
+        "max_tasks": 7,
+        "must_contain": ["organize", "undo", "rule"],
+        "must_not_contain": ["npm install", "```"]
+      }
+    }
+  ],
+  "scoring": {
+    "structure": {
+      "has_goal_section": 10,
+      "has_phases": 10,
+      "tasks_have_checkboxes": 10,
+      "tasks_have_verify": 15
+    },
+    "content": {
+      "no_code_snippets": 15,
+      "no_file_line_refs": 10,
+      "no_shell_commands_in_tasks": 10,
+      "deliverables_not_instructions": 10
+    },
+    "quality": {
+      "appropriate_task_count": 10,
+      "tasks_are_batched": 5,
+      "scope_matches_description": 5
+    }
+  }
+}

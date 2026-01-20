@@ -175,7 +175,7 @@ if (statusResult.stdout.trim() === "") {
         violations: [],
         warnings: [],
       };
-      expect(formatValidationResult(result)).toBe('✓ SPEC.md follows conventions');
+      expect(formatValidationResult(result)).toBe('✓ Spec follows conventions');
     });
 
     it('formats violations', () => {

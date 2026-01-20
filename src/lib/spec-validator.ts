@@ -1,5 +1,5 @@
 import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { locateActiveSpec, SpecLocatorError } from './spec-locator.js';
 
 export type ViolationType =
   | 'code_snippet'
@@ -58,7 +58,7 @@ export function validateSpecContent(content: string): ValidationResult {
             type: 'code_snippet',
             line: codeBlockStart,
             content: codeBlockContent.slice(0, 3).join('\n') + (codeBlockContent.length > 3 ? '\n...' : ''),
-            message: 'Code snippets belong in plan.md, not SPEC.md. Describe WHAT to build, not HOW.',
+            message: 'Code snippets belong in plan.md, not the spec. Describe WHAT to build, not HOW.',
           });
         }
         inCodeBlock = false;
@@ -95,7 +95,7 @@ export function validateSpecContent(content: string): ValidationResult {
         type: 'technical_notes_section',
         line: lineNum,
         content: line.trim(),
-        message: '"Technical Notes" sections belong in plan.md. SPECs describe requirements only.',
+        message: '"Technical Notes" sections belong in plan.md. Specs describe requirements only.',
       });
     }
 
@@ -138,7 +138,7 @@ export function validateSpec(specPath: string): ValidationResult {
     return {
       valid: false,
       violations: [],
-      warnings: [`SPEC.md not found at ${specPath}`],
+      warnings: [`Spec not found at ${specPath}`],
     };
   }
 
@@ -147,8 +147,23 @@ export function validateSpec(specPath: string): ValidationResult {
 }
 
 export function validateSpecInDir(dir: string): ValidationResult {
-  const specPath = join(dir, 'SPEC.md');
-  return validateSpec(specPath);
+  try {
+    const located = locateActiveSpec(dir);
+    return validateSpec(located.path);
+  } catch (err) {
+    if (err instanceof SpecLocatorError) {
+      return {
+        valid: false,
+        violations: [],
+        warnings: [err.message],
+      };
+    }
+    return {
+      valid: false,
+      violations: [],
+      warnings: ['No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.'],
+    };
+  }
 }
 
 export function formatViolation(v: SpecViolation): string {
@@ -157,7 +172,7 @@ export function formatViolation(v: SpecViolation): string {
 
 export function formatValidationResult(result: ValidationResult): string {
   if (result.valid && result.warnings.length === 0) {
-    return '✓ SPEC.md follows conventions';
+    return '✓ Spec follows conventions';
   }
 
   const parts: string[] = [];
