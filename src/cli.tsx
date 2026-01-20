@@ -160,8 +160,9 @@ function main(): void {
         }
 
         console.log('\nRalphie initialized! Next steps:');
-        console.log('  1. Create a spec in specs/active/ with your project tasks');
-        console.log('  2. Run: ralphie run');
+        console.log('  1. Install skills: npx add-skill skylarbarrera/ralphie');
+        console.log('  2. Create a spec: /ralphie-spec "your project idea"');
+        console.log('  3. Run: ralphie run --all');
       } catch (error) {
         console.error('Error:', error instanceof Error ? error.message : error);
         process.exit(1);

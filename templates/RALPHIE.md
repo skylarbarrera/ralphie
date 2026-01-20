@@ -4,8 +4,12 @@ Ralphie is an autonomous AI coding loop. You write a spec, Ralphie works through
 
 ## Quick Start
 
-1. **Create a spec** in `specs/active/` with your project requirements
-2. **Run Ralphie**: `ralphie run` or `ralphie run --all` to complete all tasks
+1. **Install skills** using [add-skill](https://github.com/vercel-labs/add-skill):
+   ```bash
+   npx add-skill skylarbarrera/ralphie
+   ```
+2. **Create a spec** in `specs/active/` or run `/ralphie-spec "description"`
+3. **Run Ralphie**: `ralphie run --all`
 
 ## Project Structure
 
