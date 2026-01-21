@@ -19,6 +19,13 @@ import {
   emitFailed,
   emitWarning,
 } from './headless-emitter.js';
+import {
+  recordTaskStatuses,
+  detectFailedToPassedTasks,
+  generateLearningFromFailure,
+  createLearning,
+  generateLearningCaptureInstructions,
+} from './learnings/index.js';
 
 export interface HeadlessRunOptions {
   prompt: string;
@@ -115,12 +122,43 @@ export async function runSingleIteration(
     const specResult = locateActiveSpec(options.cwd);
     if (specResult && specResult.path) {
       const spec = parseSpecV2(specResult.path);
-      // Find the first pending task to extract context
+
+      // Check if we need to capture learnings from failed→passed tasks
+      const tasks = spec.tasks.map((t) => ({ id: t.id, status: t.status }));
+      const failedToPassedTasks = detectFailedToPassedTasks(options.cwd, tasks);
+
+      if (failedToPassedTasks.length > 0) {
+        // Inject learning capture instructions for the first failed→passed task
+        const taskId = failedToPassedTasks[0];
+        const task = spec.tasks.find((t) => t.id === taskId);
+
+        if (task) {
+          // Create stub learning file
+          const learningInput = generateLearningFromFailure({
+            taskId: task.id,
+            taskTitle: task.title,
+            errorMessage: 'Task failed in previous iteration',
+          });
+
+          const learningResult = createLearning(learningInput, options.cwd);
+
+          // Inject instructions to complete the learning
+          const instructions = generateLearningCaptureInstructions(
+            task.id,
+            task.title,
+            learningResult.path
+          );
+
+          promptToUse = `${options.prompt}\n\n${instructions}`;
+        }
+      }
+
+      // Find the first pending task to extract context for learnings search
       const pendingTask = spec.tasks.find((t) => t.status === 'pending');
 
       if (pendingTask) {
         const deliverables = pendingTask.deliverables?.join('\n') || '';
-        promptToUse = injectLearnings(options.prompt, pendingTask.title, deliverables, options.cwd);
+        promptToUse = injectLearnings(promptToUse, pendingTask.title, deliverables, options.cwd);
       }
     }
   } catch (error) {
@@ -260,6 +298,16 @@ export async function executeHeadlessRun(
     }
 
     emitIterationDone(i, result.durationMs, result.stats);
+
+    // Record task statuses for next iteration (to detect failed→passed transitions)
+    try {
+      const spec = parseSpecV2(specPath);
+      const tasks = spec.tasks.map((t) => ({ id: t.id, status: t.status }));
+      recordTaskStatuses(options.cwd, tasks);
+    } catch (error) {
+      // Status tracking is not critical - log but continue
+      console.warn('[status-tracker] Failed to track task statuses:', error);
+    }
 
     // Check for stuck condition
     if (iterationsWithoutProgress >= options.stuckThreshold) {

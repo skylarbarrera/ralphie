@@ -82,7 +82,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ---
 
 ### T004: Implement learnings capture with auto-upgrades
-- Status: pending
+- Status: passed
 - Size: L
 
 **Deliverables:**
