@@ -400,3 +400,17 @@
   - Type check passes
   - Structure verified: .ralphie/ complete, old directories removed
   - Commit: b4f5631 chore: migrate Ralphie repo to .ralphie/ structure
+
+✅ 2026-01-21: Completed T008 - Create agent prompt library (compound-learnings spec)
+  - Created agents/ directory with 8 specialized agent prompts adapted from EveryInc/compound-engineering-plugin
+  - Research agents: repo-research-analyst, best-practices-researcher
+  - Review agents: security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer
+  - Validation agents: spec-flow-analyzer
+  - Created SOURCE.md documenting source mapping, adaptations, and update instructions
+  - Created README.md explaining agent system, usage examples, and Ralphie integration
+  - Adaptations: Replaced Compound tools with Ralphie tools (Grep, Glob, Read, WebFetch, WebSearch)
+  - Added Ralphie-specific sections referencing .ralphie/learnings/ and .ralphie/llms.txt
+  - Expanded from concise overviews to comprehensive guides with examples
+  - Standardized output formats and aligned with Ralphie's orchestration model
+  - All 8 agent files created, plus documentation
+  - Commit: 13179c9 feat: T008 create agent prompt library

@@ -271,3 +271,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 659 passing (all tests pass after migration)
 - notes: Applied T001 migration to Ralphie's own repository; moved specs/ → .ralphie/specs/ and STATE.txt → .ralphie/state.txt using git mv (preserving history); created .ralphie/llms.txt with architecture decisions for TypeScript, harness abstraction, spec V2 format, path detection, orchestration model; created learnings subdirectories (build-errors, test-failures, runtime-errors, patterns); updated .gitignore to exclude .ralphie/state.txt; kept .ai/ralphie/ for development memory (not part of official Ralphie structure)
 - next: T008 - Create agent prompt library (foundation for T002, T003, T006)
+
+## 13179c9 — feat: T008 create agent prompt library
+- files: agents/ (8 agent prompts + README.md + SOURCE.md), .ralphie/specs/active/compound-learnings.md, .ai/ralphie/plan.md
+- tests: N/A (documentation and prompts)
+- notes: Created comprehensive agent library with 8 specialized prompts adapted from EveryInc/compound-engineering-plugin; Research agents (repo-research-analyst, best-practices-researcher); Review agents (security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer); Validation agent (spec-flow-analyzer); Replaced Compound tools with Ralphie tools (Grep, Glob, Read, WebFetch, WebSearch); Added Ralphie-specific sections for .ralphie/learnings/ and llms.txt; Expanded to comprehensive guides with examples; SOURCE.md documents mapping and adaptations; README.md explains agent system and Ralphie integration
+- next: T004 - Implement learnings capture with auto-upgrades (or T002/T003/T006 that depend on T008)
