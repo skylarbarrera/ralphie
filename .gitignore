@@ -63,3 +63,6 @@ temp/
 
 # TLDR CLI (runtime files)
 .tldr/
+
+# Ralphie (runtime state)
+.ralphie/state.txt
