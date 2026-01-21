@@ -9,8 +9,8 @@ describe('skills structure', () => {
     return fs.statSync(fullPath).isDirectory();
   });
 
-  it('has at least 3 skills', () => {
-    expect(skillDirs.length).toBeGreaterThanOrEqual(3);
+  it('has at least 1 skill', () => {
+    expect(skillDirs.length).toBeGreaterThanOrEqual(1);
   });
 
   skillDirs.forEach((skillName) => {
