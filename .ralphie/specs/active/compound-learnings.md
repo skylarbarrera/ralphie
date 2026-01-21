@@ -63,7 +63,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ---
 
 ### T003: Add SpecFlow analyzer for spec validation
-- Status: pending
+- Status: passed
 - Size: L
 - Depends: T008 (agent prompts must exist)
 

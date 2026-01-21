@@ -1,34 +1,39 @@
-# Plan: T002 - Enhance spec gen with deep research phase
+# Plan: T003 Add SpecFlow analyzer for spec validation
 
 ## Goal
-Add deep research phase to spec generation using agent prompts to analyze codebase patterns before creating specs.
+Integrate spec-flow-analyzer agent to validate spec completeness after generation
 
 ## Task ID
-T002
+T003
 
 ## Files to Create/Modify
 
 ### Create:
-- `src/lib/research-orchestrator.ts` - Core research orchestration logic
-- `tests/lib/research-orchestrator.test.ts` - Unit tests for research orchestrator
-- `.ralphie/settings.json` (example in templates) - MCP configuration
+- `src/lib/spec-analyzer.ts` - Core analyzer orchestration logic
+- `tests/lib/spec-analyzer.test.ts` - Unit tests for analyzer
 
 ### Modify:
-- `src/lib/spec-generator.ts` - Integrate research phase into spec generation
-- `src/cli.tsx` - Add `--skip-research` flag to spec command
-- `templates/.ralphie/settings.json` - Add MCP configuration template
-- `.ralphie/specs/active/compound-learnings.md` - Update T002 status
+- `src/lib/spec-generator.ts` - Integrate analysis after spec generation
+- `src/cli.tsx` - Add `--skip-analyze` flag to spec command
+- `.ralphie/specs/active/compound-learnings.md` - Update T003 status
 
 ## Tests
-1. Unit tests for research orchestrator (search patterns, run research agents)
-2. Unit tests for spec-generator integration (research before spec gen)
-3. Integration test for `--skip-research` flag behavior
+- Test loadAnalyzerPrompt() loads spec-flow-analyzer.md
+- Test runAnalyzer() calls harness with correct prompt
+- Test analyzeSpec() orchestrates analysis flow
+- Test autonomous mode runs refinement when gaps found
+- Test interactive mode skips auto-refinement
+- Test --skip-analyze flag bypasses analysis
+- Test analysis failures are non-fatal
 
 ## Exit Criteria
-- `ralphie spec "add auth"` shows research phase in output
-- Research output saved to `.ralphie/research-context.md`
-- Research findings injected into spec generation prompt
-- `ralphie spec "add auth" --skip-research` bypasses research phase
-- All tests pass (npm test)
-- Type check passes (npm run type-check)
-- Verify command passes: `ralphie spec "add auth"` shows research phase, output includes codebase patterns
+- ✓ Analyzer uses spec-flow-analyzer prompt from T008
+- ✓ Analysis runs AFTER spec generation automatically
+- ✓ Output saved to `.ralphie/analysis.md`
+- ✓ Autonomous mode: runs refinement if gaps found
+- ✓ Interactive mode: presents gaps to user (no auto-fix)
+- ✓ `--skip-analyze` flag implemented
+- ✓ Analysis failures don't break spec generation
+- ✓ All tests pass
+- ✓ Type check passes
+- ✓ Manual verification: `ralphie spec "feature"` shows analysis phase

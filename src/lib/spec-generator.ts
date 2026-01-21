@@ -4,6 +4,7 @@ import { validateSpecInDir, formatValidationResult } from './spec-validator.js';
 import { getHarness } from './harness/index.js';
 import type { HarnessEvent, HarnessName } from './harness/types.js';
 import { conductResearch, injectResearchContext } from './research-orchestrator.js';
+import { analyzeSpec } from './spec-analyzer.js';
 
 export interface SpecGeneratorOptions {
   description: string;
@@ -13,6 +14,7 @@ export interface SpecGeneratorOptions {
   model?: string;
   harness?: HarnessName;
   skipResearch?: boolean;
+  skipAnalyze?: boolean;
 }
 
 export interface SpecGeneratorResult {
@@ -198,6 +200,30 @@ When done, output: SPEC_COMPLETE`;
       if (!completed) {
         console.log('\nWarning: AI did not output SPEC_COMPLETE marker.');
         console.log('Consider reviewing the spec manually.');
+      }
+    }
+
+    // Run spec analysis phase after generation
+    // In headless mode, autonomous=true (auto-refine if gaps found)
+    // In interactive mode, autonomous=false (present gaps to user)
+    try {
+      const analysis = await analyzeSpec(
+        harness,
+        specPath,
+        options.cwd,
+        options.skipAnalyze || false,
+        options.headless // autonomous mode when headless
+      );
+
+      if (analysis && !options.headless) {
+        console.log(''); // Blank line for readability
+      }
+    } catch (error) {
+      // Analysis failures are non-fatal, continue
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (!options.headless) {
+        console.warn(`Analysis phase failed: ${errorMsg}`);
+        console.warn('Continuing without analysis...\n');
       }
     }
 

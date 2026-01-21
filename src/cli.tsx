@@ -296,6 +296,7 @@ function main(): void {
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'opus')
     .option('--harness <name>', 'AI harness to use: claude, codex, opencode', 'claude')
     .option('--skip-research', 'Skip the research phase', false)
+    .option('--skip-analyze', 'Skip the spec analysis phase', false)
     .action(async (description: string, opts) => {
       const cwd = resolve(opts.cwd);
 
@@ -307,6 +308,7 @@ function main(): void {
         model: opts.model,
         harness: opts.harness,
         skipResearch: opts.skipResearch ?? false,
+        skipAnalyze: opts.skipAnalyze ?? false,
       });
 
       if (!result.success) {
