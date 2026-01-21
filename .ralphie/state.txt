@@ -435,3 +435,19 @@
   - Manual verification process defined for AI assistants to check for updates
   - Tests: 687 passing (documentation only, no code changes)
   - Commit: 079523e docs: T010 add commit hash to agent source tracking
+
+✅ 2026-01-21: Completed T002 - Enhance spec gen with deep research phase
+  - Created src/lib/research-orchestrator.ts with core research orchestration logic
+  - Implemented loadAgentPrompt(), runResearchAgent(), conductResearch() functions
+  - Research uses agent prompts from T008: repo-research-analyst, best-practices-researcher
+  - Research runs sequentially (can be parallelized in future)
+  - Integrated research phase into spec-generator.ts (runs BEFORE spec generation)
+  - Research output saved to .ralphie/research-context.md
+  - Research findings injected into spec generation prompt via injectResearchContext()
+  - Added --skip-research flag to cli.tsx spec command for bypassing research
+  - Created templates/.ralphie/settings.json with MCP configuration example (Context7)
+  - Research failures are non-fatal (spec generation continues with warning)
+  - Added 12 comprehensive unit tests for research orchestrator
+  - Updated spec-generator tests to skip research by default (skipResearch: true)
+  - Tests: 699 passing (12 new tests), type check passes
+  - Commit: 5060f42 feat: T002 add deep research phase to spec generation

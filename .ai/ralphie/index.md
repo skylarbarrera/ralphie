@@ -289,3 +289,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 687 passing (no code changes, documentation only)
 - notes: Added specific commit hash cb2485ff from upstream EveryInc/compound-engineering-plugin to SOURCE.md for accurate version tracking; verified all 8 agents correctly mapped; update instructions comprehensive and actionable
 - next: T002 - Enhance spec gen with deep research phase (or T003, T006 - all unblocked now)
+
+## 5060f42 — feat: T002 add deep research phase to spec generation
+- files: src/lib/research-orchestrator.ts, src/lib/spec-generator.ts, src/cli.tsx, templates/.ralphie/settings.json, tests/lib/research-orchestrator.test.ts, tests/lib/spec-generator.test.ts
+- tests: 699 passing (12 new for research-orchestrator), type check passes
+- notes: Created research orchestration system with loadAgentPrompt, runResearchAgent, conductResearch functions; uses repo-research-analyst and best-practices-researcher agent prompts from T008; research output saved to .ralphie/research-context.md; findings injected into spec gen prompt; --skip-research CLI flag; MCP configuration template; research failures non-fatal
+- next: T003 - Add SpecFlow analyzer for spec validation (or T006 - multi-agent review)
