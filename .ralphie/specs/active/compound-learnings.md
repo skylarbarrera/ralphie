@@ -200,7 +200,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ---
 
 ### T010: Agent update tracking from Compound source
-- Status: pending
+- Status: passed
 - Size: S
 
 **Deliverables:**

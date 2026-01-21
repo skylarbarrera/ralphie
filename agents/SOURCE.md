@@ -5,7 +5,7 @@
 All agent prompts in this directory are adapted from the **EveryInc/compound-engineering-plugin** repository.
 
 - **Repository**: https://github.com/EveryInc/compound-engineering-plugin
-- **Source Commit**: main branch (as of January 2026)
+- **Source Commit**: `cb2485ff481cb6d556163003d339ce16d4dcffdb` (main branch, January 2026)
 - **License**: Check repository for current license
 - **Credit**: Created by [Every](https://every.to/) as part of their compound engineering methodology
 
