@@ -10,6 +10,7 @@ describe('spec-archiver', () => {
   beforeEach(() => {
     testDir = join(tmpdir(), `spec-archiver-test-${Date.now()}`);
     mkdirSync(testDir, { recursive: true });
+    // Use old structure for these tests (backward compat)
     mkdirSync(join(testDir, 'specs', 'active'), { recursive: true });
     mkdirSync(join(testDir, 'specs', 'completed'), { recursive: true });
   });

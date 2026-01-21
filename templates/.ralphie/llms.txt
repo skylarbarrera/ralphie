@@ -1,0 +1,88 @@
+# Architecture Decisions
+
+> High-level technical decisions for this project.
+> Update this file when making significant architectural choices.
+> This helps AI agents understand your project's technical context.
+
+## Technology Stack
+
+### Language & Runtime
+- Language: [e.g., TypeScript, Python, Go]
+- Runtime: [e.g., Node.js 20+, Python 3.11+]
+
+### Framework & Libraries
+- Framework: [e.g., React, Next.js, FastAPI, Rails]
+- Key Libraries: [List major dependencies]
+
+### Database & Storage
+- Database: [e.g., PostgreSQL, MongoDB, MySQL]
+- Caching: [e.g., Redis, in-memory]
+- File Storage: [e.g., S3, local filesystem]
+
+## Architecture Patterns
+
+### Application Structure
+- Pattern: [e.g., MVC, Clean Architecture, Microservices]
+- Rationale: [Why this pattern was chosen]
+
+### State Management
+- Approach: [e.g., Redux, Zustand, Context API]
+- Rationale: [Why this approach was chosen]
+
+### API Design
+- Style: [e.g., REST, GraphQL, gRPC]
+- Versioning: [e.g., /api/v1/, header-based]
+- Authentication: [e.g., JWT, OAuth2, API keys]
+
+## Key Conventions
+
+### Code Organization
+- [Convention]: [Description and rationale]
+
+### Naming Conventions
+- [Convention]: [Description and examples]
+
+### Testing Strategy
+- Unit Tests: [Framework and approach]
+- Integration Tests: [Framework and approach]
+- E2E Tests: [Framework and approach]
+
+## External Dependencies
+
+### Third-Party Services
+- [Service Name]: [Purpose and integration method]
+
+### APIs & Integrations
+- [API Name]: [Purpose, authentication, rate limits]
+
+## Performance Considerations
+
+### Optimization Strategies
+- [Strategy]: [Description and reasoning]
+
+### Scaling Approach
+- [Approach]: [Description of horizontal/vertical scaling strategy]
+
+## Security Decisions
+
+### Authentication & Authorization
+- Method: [e.g., JWT with httpOnly cookies]
+- Session Management: [e.g., 24h expiry, refresh tokens]
+
+### Data Protection
+- Encryption: [At-rest and in-transit approaches]
+- Sensitive Data: [How PII and secrets are handled]
+
+## Deployment & Infrastructure
+
+### Hosting
+- Platform: [e.g., AWS, Vercel, Railway]
+- Environment: [e.g., Docker, serverless]
+
+### CI/CD
+- Pipeline: [e.g., GitHub Actions, GitLab CI]
+- Deployment Strategy: [e.g., blue-green, rolling]
+
+## Notes
+
+Add project-specific notes, constraints, or future considerations here.

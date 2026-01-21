@@ -159,6 +159,15 @@ function main(): void {
           }
         }
 
+        // Show global directory info
+        if (result.globalDirectory) {
+          if (result.globalDirectory.created) {
+            console.log(`\n✓ Created global directory: ${result.globalDirectory.path}`);
+          } else {
+            console.log(`\n✓ Using existing global directory: ${result.globalDirectory.path}`);
+          }
+        }
+
         console.log('\nRalphie initialized! Next steps:');
         console.log('  1. Create a spec:');
         console.log('     ralphie spec "your project idea"    # autonomous');

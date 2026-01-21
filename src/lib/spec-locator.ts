@@ -1,5 +1,14 @@
 import { existsSync, readdirSync } from 'fs';
 import { join } from 'path';
+import {
+  getActiveSpecsDirectory,
+  getSpecsDirectory,
+  getCompletedSpecsDirectory,
+  getSpecTemplatesDirectory,
+  getLessonsPath,
+  checkForOldStructure,
+  getMigrationMessage,
+} from './paths.js';
 
 export interface LocateSpecResult {
   path: string;
@@ -16,7 +25,7 @@ export class SpecLocatorError extends Error {
 }
 
 export function locateActiveSpec(projectDir: string = process.cwd()): LocateSpecResult {
-  const specsActiveDir = join(projectDir, 'specs', 'active');
+  const specsActiveDir = getActiveSpecsDirectory(projectDir);
 
   if (existsSync(specsActiveDir)) {
     const files = readdirSync(specsActiveDir).filter(
@@ -31,14 +40,19 @@ export function locateActiveSpec(projectDir: string = process.cwd()): LocateSpec
 
     if (files.length > 1) {
       throw new SpecLocatorError(
-        `Multiple specs found in specs/active/: ${files.join(', ')}. Only one active spec is allowed.`,
+        `Multiple specs found in ${specsActiveDir}: ${files.join(', ')}. Only one active spec is allowed.`,
         'MULTIPLE_SPECS'
       );
     }
   }
 
+  // Show migration message if old structure detected
+  const migrationHint = checkForOldStructure(projectDir)
+    ? `\n\n${getMigrationMessage()}`
+    : '';
+
   throw new SpecLocatorError(
-    'No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.',
+    `No spec found. Create a spec in .ralphie/specs/active/ or run \`ralphie spec "description"\`.${migrationHint}`,
     'NO_SPEC'
   );
 }
@@ -52,22 +66,5 @@ export function hasActiveSpec(projectDir: string = process.cwd()): boolean {
   }
 }
 
-export function getSpecsDirectory(projectDir: string = process.cwd()): string {
-  return join(projectDir, 'specs');
-}
-
-export function getActiveSpecsDirectory(projectDir: string = process.cwd()): string {
-  return join(projectDir, 'specs', 'active');
-}
-
-export function getCompletedSpecsDirectory(projectDir: string = process.cwd()): string {
-  return join(projectDir, 'specs', 'completed');
-}
-
-export function getSpecTemplatesDirectory(projectDir: string = process.cwd()): string {
-  return join(projectDir, 'specs', 'templates');
-}
-
-export function getLessonsPath(projectDir: string = process.cwd()): string {
-  return join(projectDir, 'specs', 'lessons.md');
-}
+// Re-export from paths module for backward compatibility
+export { getSpecsDirectory, getActiveSpecsDirectory, getCompletedSpecsDirectory, getSpecTemplatesDirectory, getLessonsPath };

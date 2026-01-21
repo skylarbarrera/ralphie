@@ -105,7 +105,7 @@ describe('validateProject', () => {
       const result = validateProject(testDir);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.');
+      expect(result.errors.some(err => err.includes('No spec found'))).toBe(true);
     });
 
     it('should fail when .claude/ralphie.md is missing', () => {
@@ -128,8 +128,8 @@ describe('validateProject', () => {
       expect(result.errors).toContain('.ai/ralphie/ not found. Run `ralphie init` first.');
     });
 
-    it('should fail when spec is not in specs/active/', () => {
-      // Spec must be in specs/active/, not at root
+    it('should fail when spec is not in .ralphie/specs/active/ or specs/active/', () => {
+      // Spec must be in correct location, not at root
       mkdirSync(join(testDir, '.claude'), { recursive: true });
       writeFileSync(join(testDir, '.claude', 'ralphie.md'), '# Ralphie');
       mkdirSync(join(testDir, '.ai', 'ralphie'), { recursive: true });
@@ -137,7 +137,7 @@ describe('validateProject', () => {
       const result = validateProject(testDir);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.');
+      expect(result.errors.some(err => err.includes('No spec found'))).toBe(true);
     });
   });
 });

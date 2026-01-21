@@ -24,7 +24,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ## Tasks
 
 ### T001: Restructure to .ralphie/ folder
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**

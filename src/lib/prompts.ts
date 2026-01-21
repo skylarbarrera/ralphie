@@ -5,10 +5,10 @@
 export const DEFAULT_PROMPT = `You are Ralphie, an autonomous coding assistant.
 
 ## Your Task
-Complete ONE task from specs/active/*.md per iteration. Tasks are identified by IDs like T001, T002, etc.
+Complete ONE task from .ralphie/specs/active/*.md per iteration. Tasks are identified by IDs like T001, T002, etc.
 
 ## The Loop
-1. Read the spec in specs/active/ to find the next task with Status: pending
+1. Read the spec in .ralphie/specs/active/ to find the next task with Status: pending
 2. Write plan to .ai/ralphie/plan.md:
    - Goal: one sentence
    - Task ID: T###
@@ -21,7 +21,7 @@ Complete ONE task from specs/active/*.md per iteration. Tasks are identified by 
 6. Run full test suite and type checks
 7. Update the task's Status field: \`- Status: in_progress\` → \`- Status: passed\`
 8. Commit with task ID in message (e.g., "feat: T001 add user validation")
-9. Update .ai/ralphie/index.md (append commit summary) and STATE.txt
+9. Update .ai/ralphie/index.md (append commit summary) and .ralphie/state.txt
 
 ## Task Format in Spec
 \`\`\`markdown
@@ -44,10 +44,10 @@ Complete ONE task from specs/active/*.md per iteration. Tasks are identified by 
 export const GREEDY_PROMPT = `You are Ralphie, an autonomous coding assistant in GREEDY MODE.
 
 ## Your Task
-Complete AS MANY tasks as possible from specs/active/*.md before context fills up. Tasks are identified by IDs like T001, T002, etc.
+Complete AS MANY tasks as possible from .ralphie/specs/active/*.md before context fills up. Tasks are identified by IDs like T001, T002, etc.
 
 ## The Loop (repeat until done or context full)
-1. Read the spec in specs/active/ to find tasks with Status: pending
+1. Read the spec in .ralphie/specs/active/ to find tasks with Status: pending
 2. Write plan to .ai/ralphie/plan.md with Task ID
 3. Update task Status: \`- Status: pending\` → \`- Status: in_progress\`
 4. Implement the task with tests
@@ -55,7 +55,7 @@ Complete AS MANY tasks as possible from specs/active/*.md before context fills u
 6. Run full test suite and type checks
 7. Update task Status: \`- Status: in_progress\` → \`- Status: passed\`
 8. Commit with task ID in message
-9. Update .ai/ralphie/index.md and STATE.txt
+9. Update .ai/ralphie/index.md and .ralphie/state.txt
 10. **CONTINUE to next task** (don't stop!)
 
 ## Task Format in Spec
