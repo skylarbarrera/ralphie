@@ -1,77 +1,54 @@
-# Plan: T005 - Add learnings search to iteration loop
+# Plan: Migrate Ralphie Repository to .ralphie/ Structure
 
 ## Goal
-Add learnings search functionality that finds and injects relevant learnings into the iteration prompt before AI execution.
+Migrate the Ralphie repository itself from old structure (specs/, .ai/ralphie/, STATE.txt) to new .ralphie/ structure following MIGRATION.md.
 
 ## Task ID
-T005
+Post-T001/T005 cleanup - applying the new structure to Ralphie's own repository
 
 ## Files to Create/Modify
-- **Create:**
-  - `src/lib/learnings-search.ts` - Core search functionality
-  - `tests/lib/learnings-search.test.ts` - Unit tests for search
 
-- **Modify:**
-  - `src/lib/prompts.ts` - Add learnings injection to iteration prompt
-  - `src/lib/headless-runner.ts` - Inject learnings before harness.run()
-  - `src/commands/run-interactive.tsx` - Inject learnings before Ink render
+### Create:
+- `.ralphie/` directory structure:
+  - `.ralphie/specs/` (move from specs/)
+  - `.ralphie/memory/` (move from .ai/ralphie/)
+  - `.ralphie/learnings/` with subdirectories
+  - `.ralphie/state.txt` (move from STATE.txt)
+  - `.ralphie/llms.txt` (new template)
+
+### Move:
+- `specs/*` → `.ralphie/specs/`
+- `STATE.txt` → `.ralphie/state.txt`
+
+### Keep as-is:
+- `.ai/ralphie/` - Development-specific memory (index.md, plan.md)
+- This directory is for Ralphie development, not part of official Ralphie structure
+
+### Update:
+- `.gitignore` - add `.ralphie/state.txt`
+- prompts.ts - update references from `STATE.txt` to `.ralphie/state.txt`
+- Documentation references to specs/ → .ralphie/specs/
+
+### Delete:
+- `specs/` directory (after moving contents)
+- `STATE.txt` (after moving to .ralphie/)
 
 ## Tests
-- Unit tests for learnings search:
-  - `searchLearnings()` finds matches by keywords
-  - Search order: project learnings first, then global learnings
-  - Tag matching on YAML frontmatter
-  - Empty results when no matches
-  - Deduplication of global/local learnings
-- Integration tests:
-  - Learnings injected into prompt with correct format
-  - Both project and global learnings included
-  - Handles missing learnings directories gracefully
+- Run full test suite: `npm test`
+- Run type check: `npm run type-check`
+- Verify structure: `ls -la .ralphie/`
+- Verify memory files: `ls -la .ralphie/memory/`
+- Verify no broken references to old paths
 
 ## Exit Criteria
-1. ✅ `searchLearnings()` function searches both locations in correct order
-2. ✅ YAML frontmatter parsing extracts tags, problem, solution
-3. ✅ Keyword matching on task title/deliverables
-4. ✅ Relevant learnings formatted and injected into iteration prompt
-5. ✅ All tests pass (`npm test`)
-6. ✅ Type check passes (`npm run type-check`)
-7. ✅ Verify command passes: Manual test shows learnings in prompt when matches exist
-
-## Implementation Notes
-
-### Learnings File Format (from spec)
-```yaml
----
-problem: Description of the problem encountered
-symptoms: What the error looked like
-root-cause: Why it happened
-solution: How it was fixed
-prevention: How to avoid in future
-tags: [build-errors, typescript, webpack]
----
-
-Additional notes...
-```
-
-### Search Strategy
-1. Extract keywords from: task title, task deliverables
-2. Search project learnings (`.ralphie/learnings/**/*.md`)
-3. Search global learnings (`~/.ralphie/learnings/**/*.md`)
-4. Match on: tags, problem field, root-cause field
-5. Return matched learnings with metadata
-
-### Injection Format
-Add to iteration prompt before the task details:
-```
-## Relevant Learnings
-
-The following learnings from past iterations may help with this task:
-
-### [Learning Title from filename]
-- **Problem:** [problem field]
-- **Solution:** [solution field]
-- **Prevention:** [prevention field]
-- **Tags:** [tags array]
-
-[Repeat for each relevant learning]
-```
+1. `.ralphie/` directory exists with complete structure
+2. `specs/` content moved to `.ralphie/specs/` (using git mv)
+3. `STATE.txt` moved to `.ralphie/state.txt` (using git mv)
+4. `.ralphie/llms.txt` created with template
+5. `.ralphie/learnings/` directories created
+6. Old `specs/` directory removed
+7. Old `STATE.txt` removed
+8. `.gitignore` updated
+9. All tests pass (verify no broken references)
+10. Type check passes
+11. Prompts updated to reference .ralphie/state.txt

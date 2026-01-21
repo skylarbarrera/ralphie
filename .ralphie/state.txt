@@ -377,3 +377,26 @@
   - Type check passes
   - All deliverables complete: orchestration in Node.js, keyword matching, project-first search, YAML frontmatter, injection into prompt
   - Commit: f2a74e4 feat: T005 add learnings search to iteration loop
+
+✅ 2026-01-21: Migrated Ralphie repository to .ralphie/ structure
+  - Applied T001 migration to Ralphie's own codebase
+  - Created .ralphie/ directory structure with complete organization
+  - Moved specs/ → .ralphie/specs/ using git mv (preserving history)
+  - Moved STATE.txt → .ralphie/state.txt using git mv (preserving history)
+  - Created .ralphie/llms.txt with comprehensive architecture decisions:
+    - Technology stack: TypeScript, Node.js, React (Ink), Vitest, esbuild
+    - Key patterns: Harness abstraction, Spec V2 format, Path detection, Orchestration model
+    - File organization conventions
+    - Design philosophy: 80/20 principle, compound engineering, simplicity
+  - Created .ralphie/learnings/ directory structure:
+    - build-errors/
+    - test-failures/
+    - runtime-errors/
+    - patterns/
+  - Updated .gitignore to exclude .ralphie/state.txt (runtime state)
+  - Kept .ai/ralphie/ for development memory (index.md, plan.md)
+  - Note: .ai/ralphie/ is specific to Ralphie development, not part of official Ralphie structure
+  - Tests: 659 passing (all tests pass after migration)
+  - Type check passes
+  - Structure verified: .ralphie/ complete, old directories removed
+  - Commit: b4f5631 chore: migrate Ralphie repo to .ralphie/ structure

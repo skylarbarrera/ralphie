@@ -265,3 +265,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 659 passing (22 new tests for learnings-search module)
 - notes: Implemented comprehensive learnings search with YAML frontmatter parsing; keyword extraction from task title/deliverables; searches project learnings first, then global learnings; deduplication; formatLearningsForPrompt() generates markdown injection; injectLearnings() helper in prompts.ts; integrated into headless-runner.ts and cli.tsx resolvePrompt(); searches before calling harness.run() or rendering UI
 - next: T006 - Implement multi-agent review with cost tracking (requires T008 agent prompts first)
+
+## b4f5631 — chore: migrate Ralphie repo to .ralphie/ structure
+- files: .ralphie/specs/, .ralphie/state.txt, .ralphie/llms.txt, .ralphie/learnings/, .gitignore
+- tests: 659 passing (all tests pass after migration)
+- notes: Applied T001 migration to Ralphie's own repository; moved specs/ → .ralphie/specs/ and STATE.txt → .ralphie/state.txt using git mv (preserving history); created .ralphie/llms.txt with architecture decisions for TypeScript, harness abstraction, spec V2 format, path detection, orchestration model; created learnings subdirectories (build-errors, test-failures, runtime-errors, patterns); updated .gitignore to exclude .ralphie/state.txt; kept .ai/ralphie/ for development memory (not part of official Ralphie structure)
+- next: T008 - Create agent prompt library (foundation for T002, T003, T006)
