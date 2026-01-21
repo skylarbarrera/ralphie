@@ -510,3 +510,34 @@
     ✓ README with 80/20 workflow and Compound attribution
   - Tests: 760 passing (all tests pass), type check passes
   - Commit: 73524de docs: T007 integrate orchestration into CLI with 80/20 workflow docs
+
+✅ 2026-01-21: Completed T009 - Update /ralphie-spec skill for new flow
+  - Enhanced skills/ralphie-spec/SKILL.md with research and analysis phases
+  - Added Step 0: Check for Research Context (optional)
+    - Reads .ralphie/research-context.md if exists
+    - Incorporates codebase patterns and framework best practices into interview questions
+  - Added Step 6: Check for Analysis (optional)
+    - Reads .ralphie/analysis.md if exists
+    - Reviews gaps, edge cases, and missing elements with user
+    - User decides: revise spec, accept as-is, or add follow-up tasks
+  - Updated workflow: Research → Interview → Explore → Draft → Size Review → Write → Analysis → Review Gaps → Approve
+  - Added 80/20 Integration section explaining how skill works with compound engineering features
+  - Updated output path from specs/active/ to .ralphie/specs/active/ throughout
+  - Enhanced presentation summary to include:
+    - Research findings section (if available)
+    - Analysis results section (if available)
+  - Updated Context template in spec format to mention research findings
+  - Skill remains self-contained:
+    - Reads research and analysis outputs (doesn't call harness)
+    - User is present for interactive gap resolution
+    - CLI triggers research/analysis, skill incorporates findings
+  - Follows 80/20 philosophy: research and analysis are part of 80% planning phase
+  - All deliverables complete:
+    ✓ Research phase before interview
+    ✓ Analysis phase after spec draft
+    ✓ Flow: Research → Interview → Draft → Analyze → Review Gaps → Finalize
+    ✓ Reads .ralphie/research-context.md if exists
+    ✓ Runs analysis and presents gaps before approval
+    ✓ Remains self-contained (no harness calls)
+  - Tests: N/A (documentation only, no code changes)
+  - Commit: f9fd4e2 feat: T009 update ralphie-spec skill for 80/20 workflow

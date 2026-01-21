@@ -313,3 +313,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 760 passing (all tests pass, no code changes)
 - notes: Added comprehensive 80/20 philosophy section to README with visual workflow diagram (80% planning / 20% execution); Compound Engineering attribution to EveryInc plugin; three pillars (Deep Research, Multi-Agent Review, Learnings System); directory structure docs (.ralphie/ and ~/.ralphie/); learnings YAML format examples; updated commands table with new flags (--review, --force, --skip-research, --skip-analyze); verified all orchestration already complete from T002-T006
 - next: T009 - Update /ralphie-spec skill for new flow
+
+## f9fd4e2 — feat: T009 update ralphie-spec skill for 80/20 workflow
+- files: skills/ralphie-spec/SKILL.md, .ralphie/specs/active/compound-learnings.md, .ai/ralphie/plan.md
+- tests: N/A (documentation only, no code changes)
+- notes: Enhanced /ralphie-spec skill with research and analysis integration; added Step 0 (check .ralphie/research-context.md), Step 6 (check .ralphie/analysis.md); updated workflow to include research and analysis phases; added 80/20 Integration section; updated output path to .ralphie/specs/active/; enhanced presentation summary to include research findings and analysis results; skill remains self-contained (reads outputs, doesn't call harness); follows 80/20 philosophy with research/analysis as part of 80% planning
+- next: Compound learnings spec complete - all tasks passed
