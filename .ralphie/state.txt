@@ -426,3 +426,12 @@
   - Storage: .ralphie/learnings/ (project) and ~/.ralphie/learnings/ (global)
   - Tests: 28 new tests (17 manager, 11 status-tracker), all 687 tests pass
   - Commit: c28bbad feat: T004 implement learnings capture with auto-upgrades
+
+✅ 2026-01-21: Completed T010 - Agent update tracking from Compound source
+  - Added specific commit hash cb2485ff from upstream EveryInc/compound-engineering-plugin to SOURCE.md
+  - Verified all 8 agents are correctly mapped in source mapping table
+  - Confirmed comprehensive update instructions for checking diffs against upstream
+  - Documentation includes: repo URL, commit hash, mapping table, adaptations list, update process
+  - Manual verification process defined for AI assistants to check for updates
+  - Tests: 687 passing (documentation only, no code changes)
+  - Commit: 079523e docs: T010 add commit hash to agent source tracking

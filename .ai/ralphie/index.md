@@ -283,3 +283,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 28 new tests (17 manager + 11 status-tracker), 687 total pass
 - notes: Automatic learning capture when tasks go failed→passed; YAML frontmatter with category detection; global vs project scope; status tracking in .ralphie/.task-status.json; integration with headless runner; prompt template for AI to complete learnings
 - next: Continue with remaining compound-learnings tasks (T002, T003, T006, T007, T009, T010)
+
+## 079523e — docs: T010 add commit hash to agent source tracking
+- files: agents/SOURCE.md, .ralphie/specs/active/compound-learnings.md
+- tests: 687 passing (no code changes, documentation only)
+- notes: Added specific commit hash cb2485ff from upstream EveryInc/compound-engineering-plugin to SOURCE.md for accurate version tracking; verified all 8 agents correctly mapped; update instructions comprehensive and actionable
+- next: T002 - Enhance spec gen with deep research phase (or T003, T006 - all unblocked now)
