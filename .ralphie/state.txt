@@ -484,3 +484,29 @@
   - Added 40 comprehensive tests: 25 for review.ts, 15 for cost-tracker.ts
   - Tests: 760 passing (40 new tests), type check passes
   - Commit: 2687688 feat: T006 Implement multi-agent review with cost tracking
+
+✅ 2026-01-21: Completed T007 - Integrate orchestration into CLI commands
+  - Updated README.md with comprehensive 80/20 philosophy section
+  - Added visual workflow diagram showing 80% planning / 20% execution split
+  - Documented three pillars: Deep Research, Multi-Agent Review, Learnings System
+  - Added Compound Engineering attribution to EveryInc/compound-engineering-plugin
+  - Documented complete workflow example: research → analysis → review → learnings
+  - Added directory structure documentation (.ralphie/ and ~/.ralphie/)
+  - Documented learnings YAML format and llms.txt architecture decisions format
+  - Updated commands table with new flags: --review, --force, --skip-research, --skip-analyze
+  - Updated spec path references from specs/ to .ralphie/specs/
+  - Verified all orchestration already complete from previous tasks:
+    - T002: Research orchestration (conductResearch in spec-generator.ts)
+    - T003: Analysis orchestration (analyzeSpec in spec-generator.ts)
+    - T004: Learnings capture (recordTaskStatuses in headless-runner.ts)
+    - T005: Learnings search (searchLearnings in prompts.ts + cli.tsx)
+    - T006: Review orchestration (runReview in run-interactive.tsx + headless-runner.ts)
+  - All deliverables complete:
+    ✓ generateSpec() orchestrates: research → spec gen → analysis
+    ✓ executeRun() orchestrates: learnings search → inject into prompt → run
+    ✓ executeRun() with --review: run reviewers → check P1 → iteration
+    ✓ P1 findings block without --force flag
+    ✓ Task status tracking for learnings capture
+    ✓ README with 80/20 workflow and Compound attribution
+  - Tests: 760 passing (all tests pass), type check passes
+  - Commit: 73524de docs: T007 integrate orchestration into CLI with 80/20 workflow docs

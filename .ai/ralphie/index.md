@@ -307,3 +307,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 760 passing (40 new: 25 review + 15 cost-tracker), type check passes
 - notes: Multi-agent review system with parallel execution via Promise.all(); 5 review agents: security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer; language detection (TypeScript/Python); cost tracking with custom pricing support; severity parsing (Critical/High→P1, Medium→P2, Low→P3); P1 blocking (unless --force); review results saved to .ralphie/review.md; --review and --force CLI flags for both interactive and headless modes
 - next: T007 - Integrate orchestration into CLI commands (or T009 - Update /ralphie-spec skill)
+
+## 73524de — docs: T007 integrate orchestration into CLI with 80/20 workflow docs
+- files: README.md, .ralphie/specs/active/compound-learnings.md, .ai/ralphie/{plan,index}.md, .ralphie/state.txt
+- tests: 760 passing (all tests pass, no code changes)
+- notes: Added comprehensive 80/20 philosophy section to README with visual workflow diagram (80% planning / 20% execution); Compound Engineering attribution to EveryInc plugin; three pillars (Deep Research, Multi-Agent Review, Learnings System); directory structure docs (.ralphie/ and ~/.ralphie/); learnings YAML format examples; updated commands table with new flags (--review, --force, --skip-research, --skip-analyze); verified all orchestration already complete from T002-T006
+- next: T009 - Update /ralphie-spec skill for new flow
