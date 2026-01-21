@@ -253,3 +253,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 613 passing (all tests pass, no regressions)
 - notes: Ran full test suite to verify refactoring tasks T001-T005; all 613 tests passed with no failures; verified import paths working correctly with new module structure; no behavior changes from refactoring
 - next: Component refactor spec complete - all 6 tasks passed
+
+## dbf445d — feat: T001 restructure to .ralphie/ folder
+- files: MIGRATION.md, src/lib/paths.ts, src/lib/spec-locator.ts, src/commands/init.ts, src/lib/prompts.ts, templates/.ralphie/, tests/lib/paths.test.ts, tests/spec-locator.test.ts, tests/cli.test.tsx, tests/commands/run.test.ts
+- tests: 637 passing (18 new tests for paths module)
+- notes: Created .ralphie/ directory structure with specs/, learnings/, state.txt, llms.txt; added global ~/.ralphie/ with learnings/ and settings.json; backward compatible with old specs/ structure; migration detection shows MIGRATION.md guidance; all path utilities centralized in paths.ts
+- next: T005 - Add learnings search to iteration loop

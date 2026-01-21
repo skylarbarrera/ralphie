@@ -336,3 +336,24 @@
   - Test output clean with no unexpected errors or warnings
   - Component refactor spec now complete - all 6 tasks passed
   - Commit: ce3465b test: T006 verify all tests pass after refactoring
+
+✅ 2026-01-21: Completed T001 - Restructure to .ralphie/ folder (compound-learnings spec)
+  - Created comprehensive .ralphie/ directory structure:
+    - .ralphie/specs/ (active, completed, templates)
+    - .ralphie/learnings/ (build-errors, test-failures, runtime-errors, patterns)
+    - .ralphie/state.txt (moved from root STATE.txt)
+    - .ralphie/llms.txt (new architecture decisions file)
+  - Created global ~/.ralphie/ directory:
+    - ~/.ralphie/learnings/ (shared across projects)
+    - ~/.ralphie/settings.json (global defaults)
+  - Created src/lib/paths.ts with centralized path utilities
+  - Updated src/lib/spec-locator.ts to use paths module
+  - Updated src/commands/init.ts to create new structure and global directory
+  - Updated src/lib/prompts.ts to reference .ralphie/ paths
+  - Created MIGRATION.md guide for AI-assisted migration
+  - Backward compatibility: detects old specs/ structure and shows migration message
+  - Updated templates/ to use .ralphie/ structure
+  - Updated all tests (18 new tests for paths module)
+  - Tests: 637 passing (all tests pass)
+  - Verified: `ralphie init` creates correct structure and global directory
+  - Commit: dbf445d feat: T001 restructure to .ralphie/ folder

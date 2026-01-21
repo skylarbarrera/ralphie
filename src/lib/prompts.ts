@@ -2,6 +2,45 @@
  * Prompt templates for Ralphie autonomous coding assistant
  */
 
+import { searchLearnings, formatLearningsForPrompt } from './learnings-search.js';
+
+/**
+ * Inject relevant learnings into a prompt based on task information
+ *
+ * @param basePrompt - The base prompt to inject learnings into
+ * @param taskTitle - The title of the current task
+ * @param deliverables - Optional deliverables text for additional context
+ * @param cwd - Current working directory (defaults to process.cwd())
+ * @returns Prompt with learnings injected (if any found)
+ */
+export function injectLearnings(
+  basePrompt: string,
+  taskTitle: string,
+  deliverables?: string,
+  cwd: string = process.cwd()
+): string {
+  const learnings = searchLearnings(taskTitle, deliverables, cwd);
+
+  if (learnings.length === 0) {
+    return basePrompt;
+  }
+
+  const learningsSection = formatLearningsForPrompt(learnings);
+
+  // Inject learnings after the prompt header but before task details
+  // Find a good insertion point (after "## Your Task" section)
+  const insertAfter = '## The Loop';
+  const insertIndex = basePrompt.indexOf(insertAfter);
+
+  if (insertIndex === -1) {
+    // If structure doesn't match expected, append to end
+    return `${basePrompt}\n\n${learningsSection}`;
+  }
+
+  // Insert before "## The Loop" section
+  return `${basePrompt.slice(0, insertIndex)}${learningsSection}\n\n${basePrompt.slice(insertIndex)}`;
+}
+
 export const DEFAULT_PROMPT = `You are Ralphie, an autonomous coding assistant.
 
 ## Your Task

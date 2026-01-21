@@ -41,8 +41,9 @@ import {
   runLessons,
 } from './commands/spec-v2.js';
 import { generateTaskContext } from './lib/prompt-generator.js';
-import { DEFAULT_PROMPT, GREEDY_PROMPT } from './lib/prompts.js';
+import { DEFAULT_PROMPT, GREEDY_PROMPT, injectLearnings } from './lib/prompts.js';
 import { executeRun } from './commands/run-interactive.js'; // .tsx compiled to .js
+import { parseSpecV2 } from './lib/spec-parser-v2.js';
 
 export interface RunOptions {
   iterations: number;
@@ -82,7 +83,24 @@ export function resolvePrompt(options: RunOptions, specPath?: string): string {
   }
 
   // Get base prompt
-  const basePrompt = options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
+  let basePrompt = options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
+
+  // Inject learnings if we have a spec
+  if (specPath) {
+    try {
+      const spec = parseSpecV2(specPath);
+      // Find the first pending task to extract context
+      const pendingTask = spec.tasks.find((t) => t.status === 'pending');
+
+      if (pendingTask) {
+        const deliverables = pendingTask.deliverables?.join('\n') || '';
+        basePrompt = injectLearnings(basePrompt, pendingTask.title, deliverables, options.cwd);
+      }
+    } catch (error) {
+      // If learnings search fails, just use the original prompt
+      // This is not critical to the iteration, so we continue
+    }
+  }
 
   // Generate task context from spec and budget
   const taskContext = generateTaskContext(specPath, { budget: options.budget });

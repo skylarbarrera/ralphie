@@ -104,7 +104,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ---
 
 ### T005: Add learnings search to iteration loop
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**

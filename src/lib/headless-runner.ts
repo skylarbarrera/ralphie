@@ -1,11 +1,12 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { isSpecCompleteV2, getProgressV2 } from './spec-parser-v2.js';
+import { isSpecCompleteV2, getProgressV2, parseSpecV2 } from './spec-parser-v2.js';
 import { locateActiveSpec } from './spec-locator.js';
 import { getToolCategory } from './tool-categories.js';
 import type { HeadlessIterationResult } from './types.js';
 import type { HarnessName, HarnessEvent } from './harness/types.js';
 import { getHarness } from './harness/index.js';
+import { injectLearnings } from './prompts.js';
 import {
   emitStarted,
   emitIteration,
@@ -108,6 +109,25 @@ export async function runSingleIteration(
   let commitMessage: string | undefined;
   let lastError: Error | undefined;
 
+  // Search for learnings and inject into prompt
+  let promptToUse = options.prompt;
+  try {
+    const specResult = locateActiveSpec(options.cwd);
+    if (specResult && specResult.path) {
+      const spec = parseSpecV2(specResult.path);
+      // Find the first pending task to extract context
+      const pendingTask = spec.tasks.find((t) => t.status === 'pending');
+
+      if (pendingTask) {
+        const deliverables = pendingTask.deliverables?.join('\n') || '';
+        promptToUse = injectLearnings(options.prompt, pendingTask.title, deliverables, options.cwd);
+      }
+    }
+  } catch (error) {
+    // If learnings search fails, just use the original prompt
+    // This is not critical to the iteration, so we continue
+  }
+
   const handleEvent = (event: HarnessEvent) => {
     switch (event.type) {
       case 'tool_start': {
@@ -148,7 +168,7 @@ export async function runSingleIteration(
 
   try {
     const result = await harness.run(
-      options.prompt,
+      promptToUse,
       {
         cwd: options.cwd,
         model: options.model,
