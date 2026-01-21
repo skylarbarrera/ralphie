@@ -357,3 +357,23 @@
   - Tests: 637 passing (all tests pass)
   - Verified: `ralphie init` creates correct structure and global directory
   - Commit: dbf445d feat: T001 restructure to .ralphie/ folder
+
+✅ 2026-01-21: Completed T005 - Add learnings search to iteration loop (compound-learnings spec)
+  - Created src/lib/learnings-search.ts with core search functionality
+  - Implemented searchLearnings() to find relevant learnings by keyword matching
+  - YAML frontmatter parsing extracts: problem, solution, prevention, tags, symptoms, root-cause
+  - extractKeywords() filters stopwords and short words from task title/deliverables
+  - parseFrontmatter() handles YAML parsing with error handling
+  - matchesKeywords() searches on tags, problem, root-cause, solution fields
+  - Search order: project learnings (.ralphie/learnings/) first, then global (~/.ralphie/learnings/)
+  - Deduplication prevents same filename from appearing twice
+  - formatLearningsForPrompt() generates markdown section for injection
+  - Created src/lib/prompts.ts::injectLearnings() to inject learnings into base prompt
+  - Integrated into src/lib/headless-runner.ts: searches before calling harness.run()
+  - Integrated into src/cli.tsx::resolvePrompt(): injects learnings into base prompt
+  - Finds first pending task from spec to extract context for search
+  - Graceful error handling: failures don't break iteration, just skip learnings
+  - Tests: 659 passing (22 new comprehensive unit tests for learnings-search)
+  - Type check passes
+  - All deliverables complete: orchestration in Node.js, keyword matching, project-first search, YAML frontmatter, injection into prompt
+  - Commit: f2a74e4 feat: T005 add learnings search to iteration loop

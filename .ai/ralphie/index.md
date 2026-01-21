@@ -259,3 +259,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 637 passing (18 new tests for paths module)
 - notes: Created .ralphie/ directory structure with specs/, learnings/, state.txt, llms.txt; added global ~/.ralphie/ with learnings/ and settings.json; backward compatible with old specs/ structure; migration detection shows MIGRATION.md guidance; all path utilities centralized in paths.ts
 - next: T005 - Add learnings search to iteration loop
+
+## f2a74e4 — feat: T005 add learnings search to iteration loop
+- files: src/lib/learnings-search.ts, tests/lib/learnings-search.test.ts, src/lib/prompts.ts, src/lib/headless-runner.ts, src/cli.tsx, specs/active/compound-learnings.md
+- tests: 659 passing (22 new tests for learnings-search module)
+- notes: Implemented comprehensive learnings search with YAML frontmatter parsing; keyword extraction from task title/deliverables; searches project learnings first, then global learnings; deduplication; formatLearningsForPrompt() generates markdown injection; injectLearnings() helper in prompts.ts; integrated into headless-runner.ts and cli.tsx resolvePrompt(); searches before calling harness.run() or rendering UI
+- next: T006 - Implement multi-agent review with cost tracking (requires T008 agent prompts first)
