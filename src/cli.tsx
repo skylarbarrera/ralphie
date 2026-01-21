@@ -295,6 +295,7 @@ function main(): void {
     .option('--timeout <seconds>', 'Timeout for generation', '300')
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'opus')
     .option('--harness <name>', 'AI harness to use: claude, codex, opencode', 'claude')
+    .option('--skip-research', 'Skip the research phase', false)
     .action(async (description: string, opts) => {
       const cwd = resolve(opts.cwd);
 
@@ -305,6 +306,7 @@ function main(): void {
         timeoutMs: parseInt(opts.timeout, 10) * 1000,
         model: opts.model,
         harness: opts.harness,
+        skipResearch: opts.skipResearch ?? false,
       });
 
       if (!result.success) {

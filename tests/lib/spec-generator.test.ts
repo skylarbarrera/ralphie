@@ -48,6 +48,7 @@ describe('spec-generator', () => {
         cwd: '/test/path',
         headless: false,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       await generateSpec(options);
@@ -78,6 +79,7 @@ describe('spec-generator', () => {
         cwd: '/test/path',
         headless: false,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       await generateSpec(options);
@@ -101,6 +103,7 @@ describe('spec-generator', () => {
         headless: true,
         timeoutMs: 5000,
         model: 'opus',
+        skipResearch: true,
       };
 
       await generateSpec(options);
@@ -128,6 +131,7 @@ describe('spec-generator', () => {
         cwd: '/test',
         headless: true,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       const result = await generateSpec(options);
@@ -153,6 +157,7 @@ describe('spec-generator', () => {
         cwd: '/test',
         headless: true,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       const result = await generateSpec(options);
@@ -174,6 +179,7 @@ describe('spec-generator', () => {
         cwd: '/test',
         headless: true,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       const result = await generateSpec(options);
@@ -202,6 +208,7 @@ describe('spec-generator', () => {
         cwd: '/test',
         headless: true,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       const result = await generateSpec(options);
@@ -224,6 +231,7 @@ describe('spec-generator', () => {
         cwd: '/test',
         headless: true,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       const result = await generateSpec(options);
@@ -246,6 +254,7 @@ describe('spec-generator', () => {
         cwd: '/test',
         headless: true,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       const result = await generateSpec(options);
@@ -263,6 +272,7 @@ describe('spec-generator', () => {
         cwd: '/test',
         headless: true,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       const result = await generateSpec(options);
@@ -279,6 +289,7 @@ describe('spec-generator', () => {
         cwd: '/test',
         headless: true,
         timeoutMs: 5000,
+        skipResearch: true,
       };
 
       const result = await generateSpec(options);

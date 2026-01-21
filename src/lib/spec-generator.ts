@@ -3,6 +3,7 @@ import { join } from 'path';
 import { validateSpecInDir, formatValidationResult } from './spec-validator.js';
 import { getHarness } from './harness/index.js';
 import type { HarnessEvent, HarnessName } from './harness/types.js';
+import { conductResearch, injectResearchContext } from './research-orchestrator.js';
 
 export interface SpecGeneratorOptions {
   description: string;
@@ -11,6 +12,7 @@ export interface SpecGeneratorOptions {
   timeoutMs: number;
   model?: string;
   harness?: HarnessName;
+  skipResearch?: boolean;
 }
 
 export interface SpecGeneratorResult {
@@ -50,8 +52,26 @@ export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecG
     .substring(0, 50);
   const specPath = join(options.cwd, 'specs', 'active', `${specName}.md`);
 
+  // Conduct research phase before spec generation
+  let researchContext = '';
+  try {
+    researchContext = await conductResearch(
+      harness,
+      options.description,
+      options.cwd,
+      options.skipResearch || false
+    );
+  } catch (error) {
+    // Research failures are non-fatal, continue with spec generation
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (!options.headless) {
+      console.warn(`Research phase failed: ${errorMsg}`);
+      console.warn('Continuing with spec generation without research context...\n');
+    }
+  }
+
   // Autonomous spec generation prompt (no user interaction)
-  const prompt = `Generate a V2 format spec for: ${options.description}
+  let prompt = `Generate a V2 format spec for: ${options.description}
 
 Write the spec to: specs/active/${specName}.md
 
@@ -87,6 +107,11 @@ Background for implementation.
 
 Analyze the codebase to understand context. Create 3-8 well-sized tasks.
 When done, output: SPEC_COMPLETE`;
+
+  // Inject research context into prompt if available
+  if (researchContext) {
+    prompt = injectResearchContext(prompt, researchContext);
+  }
 
   if (options.headless) {
     emitJson({

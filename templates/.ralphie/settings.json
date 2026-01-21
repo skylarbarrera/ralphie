@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ralphie.dev/schemas/settings.json",
+  "mcp": {
+    "context7": {
+      "enabled": false,
+      "apiKey": "",
+      "comment": "Context7 MCP provides docs lookup for 100+ frameworks. Get free API key from https://context7.com/dashboard"
+    }
+  },
+  "research": {
+    "skipByDefault": false,
+    "comment": "Research phase analyzes codebase patterns before spec generation"
+  },
+  "agents": {
+    "customDirectory": "",
+    "comment": "Optional path to custom agent prompts (extends/overrides built-in agents)"
+  },
+  "pricing": {
+    "comment": "Override default pricing for cost tracking (USD per token)",
+    "codex": {
+      "input": 0.000015,
+      "output": 0.00006
+    },
+    "opencode": {
+      "input": 0.000015,
+      "output": 0.00006
+    }
+  }
+}

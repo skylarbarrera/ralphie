@@ -43,7 +43,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ---
 
 ### T002: Enhance spec gen with deep research phase
-- Status: pending
+- Status: passed
 - Size: L
 - Depends: T008 (agent prompts must exist)
 
