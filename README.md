@@ -13,7 +13,7 @@
 Based on the [Ralph Wiggum technique](https://github.com/ghuntley/how-to-ralph-wiggum): describe what you want → AI builds it task by task → each task gets committed → come back to working code.
 
 ```bash
-/ralphie-spec "Todo app with auth"   # AI interviews you, creates spec
+ralphie spec "Todo app with auth"    # Creates spec
 ralphie run --all                    # Builds until done
 ```
 
@@ -38,24 +38,19 @@ npm install -g @openai/codex && export OPENAI_API_KEY=sk-...
 npm install -g opencode-ai && opencode auth login
 ```
 
-**3. Install Ralphie skills** via [add-skill](https://github.com/vercel-labs/add-skill)
+**3. Build something**
 
 ```bash
-npx add-skill skylarbarrera/ralphie
-```
-
-**4. Build something**
-
-```bash
-# Option A: Interactive (user present) - run in Claude/Codex/OpenCode:
-/ralphie-spec "REST API with JWT auth"
-
-# Option B: Autonomous (unattended) - run from CLI:
+# Create a spec (autonomous)
 ralphie spec "REST API with JWT auth"
 
-# Then run the loop:
-ralphie run --all                            # Builds it
-git log --oneline                            # See what was built
+# Or interactive (AI interviews you for requirements)
+npx add-skill skylarbarrera/ralphie
+/ralphie-spec "REST API with JWT auth"   # In Claude/Codex/OpenCode
+
+# Run the loop
+ralphie run --all
+git log --oneline                        # See what was built
 ```
 
 ## How It Works
@@ -68,13 +63,13 @@ Each iteration:
 
 **The insight:** Progress lives in git, not the LLM's context. The AI can fail—next iteration starts fresh and sees only committed work.
 
-## Commands
+**What makes Ralphie different:** Structured specs with task IDs, status tracking, size budgeting, and verify commands. The AI knows exactly what to build, how to check it worked, and when it's done. No ambiguity, no drift.
 
-### CLI Commands
+## Commands
 
 | Command | Description |
 |---------|-------------|
-| `ralphie spec "desc"` | Generate spec autonomously (no user interaction) |
+| `ralphie spec "desc"` | Generate spec autonomously |
 | `ralphie run` | Run one iteration |
 | `ralphie run -n 5` | Run 5 iterations |
 | `ralphie run --all` | Run until spec complete |
@@ -87,17 +82,6 @@ Each iteration:
 | `ralphie archive` | Move completed spec to archive |
 
 Use `--harness codex` or `--harness opencode` to switch AI providers. See [CLI Reference](docs/cli.md) for all options.
-
-### Skills (via [add-skill](https://github.com/vercel-labs/add-skill))
-
-| Skill | Description |
-|-------|-------------|
-| `/ralphie-spec` | Generate spec through user interview (requires user) |
-| `/review-spec` | Validate spec format and content |
-| `/ralphie-iterate` | Execute one iteration (used by `ralphie run`) |
-| `/verify` | Pre-commit verification |
-
-Install all skills: `npx add-skill skylarbarrera/ralphie`
 
 ## Spec Format
 
@@ -136,7 +120,6 @@ Goal: Build a REST API with authentication
 
 Tasks transition from `pending` → `in_progress` → `passed`/`failed`. See [Spec Guide](docs/spec-guide.md) for best practices.
 
-
 ## Troubleshooting
 
 | Problem | Solution |
@@ -146,13 +129,12 @@ Tasks transition from `pending` → `in_progress` → `passed`/`failed`. See [Sp
 | `Missing ANTHROPIC_API_KEY` | `export ANTHROPIC_API_KEY=sk-ant-...` (add to .zshrc) |
 | `Missing OPENAI_API_KEY` | `export OPENAI_API_KEY=sk-...` (add to .zshrc) |
 | Stuck on same task | Check task status. Run `ralphie validate` |
-| No spec found | `/ralphie-spec` (with user) or `ralphie spec` (autonomous) |
+| No spec found | `ralphie spec "description"` to create one |
 
 ## Documentation
 
 - [CLI Reference](docs/cli.md) — All commands and options
 - [Spec Guide](docs/spec-guide.md) — Writing effective specs
-- [Skills](skills/SKILLS.md) — Installing and using Ralphie skills
 - [Architecture](docs/architecture.md) — How the loop works
 - [Harnesses](docs/harnesses.md) — Multi-AI provider support
 
