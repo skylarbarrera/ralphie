@@ -1,39 +1,42 @@
-# Plan: T003 Add SpecFlow analyzer for spec validation
+# Plan: T006 - Implement multi-agent review with cost tracking
 
 ## Goal
-Integrate spec-flow-analyzer agent to validate spec completeness after generation
+Add multi-agent review system with parallel execution and cost tracking for code quality analysis.
 
 ## Task ID
-T003
+T006
 
 ## Files to Create/Modify
 
 ### Create:
-- `src/lib/spec-analyzer.ts` - Core analyzer orchestration logic
-- `tests/lib/spec-analyzer.test.ts` - Unit tests for analyzer
+- `src/lib/review.ts` - Core review orchestration logic
+- `src/lib/cost-tracker.ts` - Cost calculation and tracking
+- `tests/lib/review.test.ts` - Unit tests for review system
+- `tests/lib/cost-tracker.test.ts` - Unit tests for cost tracking
 
 ### Modify:
-- `src/lib/spec-generator.ts` - Integrate analysis after spec generation
-- `src/cli.tsx` - Add `--skip-analyze` flag to spec command
-- `.ralphie/specs/active/compound-learnings.md` - Update T003 status
+- `src/commands/run.ts` - Add `--review` flag support
+- `src/types.ts` - Add review types and interfaces
+- `.ralphie/specs/active/compound-learnings.md` - Update T006 status
 
 ## Tests
-- Test loadAnalyzerPrompt() loads spec-flow-analyzer.md
-- Test runAnalyzer() calls harness with correct prompt
-- Test analyzeSpec() orchestrates analysis flow
-- Test autonomous mode runs refinement when gaps found
-- Test interactive mode skips auto-refinement
-- Test --skip-analyze flag bypasses analysis
-- Test analysis failures are non-fatal
+- Unit tests for review orchestration
+- Unit tests for cost calculation
+- Test parallel execution of multiple reviewers
+- Test language detection and reviewer selection
+- Test severity parsing and P1 blocking
+- Test cost tracking and display
+- Integration test for `--review` flag
 
 ## Exit Criteria
-- ✓ Analyzer uses spec-flow-analyzer prompt from T008
-- ✓ Analysis runs AFTER spec generation automatically
-- ✓ Output saved to `.ralphie/analysis.md`
-- ✓ Autonomous mode: runs refinement if gaps found
-- ✓ Interactive mode: presents gaps to user (no auto-fix)
-- ✓ `--skip-analyze` flag implemented
-- ✓ Analysis failures don't break spec generation
+- ✓ Review system loads agent prompts: security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer
+- ✓ Language detection auto-selects relevant reviewers
+- ✓ Reviewers run in parallel via Promise.all()
+- ✓ Each reviewer outputs markdown findings
+- ✓ Severity parsing: Critical/High → P1, Medium → P2, Low → P3
+- ✓ Cost tracking displays: tokens (in/out) + estimated USD
+- ✓ Pricing stored in settings for user override
+- ✓ `ralphie run --review` flag implemented
 - ✓ All tests pass
 - ✓ Type check passes
-- ✓ Manual verification: `ralphie spec "feature"` shows analysis phase
+- ✓ Manual verification: `ralphie run --review` in TypeScript project runs 4 reviewers with cost summary

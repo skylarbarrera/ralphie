@@ -44,6 +44,8 @@ import { generateTaskContext } from './lib/prompt-generator.js';
 import { DEFAULT_PROMPT, GREEDY_PROMPT, injectLearnings } from './lib/prompts.js';
 import { executeRun } from './commands/run-interactive.js'; // .tsx compiled to .js
 import { parseSpecV2 } from './lib/spec-parser-v2.js';
+import { runReview } from './lib/review.js';
+import { getHarness } from './lib/harness/index.js';
 
 export interface RunOptions {
   iterations: number;
@@ -62,6 +64,8 @@ export interface RunOptions {
   harness?: string;
   greedy: boolean;
   budget: number;
+  review: boolean;
+  force: boolean;
 }
 
 export type CliOptions = RunOptions;
@@ -121,14 +125,34 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
     process.exit(3);
   }
 
-  const prompt = resolvePrompt(options, validation.specPath);
-  const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
+  const harnessName = options.harness ? getHarnessName(options.harness, options.cwd) : 'claude';
 
-  const envValidation = validateHarnessEnv(harness ?? 'claude');
+  const envValidation = validateHarnessEnv(harnessName);
   if (!envValidation.valid) {
     emitFailed(envValidation.message);
     process.exit(1);
   }
+
+  // Run review if --review flag is set
+  if (options.review) {
+    console.log('Running multi-agent review...\n');
+
+    const harness = getHarness(harnessName);
+    const reviewSummary = await runReview(harness, options.cwd, options.model);
+
+    // Check for P1 issues
+    if (reviewSummary.hasP1Issues && !options.force) {
+      console.error(`\n❌ Found ${reviewSummary.p1Count} P1 issue(s). Review blocked.`);
+      console.error('Fix critical/high severity issues before running, or use --force to override.\n');
+      process.exit(1);
+    }
+
+    if (reviewSummary.hasP1Issues && options.force) {
+      console.warn(`\n⚠️  Found ${reviewSummary.p1Count} P1 issue(s), but continuing due to --force flag.\n`);
+    }
+  }
+
+  const prompt = resolvePrompt(options, validation.specPath);
 
   const exitCode = await runHeadless({
     prompt,
@@ -138,7 +162,7 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
     idleTimeoutMs: options.timeoutIdle * 1000,
     saveJsonl: options.saveJsonl,
     model: options.model,
-    harness,
+    harness: harnessName,
   });
 
   process.exit(exitCode);
@@ -216,6 +240,8 @@ function main(): void {
     .option('--harness <name>', 'AI harness to use (claude, codex, opencode)')
     .option('-g, --greedy', 'Complete multiple tasks per iteration until context fills')
     .option('--budget <points>', 'Size points budget per iteration (default 4)', '4')
+    .option('-r, --review', 'Run multi-agent review before iterations', false)
+    .option('-f, --force', 'Force run even if P1 issues found in review', false)
     .action((opts) => {
       let iterations = parseInt(opts.iterations, 10);
       const all = opts.all ?? false;
@@ -242,6 +268,8 @@ function main(): void {
         harness: opts.harness,
         greedy: opts.greedy ?? false,
         budget: parseInt(opts.budget, 10),
+        review: opts.review ?? false,
+        force: opts.force ?? false,
       };
 
       if (options.headless) {

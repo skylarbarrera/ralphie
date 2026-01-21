@@ -207,6 +207,8 @@ Goal: Test budget selection.
       budget: 4,
       quiet: false,
       headless: false,
+      review: false,
+      force: false,
     };
 
     const prompt = resolvePrompt(options, specPath);
@@ -228,6 +230,8 @@ Goal: Test budget selection.
       budget: 1,
       quiet: false,
       headless: false,
+      review: false,
+      force: false,
     };
 
     const prompt = resolvePrompt(options, specPath);
@@ -251,6 +255,8 @@ Goal: Test budget selection.
       budget: 3,
       quiet: false,
       headless: false,
+      review: false,
+      force: false,
     };
 
     const prompt = resolvePrompt(options, specPath);
@@ -274,6 +280,8 @@ Goal: Test budget selection.
       budget: 4,
       quiet: false,
       headless: false,
+      review: false,
+      force: false,
     };
 
     const prompt = resolvePrompt(options, specPath);
@@ -295,6 +303,8 @@ Goal: Test budget selection.
       budget: 4,
       quiet: false,
       headless: false,
+      review: false,
+      force: false,
     };
 
     const prompt = resolvePrompt(options, undefined);

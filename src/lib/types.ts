@@ -187,3 +187,38 @@ export interface HeadlessIterationResult extends BaseIterationResult {
   commitHash?: string;
   commitMessage?: string;
 }
+
+// Review system types
+export type ReviewSeverity = 'Critical' | 'High' | 'Medium' | 'Low';
+
+export interface ReviewFinding {
+  location: string;
+  description: string;
+  severity: ReviewSeverity;
+  risk?: string;
+  fix?: string;
+}
+
+export interface ReviewResult {
+  agent: string;
+  output: string;
+  findings: ReviewFinding[];
+  costUsd?: number;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+  };
+  durationMs: number;
+  error?: string;
+}
+
+export interface ReviewSummary {
+  results: ReviewResult[];
+  totalCostUsd: number;
+  totalDurationMs: number;
+  totalFindings: number;
+  p1Count: number;
+  p2Count: number;
+  p3Count: number;
+  hasP1Issues: boolean;
+}

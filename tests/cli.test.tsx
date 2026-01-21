@@ -28,6 +28,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe('Custom prompt text');
@@ -49,6 +51,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe('Prompt from file content');
@@ -71,6 +75,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(() => resolvePrompt(options)).toThrow('Prompt file not found: /test/missing.txt');
@@ -88,6 +94,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe(DEFAULT_PROMPT);
@@ -110,6 +118,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe('Direct prompt');
@@ -128,6 +138,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: true,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe(GREEDY_PROMPT);
