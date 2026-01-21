@@ -295,3 +295,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 699 passing (12 new for research-orchestrator), type check passes
 - notes: Created research orchestration system with loadAgentPrompt, runResearchAgent, conductResearch functions; uses repo-research-analyst and best-practices-researcher agent prompts from T008; research output saved to .ralphie/research-context.md; findings injected into spec gen prompt; --skip-research CLI flag; MCP configuration template; research failures non-fatal
 - next: T003 - Add SpecFlow analyzer for spec validation (or T006 - multi-agent review)
+
+## 2cd76e2 — feat: T003 add SpecFlow analyzer for spec validation
+- files: src/lib/spec-analyzer.ts, tests/lib/spec-analyzer.test.ts, src/lib/spec-generator.ts, src/cli.tsx, .ralphie/specs/active/compound-learnings.md
+- tests: 720 passing (21 new for spec-analyzer), type check passes
+- notes: Created analyzer orchestration with loadAnalyzerPrompt, runAnalyzer, refineSpec, analyzeSpec functions; uses spec-flow-analyzer agent prompt from T008; analysis runs AFTER spec generation automatically; output saved to .ralphie/analysis.md; autonomous mode runs auto-refinement when gaps found; interactive mode presents gaps without auto-fix; --skip-analyze CLI flag; analysis failures non-fatal
+- next: T006 - Implement multi-agent review with cost tracking (or T007 - CLI integration)
