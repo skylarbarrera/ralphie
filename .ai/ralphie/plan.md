@@ -1,38 +1,31 @@
-# Plan: T007 - Integrate orchestration into CLI commands
+# Plan: T009 - Update /ralphie-spec skill for new flow
 
 ## Goal
-Wire together all compound engineering components into CLI for 80/20 workflow
+Enhance ralphie-spec skill with research and analysis phases for thorough 80/20 workflow
 
 ## Task ID
-T007
+T009
 
 ## Files
-- `src/lib/spec-generator.ts` - Already has research + analysis integration (verify completeness)
-- `src/commands/run-interactive.tsx` - Review integration already added (verify)
-- `src/lib/headless-runner.ts` - Review integration already added (verify)
-- `README.md` - Add 80/20 workflow documentation and Compound attribution
+- `skills/ralphie-spec/SKILL.md` - Add research and analysis steps to workflow
 - `.ralphie/specs/active/compound-learnings.md` - Update task status
 
 ## Tests
-- All existing tests (760 tests should pass)
-- Manual verification of CLI flags and flows
+- No code changes, documentation only
+- Manual verification that the skill instructions are clear
 
 ## Exit Criteria
-1. ✅ `generateSpec()` orchestrates: research → spec gen → analysis (verify already done in T002, T003)
-2. ✅ `executeRun()` orchestrates: learnings search → inject into prompt → run (verify already done in T005)
-3. ✅ `executeRun()` with `--review` flag: run reviewers → check P1 → iteration (verify already done in T006)
-4. ✅ P1 findings block without `--force` flag (verify already done in T006)
-5. ✅ Task status tracking across iterations for learnings capture (verify already done in T004)
-6. ✅ README updated with 80/20 workflow and Compound attribution
-7. ✅ All tests pass (760 passing)
-8. ✅ Task marked as passed in spec
+1. ✅ Skill includes Research phase BEFORE interview
+2. ✅ Skill includes Analysis phase AFTER spec draft
+3. ✅ Flow updated: Research → Interview → Draft → Analyze → Review Gaps → Finalize
+4. ✅ Instructions to read `.ralphie/research-context.md` if exists
+5. ✅ Instructions to run analysis and present gaps before user approval
+6. ✅ Skill remains self-contained (doesn't call harness, just prompts AI)
+7. ✅ Task marked as passed in spec
 
 ## Notes
-Most of the integration work was already completed in previous tasks:
-- T002: Research orchestration in spec-generator.ts
-- T003: Analysis orchestration in spec-generator.ts
-- T004: Learnings capture orchestration in headless-runner.ts
-- T005: Learnings search orchestration in prompts.ts + headless-runner.ts + cli.tsx
-- T006: Review orchestration in run-interactive.tsx + headless-runner.ts + cli.tsx
-
-This task is primarily verification and documentation (README update with attribution).
+The skill is used interactively (user present), so it needs to:
+- Check for `.ralphie/research-context.md` and incorporate findings if available
+- After drafting spec, read `.ralphie/analysis.md` if exists and present gaps to user
+- Not call harness directly (that's Ralphie CLI's job), just read the outputs
+- Guide the AI to incorporate research and analysis findings into the interview and spec

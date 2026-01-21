@@ -182,7 +182,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ---
 
 ### T009: Update /ralphie-spec skill for new flow
-- Status: pending
+- Status: passed
 - Size: M
 - Depends: T002, T003 (research and analysis must be defined)
 
