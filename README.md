@@ -8,9 +8,9 @@
 
 # Ralphie
 
-**Let AI code while you sleep.**
+**Autonomous AI coding loops.**
 
-Ralphie runs AI in a loop until your project is done. Based on the [Ralph Wiggum technique](https://github.com/ghuntley/how-to-ralph-wiggum): describe what you want → AI builds it task by task → each task gets committed → come back to working code.
+Based on the [Ralph Wiggum technique](https://github.com/ghuntley/how-to-ralph-wiggum): describe what you want → AI builds it task by task → each task gets committed → come back to working code.
 
 ```bash
 /ralphie-spec "Todo app with auth"   # AI interviews you, creates spec
