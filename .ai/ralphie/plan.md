@@ -1,54 +1,31 @@
-# Plan: Migrate Ralphie Repository to .ralphie/ Structure
+# Plan: T008 - Create agent prompt library
 
 ## Goal
-Migrate the Ralphie repository itself from old structure (specs/, .ai/ralphie/, STATE.txt) to new .ralphie/ structure following MIGRATION.md.
+Create agent prompt library with 8 adapted prompts from Compound Engineering for research, review, and validation.
 
 ## Task ID
-Post-T001/T005 cleanup - applying the new structure to Ralphie's own repository
+T008
 
-## Files to Create/Modify
-
-### Create:
-- `.ralphie/` directory structure:
-  - `.ralphie/specs/` (move from specs/)
-  - `.ralphie/memory/` (move from .ai/ralphie/)
-  - `.ralphie/learnings/` with subdirectories
-  - `.ralphie/state.txt` (move from STATE.txt)
-  - `.ralphie/llms.txt` (new template)
-
-### Move:
-- `specs/*` → `.ralphie/specs/`
-- `STATE.txt` → `.ralphie/state.txt`
-
-### Keep as-is:
-- `.ai/ralphie/` - Development-specific memory (index.md, plan.md)
-- This directory is for Ralphie development, not part of official Ralphie structure
-
-### Update:
-- `.gitignore` - add `.ralphie/state.txt`
-- prompts.ts - update references from `STATE.txt` to `.ralphie/state.txt`
-- Documentation references to specs/ → .ralphie/specs/
-
-### Delete:
-- `specs/` directory (after moving contents)
-- `STATE.txt` (after moving to .ralphie/)
+## Files
+- `agents/repo-research-analyst.md` (create)
+- `agents/best-practices-researcher.md` (create)
+- `agents/security-sentinel.md` (create)
+- `agents/performance-oracle.md` (create)
+- `agents/architecture-strategist.md` (create)
+- `agents/typescript-reviewer.md` (create)
+- `agents/python-reviewer.md` (create)
+- `agents/spec-flow-analyzer.md` (create)
+- `agents/SOURCE.md` (create - documents source and adaptations)
+- `agents/README.md` (create - explains agent system)
 
 ## Tests
-- Run full test suite: `npm test`
-- Run type check: `npm run type-check`
-- Verify structure: `ls -la .ralphie/`
-- Verify memory files: `ls -la .ralphie/memory/`
-- Verify no broken references to old paths
+- Manual verification: `ls agents/` shows all 8 agent .md files plus SOURCE.md
+- Verify each agent has clear structure with invocation instructions and expected output format
+- Verify SOURCE.md has mapping table and update instructions
 
 ## Exit Criteria
-1. `.ralphie/` directory exists with complete structure
-2. `specs/` content moved to `.ralphie/specs/` (using git mv)
-3. `STATE.txt` moved to `.ralphie/state.txt` (using git mv)
-4. `.ralphie/llms.txt` created with template
-5. `.ralphie/learnings/` directories created
-6. Old `specs/` directory removed
-7. Old `STATE.txt` removed
-8. `.gitignore` updated
-9. All tests pass (verify no broken references)
-10. Type check passes
-11. Prompts updated to reference .ralphie/state.txt
+- ✅ 8 agent prompt files exist in agents/ directory
+- ✅ SOURCE.md exists with complete mapping and adaptation notes
+- ✅ README.md explains the agent system and how Ralphie uses them
+- ✅ Each agent prompt follows consistent structure
+- ✅ Verify command passes: `ls agents/` shows 8 agent .md files

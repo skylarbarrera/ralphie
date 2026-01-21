@@ -162,7 +162,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ---
 
 ### T008: Create agent prompt library
-- Status: pending
+- Status: passed
 - Size: L
 
 **Deliverables:**
