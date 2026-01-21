@@ -277,3 +277,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation and prompts)
 - notes: Created comprehensive agent library with 8 specialized prompts adapted from EveryInc/compound-engineering-plugin; Research agents (repo-research-analyst, best-practices-researcher); Review agents (security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer); Validation agent (spec-flow-analyzer); Replaced Compound tools with Ralphie tools (Grep, Glob, Read, WebFetch, WebSearch); Added Ralphie-specific sections for .ralphie/learnings/ and llms.txt; Expanded to comprehensive guides with examples; SOURCE.md documents mapping and adaptations; README.md explains agent system and Ralphie integration
 - next: T004 - Implement learnings capture with auto-upgrades (or T002/T003/T006 that depend on T008)
+
+## c28bbad — T004: Implement learnings capture with auto-upgrades
+- files: src/lib/learnings/{types,manager,status-tracker,prompt-template,index}.ts, src/lib/headless-runner.ts, tests/lib/learnings/{manager,status-tracker}.test.ts, .ralphie/learnings/patterns/learnings-system-architecture.md
+- tests: 28 new tests (17 manager + 11 status-tracker), 687 total pass
+- notes: Automatic learning capture when tasks go failed→passed; YAML frontmatter with category detection; global vs project scope; status tracking in .ralphie/.task-status.json; integration with headless runner; prompt template for AI to complete learnings
+- next: Continue with remaining compound-learnings tasks (T002, T003, T006, T007, T009, T010)

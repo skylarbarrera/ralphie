@@ -414,3 +414,15 @@
   - Standardized output formats and aligned with Ralphie's orchestration model
   - All 8 agent files created, plus documentation
   - Commit: 13179c9 feat: T008 create agent prompt library
+
+✅ 2026-01-21: Completed T004 - Implement learnings capture with auto-upgrades
+  - Created learnings system with types, manager, status tracker, and prompt template
+  - Automatic detection of failed→passed task transitions
+  - YAML frontmatter with category (build-errors, test-failures, runtime-errors, patterns)
+  - Scope detection: global (build errors, generic) vs project-specific
+  - Status tracking in .ralphie/.task-status.json
+  - Integration with headless runner: before iteration (inject prompt), after iteration (record status)
+  - Prompt template tells AI to: document root cause, add test, suggest rule
+  - Storage: .ralphie/learnings/ (project) and ~/.ralphie/learnings/ (global)
+  - Tests: 28 new tests (17 manager, 11 status-tracker), all 687 tests pass
+  - Commit: c28bbad feat: T004 implement learnings capture with auto-upgrades
