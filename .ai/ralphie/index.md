@@ -319,3 +319,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (documentation only, no code changes)
 - notes: Enhanced /ralphie-spec skill with research and analysis integration; added Step 0 (check .ralphie/research-context.md), Step 6 (check .ralphie/analysis.md); updated workflow to include research and analysis phases; added 80/20 Integration section; updated output path to .ralphie/specs/active/; enhanced presentation summary to include research findings and analysis results; skill remains self-contained (reads outputs, doesn't call harness); follows 80/20 philosophy with research/analysis as part of 80% planning
 - next: Compound learnings spec complete - all tasks passed
+
+## b6324a2 — chore: move compound-learnings spec to completed
+- files: .ralphie/specs/completed/2026-01-21-compound-learnings.md (moved from active/), .ralphie/state.txt
+- tests: N/A (administrative move)
+- notes: All 10 tasks in compound-learnings spec completed and marked as passed (T001-T010); moved spec from active/ to completed/ directory; updated state.txt with completion summary; compound engineering features fully integrated: restructure to .ralphie/, deep research phase, SpecFlow analyzer, learnings capture system, learnings search, multi-agent review with cost tracking, CLI orchestration, agent prompt library (8 agents from Compound), updated /ralphie-spec skill, agent update tracking
+- next: No active specs remaining - project ready for new work or specs
