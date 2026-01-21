@@ -143,7 +143,7 @@ Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/c
 ---
 
 ### T007: Integrate orchestration into CLI commands
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**

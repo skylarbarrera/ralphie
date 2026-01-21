@@ -65,14 +65,102 @@ Each iteration:
 
 **What makes Ralphie different:** Structured specs with task IDs, status tracking, size budgeting, and verify commands. The AI knows exactly what to build, how to check it worked, and when it's done. No ambiguity, no drift.
 
+## The 80/20 Philosophy
+
+Ralphie inverts traditional development workflow: **80% planning, 20% execution.**
+
+Instead of spending most time debugging and iterating during implementation, Ralphie front-loads the work in spec generation—so execution becomes trivial.
+
+```
+┌─────────────────────────────────────────────────┐
+│                 80% OF WORK                     │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐         │
+│  │Research │→ │Spec Gen │→ │Analysis │         │
+│  └─────────┘  └─────────┘  └─────────┘         │
+│       ↓            ↓            ↓              │
+│  Codebase     Interview/    Edge cases         │
+│  patterns     Autonomous    & gaps             │
+└─────────────────────────────────────────────────┘
+                      ↓
+┌─────────────────────────────────────────────────┐
+│                 20% OF WORK                     │
+│           ┌─────────────────┐                  │
+│           │  ralphie run    │                  │
+│           │  (iterations)   │                  │
+│           └─────────────────┘                  │
+└─────────────────────────────────────────────────┘
+                      ↓
+┌─────────────────────────────────────────────────┐
+│               COMPOUND LOOP                     │
+│  Failures → Learnings → Tests/Rules → Better   │
+└─────────────────────────────────────────────────┘
+```
+
+### Compound Engineering Integration
+
+Ralphie's compound engineering features are inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin), which pioneered the concept of making "each unit of work make subsequent units easier."
+
+**Core principle:** Turn failures into permanent upgrades. When a task fails then passes, Ralphie automatically documents the fix as a learning—complete with prevention rules and tests—so the same mistake never happens twice.
+
+**Three pillars:**
+
+1. **Deep Research Phase** (before spec generation)
+   - Analyzes codebase patterns, conventions, and architecture
+   - Researches framework best practices and common patterns
+   - Ensures specs align with existing code
+
+2. **Multi-Agent Review** (before iteration)
+   - Security review (OWASP, injection, auth)
+   - Performance review (complexity, N+1 queries, caching)
+   - Architecture review (design patterns, boundaries)
+   - Language-specific review (TypeScript/Python best practices)
+   - Blocks on critical findings (P1) unless overridden with `--force`
+
+3. **Learnings System** (after failures)
+   - Captures root cause analysis when tasks fail then pass
+   - Generates preventive tests and coding rules
+   - Stores globally (`~/.ralphie/learnings/`) for reuse across projects
+   - Injects relevant learnings into future iterations
+
+Learn more: [Compound Engineering articles](https://blog.every.com) by Compound team
+
+### 80/20 Workflow Example
+
+```bash
+# 80%: Thorough spec generation with research & analysis
+ralphie spec "user authentication with JWT"
+# → Research: scans codebase for auth patterns
+# → Interview: asks clarifying questions
+# → Analysis: identifies edge cases and gaps
+# Result: Comprehensive spec that anticipates problems
+
+# 20%: Execution with review & learnings
+ralphie run --review --all
+# → Pre-iteration: security + architecture review
+# → Iteration: implements one task at a time
+# → Post-iteration: captures learnings from failures
+# Result: High-quality code with permanent upgrades
+
+# View accumulated knowledge
+ls .ralphie/learnings/
+# → build-errors/
+# → test-failures/
+# → runtime-errors/
+# → patterns/
+```
+
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `ralphie spec "desc"` | Generate spec autonomously |
+| `ralphie spec "desc"` | Generate spec autonomously with research + analysis |
+| `ralphie spec --skip-research` | Skip deep research phase |
+| `ralphie spec --skip-analyze` | Skip SpecFlow analysis phase |
 | `ralphie run` | Run one iteration |
 | `ralphie run -n 5` | Run 5 iterations |
 | `ralphie run --all` | Run until spec complete |
+| `ralphie run --review` | Run multi-agent review before iteration |
+| `ralphie run --force` | Override P1 blocking (use with `--review`) |
 | `ralphie run --greedy` | Multiple tasks per iteration |
 | `ralphie run --headless` | JSON output for CI/CD |
 | `ralphie init` | Add to existing project |
@@ -85,7 +173,7 @@ Use `--harness codex` or `--harness opencode` to switch AI providers. See [CLI R
 
 ## Spec Format
 
-Ralphie works from structured specs in `specs/active/`:
+Ralphie works from structured specs in `.ralphie/specs/active/`:
 
 ```markdown
 # My Project
@@ -119,6 +207,62 @@ Goal: Build a REST API with authentication
 ```
 
 Tasks transition from `pending` → `in_progress` → `passed`/`failed`. See [Spec Guide](docs/spec-guide.md) for best practices.
+
+## Directory Structure
+
+Ralphie uses a `.ralphie/` directory for project-specific resources and `~/.ralphie/` for global resources:
+
+```
+your-project/
+├── .ralphie/
+│   ├── specs/
+│   │   ├── active/          # Current specs being worked on
+│   │   ├── completed/       # Archived completed specs
+│   │   └── templates/       # Spec templates
+│   ├── learnings/           # Project-specific learnings
+│   │   ├── build-errors/
+│   │   ├── test-failures/
+│   │   ├── runtime-errors/
+│   │   └── patterns/
+│   ├── llms.txt             # Architecture decisions
+│   ├── state.txt            # Iteration progress tracking
+│   └── settings.json        # Project configuration
+│
+~/.ralphie/                  # Global (shared across projects)
+├── learnings/               # Global learnings library
+│   ├── build-errors/
+│   ├── test-failures/
+│   ├── runtime-errors/
+│   └── patterns/
+└── settings.json            # Global defaults
+```
+
+**Learnings format** (YAML frontmatter):
+```yaml
+---
+problem: "npm install fails with EACCES error"
+symptoms: ["Permission denied", "EACCES", "npm ERR!"]
+root-cause: "Global npm packages installed with sudo"
+solution: "Use nvm or configure npm prefix"
+prevention: "Never use sudo with npm"
+tags: [npm, permissions, build-error]
+---
+
+# Detailed explanation and steps...
+```
+
+**llms.txt format** (architecture decisions):
+```
+# Architecture Decisions
+
+## Database
+- PostgreSQL for primary data
+- Redis for caching
+
+## Auth
+- JWT tokens, 24h expiry
+- Refresh tokens in httpOnly cookies
+```
 
 ## Troubleshooting
 

@@ -301,3 +301,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 720 passing (21 new for spec-analyzer), type check passes
 - notes: Created analyzer orchestration with loadAnalyzerPrompt, runAnalyzer, refineSpec, analyzeSpec functions; uses spec-flow-analyzer agent prompt from T008; analysis runs AFTER spec generation automatically; output saved to .ralphie/analysis.md; autonomous mode runs auto-refinement when gaps found; interactive mode presents gaps without auto-fix; --skip-analyze CLI flag; analysis failures non-fatal
 - next: T006 - Implement multi-agent review with cost tracking (or T007 - CLI integration)
+
+## 2687688 — feat: T006 Implement multi-agent review with cost tracking
+- files: src/lib/{review,cost-tracker}.ts, src/lib/types.ts, src/cli.tsx, src/commands/run-interactive.tsx, tests/lib/{review,cost-tracker}.test.ts, tests/{cli,commands/run}.test.tsx
+- tests: 760 passing (40 new: 25 review + 15 cost-tracker), type check passes
+- notes: Multi-agent review system with parallel execution via Promise.all(); 5 review agents: security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer; language detection (TypeScript/Python); cost tracking with custom pricing support; severity parsing (Critical/High→P1, Medium→P2, Low→P3); P1 blocking (unless --force); review results saved to .ralphie/review.md; --review and --force CLI flags for both interactive and headless modes
+- next: T007 - Integrate orchestration into CLI commands (or T009 - Update /ralphie-spec skill)

@@ -1,42 +1,38 @@
-# Plan: T006 - Implement multi-agent review with cost tracking
+# Plan: T007 - Integrate orchestration into CLI commands
 
 ## Goal
-Add multi-agent review system with parallel execution and cost tracking for code quality analysis.
+Wire together all compound engineering components into CLI for 80/20 workflow
 
 ## Task ID
-T006
+T007
 
-## Files to Create/Modify
-
-### Create:
-- `src/lib/review.ts` - Core review orchestration logic
-- `src/lib/cost-tracker.ts` - Cost calculation and tracking
-- `tests/lib/review.test.ts` - Unit tests for review system
-- `tests/lib/cost-tracker.test.ts` - Unit tests for cost tracking
-
-### Modify:
-- `src/commands/run.ts` - Add `--review` flag support
-- `src/types.ts` - Add review types and interfaces
-- `.ralphie/specs/active/compound-learnings.md` - Update T006 status
+## Files
+- `src/lib/spec-generator.ts` - Already has research + analysis integration (verify completeness)
+- `src/commands/run-interactive.tsx` - Review integration already added (verify)
+- `src/lib/headless-runner.ts` - Review integration already added (verify)
+- `README.md` - Add 80/20 workflow documentation and Compound attribution
+- `.ralphie/specs/active/compound-learnings.md` - Update task status
 
 ## Tests
-- Unit tests for review orchestration
-- Unit tests for cost calculation
-- Test parallel execution of multiple reviewers
-- Test language detection and reviewer selection
-- Test severity parsing and P1 blocking
-- Test cost tracking and display
-- Integration test for `--review` flag
+- All existing tests (760 tests should pass)
+- Manual verification of CLI flags and flows
 
 ## Exit Criteria
-- ✓ Review system loads agent prompts: security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer
-- ✓ Language detection auto-selects relevant reviewers
-- ✓ Reviewers run in parallel via Promise.all()
-- ✓ Each reviewer outputs markdown findings
-- ✓ Severity parsing: Critical/High → P1, Medium → P2, Low → P3
-- ✓ Cost tracking displays: tokens (in/out) + estimated USD
-- ✓ Pricing stored in settings for user override
-- ✓ `ralphie run --review` flag implemented
-- ✓ All tests pass
-- ✓ Type check passes
-- ✓ Manual verification: `ralphie run --review` in TypeScript project runs 4 reviewers with cost summary
+1. ✅ `generateSpec()` orchestrates: research → spec gen → analysis (verify already done in T002, T003)
+2. ✅ `executeRun()` orchestrates: learnings search → inject into prompt → run (verify already done in T005)
+3. ✅ `executeRun()` with `--review` flag: run reviewers → check P1 → iteration (verify already done in T006)
+4. ✅ P1 findings block without `--force` flag (verify already done in T006)
+5. ✅ Task status tracking across iterations for learnings capture (verify already done in T004)
+6. ✅ README updated with 80/20 workflow and Compound attribution
+7. ✅ All tests pass (760 passing)
+8. ✅ Task marked as passed in spec
+
+## Notes
+Most of the integration work was already completed in previous tasks:
+- T002: Research orchestration in spec-generator.ts
+- T003: Analysis orchestration in spec-generator.ts
+- T004: Learnings capture orchestration in headless-runner.ts
+- T005: Learnings search orchestration in prompts.ts + headless-runner.ts + cli.tsx
+- T006: Review orchestration in run-interactive.tsx + headless-runner.ts + cli.tsx
+
+This task is primarily verification and documentation (README update with attribution).

@@ -467,3 +467,20 @@
   - Added 21 comprehensive unit tests for spec-analyzer
   - Tests: 720 passing (21 new tests), type check passes
   - Commit: 2cd76e2 feat: T003 add SpecFlow analyzer for spec validation
+
+✅ 2026-01-21: Completed T006 - Implement multi-agent review with cost tracking (compound-learnings spec)
+  - Created src/lib/review.ts with comprehensive review orchestration system
+  - Created src/lib/cost-tracker.ts with token cost calculation and custom pricing support
+  - Added multi-agent review system that runs 5 agents in parallel via Promise.all()
+  - Review agents: security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer
+  - Language detection (TypeScript/Python) auto-selects relevant reviewers
+  - Cost tracking: input/output tokens + USD estimates (supports Claude, GPT, custom pricing)
+  - Severity parsing: Critical/High → P1, Medium → P2, Low → P3
+  - P1 blocking: exits with error if P1 issues found (unless --force flag used)
+  - Review results saved to .ralphie/review.md with severity grouping and full agent outputs
+  - Added --review and --force CLI flags to 'ralphie run' command (both interactive and headless modes)
+  - Updated src/cli.tsx and src/commands/run-interactive.tsx for review integration
+  - Custom pricing configurable in .ralphie/settings.json or ~/.ralphie/settings.json
+  - Added 40 comprehensive tests: 25 for review.ts, 15 for cost-tracker.ts
+  - Tests: 760 passing (40 new tests), type check passes
+  - Commit: 2687688 feat: T006 Implement multi-agent review with cost tracking
