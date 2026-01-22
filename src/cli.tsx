@@ -40,6 +40,7 @@ import {
   formatArchive,
   runLessons,
 } from './commands/spec-v2.js';
+import { runLogs, formatLogs } from './commands/logs.js';
 import { generateTaskContext } from './lib/prompt-generator.js';
 import { DEFAULT_PROMPT, GREEDY_PROMPT, injectLearnings } from './lib/prompts.js';
 import { executeRun } from './commands/run-interactive.js'; // .tsx compiled to .js
@@ -413,6 +414,31 @@ function main(): void {
       try {
         const result = runLessons(cwd, opts.add);
         console.log(result);
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command('logs')
+    .description('Query and view Ralphie logs')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .option('--phase <phase>', 'Filter by phase (research, spec, iteration, review)')
+    .option('--since <date>', 'Show logs since date (ISO 8601 or relative like "2024-01-01")')
+    .option('--limit <n>', 'Limit number of results', '10')
+    .option('--summary', 'Show summary statistics instead of logs', false)
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runLogs({
+          cwd,
+          phase: opts.phase as any,
+          since: opts.since,
+          limit: opts.limit ? parseInt(opts.limit, 10) : undefined,
+          summary: opts.summary ?? false,
+        });
+        console.log(formatLogs(result));
       } catch (err) {
         console.error(`Error: ${err instanceof Error ? err.message : err}`);
         process.exit(1);

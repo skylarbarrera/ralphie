@@ -26,6 +26,7 @@ import {
   createLearning,
   generateLearningCaptureInstructions,
 } from './learnings/index.js';
+import { getLogger, type IterationCompleteLog } from './logging/logger.js';
 
 export interface HeadlessRunOptions {
   prompt: string;
@@ -116,6 +117,11 @@ export async function runSingleIteration(
   let commitMessage: string | undefined;
   let lastError: Error | undefined;
 
+  // Track task status for logging
+  let currentTaskId: string | undefined;
+  let currentTaskTitle: string | undefined;
+  let taskStatusBefore: string | undefined;
+
   // Search for learnings and inject into prompt
   let promptToUse = options.prompt;
   try {
@@ -157,6 +163,11 @@ export async function runSingleIteration(
       const pendingTask = spec.tasks.find((t) => t.status === 'pending');
 
       if (pendingTask) {
+        // Capture task info for logging
+        currentTaskId = pendingTask.id;
+        currentTaskTitle = pendingTask.title;
+        taskStatusBefore = pendingTask.status;
+
         const deliverables = pendingTask.deliverables?.join('\n') || '';
         promptToUse = injectLearnings(promptToUse, pendingTask.title, deliverables, options.cwd);
       }
@@ -204,6 +215,55 @@ export async function runSingleIteration(
     }
   };
 
+  // Helper to log iteration completion
+  const logIteration = (durationMs: number, error?: Error) => {
+    try {
+      const logger = getLogger(options.cwd);
+
+      // Get final task status
+      let taskStatusAfter = taskStatusBefore;
+      try {
+        const specResult = locateActiveSpec(options.cwd);
+        if (specResult && specResult.path && currentTaskId) {
+          const spec = parseSpecV2(specResult.path);
+          const task = spec.tasks.find((t) => t.id === currentTaskId);
+          if (task) {
+            taskStatusAfter = task.status;
+          }
+        }
+      } catch {
+        // If we can't get the final status, use the initial status
+      }
+
+      const logData: IterationCompleteLog = {
+        duration_ms: durationMs,
+        iteration_number: iteration,
+        task: {
+          id: currentTaskId || 'unknown',
+          title: currentTaskTitle || 'unknown',
+          status_before: taskStatusBefore || 'unknown',
+          status_after: taskStatusAfter || 'unknown',
+        },
+        steps: [
+          { action: 'tools_executed', tools_started: stats.toolsStarted, tools_completed: stats.toolsCompleted, tools_errored: stats.toolsErrored },
+          { action: 'file_operations', reads: stats.reads, writes: stats.writes },
+          { action: 'commands', commands: stats.commands },
+        ],
+        commit_hash: commitHash,
+      };
+
+      logger.log({
+        phase: 'iteration',
+        type: error ? 'error' : 'complete',
+        data: logData,
+        timestamp: new Date(),
+      });
+    } catch (err) {
+      // Don't fail the iteration if logging fails
+      console.warn('Failed to log iteration:', err);
+    }
+  };
+
   try {
     const result = await harness.run(
       promptToUse,
@@ -218,20 +278,27 @@ export async function runSingleIteration(
       lastError = new Error(result.error);
     }
 
+    const durationMs = result.durationMs || Date.now() - startTime;
+    logIteration(durationMs, lastError);
+
     return {
       iteration,
-      durationMs: result.durationMs || Date.now() - startTime,
+      durationMs,
       stats,
       error: lastError,
       commitHash,
       commitMessage,
     };
   } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    const durationMs = Date.now() - startTime;
+    logIteration(durationMs, error);
+
     return {
       iteration,
-      durationMs: Date.now() - startTime,
+      durationMs,
       stats,
-      error: err instanceof Error ? err : new Error(String(err)),
+      error,
       commitHash,
       commitMessage,
     };
