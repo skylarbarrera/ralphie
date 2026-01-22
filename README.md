@@ -66,9 +66,17 @@ Each iteration:
 ## Key Features
 
 **Compound Engineering** - Each failure makes the system better:
-- **Research phase**: Analyzes codebase patterns + best practices before spec generation
+- **Research phase**: Analyzes codebase patterns + fetches domain expertise from [skills.sh](https://skills.sh) + researches best practices via WebSearch
+- **Dynamic tool selection**: Discovers best-in-class libraries for your stack (not hardcoded recommendations)
 - **Multi-agent review**: Security, performance, architecture checks before implementation
 - **Learnings system**: Captures failure→fix transitions as reusable knowledge
+- **Quality enforcement**: >80% test coverage mandatory, typed interfaces required, security by default
+
+**Senior Engineer Output** - Code quality built-in:
+- Research recommends current best tools (Zod, bcrypt, expo-auth-session)
+- Specs include explicit quality requirements (tests, security, architecture)
+- Test validator blocks task completion without >80% coverage
+- See [Code Quality Standards](docs/code-quality-standards.md) for details
 
 Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin). See [Architecture docs](docs/architecture.md) for details.
 
