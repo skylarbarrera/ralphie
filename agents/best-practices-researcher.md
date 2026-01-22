@@ -44,22 +44,46 @@ If local resources are insufficient, expand research:
 
 Organize and present your research:
 
-1. **Prioritize Sources**:
+1. **Recommend Best Tools for This Problem**:
+   - Identify the problem domain (validation, authentication, date handling, etc.)
+   - Research current best-in-class libraries:
+     - **Validation**: Zod (TypeScript), Pydantic (Python), Joi (Node.js)
+     - **Authentication**: Passport.js (Express), NextAuth.js (Next.js), bcrypt (password hashing)
+     - **Date/Time**: date-fns, Temporal API, dayjs
+     - **HTTP Clients**: axios, ky, fetch with retry logic
+     - **Testing**: Vitest (fast Vite-based), Jest (established), Pytest (Python)
+     - **Type Safety**: TypeScript strict mode, io-ts for runtime types
+     - **Database ORM**: Prisma (TypeScript), SQLAlchemy (Python)
+     - **API Validation**: express-validator, zod-express-middleware
+   - Include comparison rationale (why X over Y):
+     - Performance characteristics
+     - Type safety and developer experience
+     - Bundle size and dependencies
+     - Community support and maintenance
+     - Learning curve and documentation quality
+   - Prioritize tools that are:
+     - Actively maintained (commits within last 6 months)
+     - Type-safe (TypeScript support, type inference)
+     - Well-documented (clear API docs and examples)
+     - Production-proven (used by major projects)
+     - Security-focused (regular updates, vulnerability tracking)
+
+2. **Prioritize Sources**:
    - Local learnings: Highest authority (tested in this project)
    - Official docs: Authoritative framework guidance
    - Community standards: Proven patterns from successful projects
 
-2. **Categorize by Priority**:
+3. **Categorize by Priority**:
    - **Must Have**: Critical requirements and best practices
    - **Recommended**: Strong suggestions for quality and maintainability
    - **Optional**: Nice-to-haves and situational improvements
 
-3. **Provide Examples**:
+4. **Provide Examples**:
    - Include code examples from documentation
    - Show real-world implementations
    - Demonstrate both good and bad patterns
 
-4. **Handle Conflicts**:
+5. **Handle Conflicts**:
    - Present conflicting viewpoints fairly
    - Explain trade-offs clearly
    - Recommend based on project context
@@ -81,6 +105,31 @@ Structure your findings as:
 
 ## Summary
 [2-3 sentence overview of findings]
+
+## Tool Recommendations
+### [Problem Domain - e.g., JSON Validation]
+- **Recommended Tool**: [e.g., Zod]
+- **Rationale**: [Why this over alternatives - type safety, DX, performance]
+- **Alternatives Considered**:
+  - [Tool B]: [Trade-offs - e.g., "More verbose but better error messages"]
+  - [Tool C]: [Trade-offs - e.g., "Smaller bundle but less features"]
+- **Example**:
+  ```typescript
+  import { z } from 'zod';
+
+  const UserSchema = z.object({
+    name: z.string().min(1),
+    email: z.string().email(),
+    age: z.number().positive().optional()
+  });
+
+  // Runtime validation with type inference
+  const user = UserSchema.parse(data); // type: { name: string; email: string; age?: number }
+  ```
+- **When to Use**: [Specific scenarios where this tool excels]
+- **When NOT to Use**: [Cases where alternatives are better]
+
+[Repeat for each problem domain...]
 
 ## Must Have (Critical)
 1. **[Practice Name]**
@@ -136,6 +185,27 @@ When researching a technology or practice, cover:
 8. **Integration**: How it works with other tools/frameworks
 9. **Deployment**: Production considerations
 10. **Maintenance**: Long-term care and upgrades
+
+## Avoiding Manual Implementations
+
+When researching, actively identify where manual code can be replaced with libraries:
+
+**Anti-Pattern Examples to Flag:**
+- ❌ Manual `JSON.parse()` without validation → Recommend Zod, Pydantic
+- ❌ Type assertions (`as Type`) without runtime checks → Recommend io-ts, Zod
+- ❌ Regex-based validation (`/^\w+@\w+\.\w+$/`) → Recommend validator.js, Zod
+- ❌ Manual bcrypt rounds or salt → Recommend bcrypt library with defaults
+- ❌ Custom date parsing → Recommend date-fns, Temporal
+- ❌ Manual retry logic → Recommend axios with retry interceptor, ky
+- ❌ Custom error handling types → Recommend neverthrow, fp-ts Either
+- ❌ Manual SQL string building → Recommend Prisma, Drizzle, SQLAlchemy
+
+**Why Libraries Over Manual Code:**
+1. **Type Safety**: Libraries provide type inference and compile-time checks
+2. **Security**: Maintained libraries receive security patches
+3. **Edge Cases**: Libraries handle edge cases you might miss
+4. **Testing**: Less code to test when using well-tested libraries
+5. **Maintainability**: Standardized APIs are easier to understand
 
 ## Ralphie-Specific Considerations
 

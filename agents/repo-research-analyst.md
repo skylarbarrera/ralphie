@@ -50,6 +50,30 @@ Use available tools to identify implementation patterns:
 - Use `Read` tool to examine specific files
 - Cross-reference findings across multiple files
 
+### 6. Identify Improvement Opportunities
+Analyze the codebase for opportunities to adopt better tools and practices:
+- **Current Tech Stack**: Document libraries and tools currently in use
+- **Manual Implementations**: Flag areas using manual logic when libraries exist
+  - Manual JSON parsing without schema validation → recommend Zod (TypeScript) or Pydantic (Python)
+  - Manual type assertions without runtime validation → recommend validation libraries
+  - String-based validation with regex → recommend dedicated validation libraries
+  - Manual date parsing → recommend date-fns or Temporal
+  - Basic HTTP without retry/timeout logic → recommend axios or ky
+- **Outdated Patterns**: Note deprecated or outdated approaches
+  - Old testing frameworks (should use vitest, pytest, jest)
+  - Legacy authentication patterns (should use Passport.js, bcrypt)
+  - Untyped code in TypeScript projects
+- **Missing Validation**: Identify data boundaries without validation
+  - API request/response handling
+  - File I/O operations
+  - Environment variable access
+  - User input processing
+- **Tech Debt**: Document areas for improvement
+  - Inconsistent error handling patterns
+  - Missing type definitions
+  - Lack of input validation
+  - Security concerns (path traversal, injection risks)
+
 ## Research Methodology
 
 Follow this progressive approach:
@@ -108,6 +132,14 @@ Structure your findings as:
 - Common patterns discovered: [list with file examples]
 - Anti-patterns to avoid: [list]
 - Module conventions: [description]
+
+## Improvement Opportunities
+- **Current Tech Stack**: [libraries/tools in use]
+- **Manual Implementations to Replace**: [list with recommended libraries]
+  - Example: Manual JSON parsing → Recommend Zod for TypeScript
+- **Outdated Patterns**: [deprecated approaches with modern alternatives]
+- **Missing Validation**: [data boundaries without validation]
+- **Tech Debt**: [areas needing improvement]
 
 ## Recommendations
 [Specific guidance for contributors based on findings]

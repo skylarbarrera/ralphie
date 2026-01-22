@@ -32,7 +32,7 @@ Target: Code that would pass senior engineer code review - maintainable, well-ar
 ---
 
 ### T002: Update research agents to recommend best tools
-- Status: pending
+- Status: passed
 - Size: L
 
 **Deliverables:**

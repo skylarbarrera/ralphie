@@ -1,84 +1,89 @@
-# Plan: T003 - Add Architecture Quality Checks to Review Agents
+# Implementation Plan: T002
 
 ## Goal
-Enhance architecture-strategist agent to enforce senior engineer architecture standards including validation library usage.
+Update research agents to recommend best-in-class tools and libraries with rationale
 
 ## Task ID
-T003
+T002
 
-## Files
-- Modify: `agents/architecture-strategist.md` (add quality checks)
-- Create: `tests/agents/architecture-strategist.test.md` (test cases for validation)
+## Files to Create/Modify
+- `agents/repo-research-analyst.md` - Add "Identify improvement opportunities" section
+- `agents/best-practices-researcher.md` - Add "Recommend best tools for this problem" section
+- Tests to verify research output includes tool recommendations
 
-## Approach
+## Context from Audit
+The T001 audit revealed that Ralphie produces good code but doesn't consistently recommend best-in-class libraries. Key findings:
+- Manual JSON.parse instead of Zod
+- Type assertions instead of runtime validation
+- Missing recommendations for validation libraries (Zod, io-ts)
 
-Based on the T001 audit findings, we need to enhance the architecture review agent to catch:
+## Implementation Approach
 
-1. **Separation of Concerns**
-   - Business logic vs presentation vs data
-   - One responsibility per module
-   - Clear module boundaries
+### 1. Update `repo-research-analyst.md`
+Add new section after "Codebase Pattern Search":
+- **Section: "Identify Improvement Opportunities"**
+  - Document current tech stack and library choices
+  - Note when better alternatives exist (with specific examples)
+  - Flag outdated patterns or manual implementations
+  - Document tech debt and missing validation
 
-2. **Interface Definitions**
-   - Typed contracts between modules
-   - Exported interfaces with JSDoc
-   - Proper use of TypeScript types
+### 2. Update `best-practices-researcher.md`
+Add new section in Phase 3 (Synthesize Findings):
+- **Section: "Recommend Best Tools for This Problem"**
+  - Research current best-in-class libraries for the domain
+  - Include comparison rationale (why X over Y)
+  - Provide specific examples: Zod for validation, bcrypt for hashing, etc.
+  - List trade-offs between options
+  - Prioritize tools that are:
+    - Actively maintained
+    - Type-safe
+    - Well-documented
+    - Production-proven
 
-3. **Dependency Direction**
-   - High-level → low-level (not circular)
-   - Core logic doesn't depend on presentation
-   - Data layer at bottom
+### 3. Add Tool Recommendation Templates
+Include examples in both agents:
+- Validation: Zod (TypeScript), Pydantic (Python)
+- Authentication: Passport.js, bcrypt
+- Date handling: date-fns, Temporal
+- HTTP clients: axios, node-fetch
+- Testing: vitest, jest, pytest
 
-4. **Module Boundaries**
-   - Clear imports/exports
-   - No reaching into internals
-   - Proper encapsulation
-
-5. **Validation Library Usage** (from audit)
-   - Flag manual JSON.parse without schema validation
-   - Recommend Zod for TypeScript projects
-   - Recommend Pydantic for Python projects
-   - Flag type assertions without runtime validation
-
-6. **Error Handling Consistency** (from audit)
-   - Check for consistent error patterns
-   - Flag mix of throw/return null/undefined
-   - Recommend Result types or consistent strategy
-
-## Enhancement Strategy
-
-Update `architecture-strategist.md` to add:
-
-1. **New section: "Validation & Parsing"**
-   - Check for manual JSON.parse → flag, recommend Zod
-   - Check for YAML.load with type assertion → flag, recommend schema
-   - Check for manual validation logic → suggest library alternative
-
-2. **New section: "Error Handling Patterns"**
-   - Identify error handling patterns in codebase
-   - Flag inconsistencies (throw vs null vs undefined)
-   - Recommend standardization
-
-3. **Enhanced severity levels**
-   - P1 (CRITICAL): Circular dependencies, no separation of concerns
-   - P2 (HIGH): Manual validation without schema, inconsistent error handling
-   - P3 (MEDIUM): Missing JSDoc, unclear module boundaries
+### 4. Update Output Format
+Modify research output to include:
+```markdown
+## Tool Recommendations
+- **Problem Domain**: [e.g., JSON validation]
+- **Recommended Tool**: [e.g., Zod]
+- **Rationale**: [Why this over alternatives]
+- **Alternatives Considered**: [Other options and trade-offs]
+- **Examples**: [Code snippet showing usage]
+```
 
 ## Tests
-
-Create test document with intentional violations:
-- Manual JSON.parse without validation
-- Circular dependencies
-- Business logic in presentation layer
-- Mixed error handling patterns
-
-Verify agent catches these issues and recommends fixes.
+- Create test scenario: "add validation" task
+- Verify research output includes:
+  - Tool recommendations (e.g., Zod for TypeScript, Pydantic for Python)
+  - Rationale for recommendations
+  - Comparison with alternatives
+  - Specific examples
+- Document findings in test results
 
 ## Exit Criteria
-- [x] Architecture agent updated with validation checks
-- [x] Architecture agent updated with error handling checks
-- [x] Test cases documented
-- [x] Agent catches manual JSON.parse and recommends Zod
-- [x] Agent catches inconsistent error handling
-- [x] Task status updated to `passed`
-- [x] Changes committed
+1. ✅ `repo-research-analyst.md` has "Identify Improvement Opportunities" section
+2. ✅ `best-practices-researcher.md` has "Recommend Best Tools" section
+3. ✅ Research output format includes tool recommendations template
+4. ✅ Both agents reference specific best-in-class tools with examples
+5. ✅ Test scenario demonstrates tool recommendations appear in research output
+6. ✅ Verification command passes
+
+## Verification
+**Verify:** Research output includes tool recommendations with rationale
+
+Testing approach:
+- Create a sample task spec (e.g., "add user input validation")
+- Run research agents (manually or via test harness)
+- Verify output contains:
+  - Recommended validation library (Zod/Pydantic)
+  - Rationale for recommendation
+  - Alternative options considered
+  - Code examples
