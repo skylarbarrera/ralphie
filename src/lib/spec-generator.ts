@@ -107,7 +107,13 @@ Background for implementation.
 - WHEN X, THEN Y
 \`\`\`
 
-Analyze the codebase to understand context. Create 3-8 well-sized tasks.
+**IMPORTANT**: If research findings are provided above, USE them in your spec:
+- Recommend specific libraries found in research (with rationale in deliverables)
+- Reference best practices from research findings
+- Include tool recommendations in task deliverables
+- Example: "Install victory-native (best TS support, actively maintained)"
+
+Analyze the codebase to understand context. Create 3-8 well-sized tasks that incorporate research recommendations.
 When done, output: SPEC_COMPLETE`;
 
   // Inject research context into prompt if available
