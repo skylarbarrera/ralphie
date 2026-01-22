@@ -558,3 +558,29 @@
   - 80/20 philosophy implemented: deep research, multi-agent review, learnings system
   - Agent prompt library created with 8 specialized agents from Compound
   - Commit: b6324a2 chore: move compound-learnings spec to completed
+
+✅ 2026-01-22: Completed T001 - Audit current code quality output (senior-engineer-output spec)
+  - Analyzed recent Ralphie code (learnings-search, cost-tracker, research-orchestrator)
+  - Overall Grade: B+ (Good fundamentals, missing best practices)
+  - Strengths: Excellent test coverage (~95%), strong TypeScript, good separation of concerns
+  - Weaknesses: Manual JSON.parse instead of Zod, inconsistent error handling patterns
+  - Key gap: Not recommending best-in-class libraries (Zod, io-ts, Pydantic)
+  - Created .ralphie/audit-results.md with detailed findings and code examples
+  - Created .ralphie/specs/active/config-validation-test.md for future testing
+  - Established baseline metrics for tracking improvement
+  - Commit: 218c940 feat: T001 audit current code quality output
+
+✅ 2026-01-22: Completed T003 - Add architecture quality checks to review agents (senior-engineer-output spec)
+  - Enhanced architecture-strategist agent with validation and error handling checks
+  - Added "Validation & Parsing" section for TypeScript/JavaScript and Python
+  - Added "Error Handling Consistency" section to detect mixed patterns
+  - Flags manual JSON.parse without schema validation
+  - Flags YAML parsing with type assertions
+  - Recommends Zod/io-ts for TypeScript, Pydantic for Python
+  - Detects inconsistent error handling (throw vs null vs undefined)
+  - Added architectural smells #8 (Manual Validation) and #9 (Inconsistent Errors)
+  - Updated verification checklist with validation library and error handling checks
+  - Created tests/agents/architecture-violations-test.md with 5 test cases
+  - Test cases cover: manual JSON.parse, inconsistent errors, YAML issues, circular deps, business logic in UI
+  - Directly addresses gaps from T001 audit
+  - Commit: 85ca11e feat: T003 add architecture quality checks to review agents
