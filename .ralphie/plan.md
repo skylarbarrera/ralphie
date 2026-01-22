@@ -1,26 +1,19 @@
-# Plan: T005 - Add security checks to validation
+# Plan: T006 - Add performance awareness to implementation
 
-**Goal:** Add comprehensive security checks to the validation review process
+**Goal:** Add performance guidance to iteration prompt to avoid common performance issues
 
-**Task ID:** T005
+**Task ID:** T006
 
-**Files to create/modify:**
-- Check if `agents/security-reviewer.md` exists, create/update it
-- Update iteration prompt to include security checklist
-- Update review orchestration to include security checks
+**Files to modify:**
+- `src/lib/prompts.ts` - Add performance section to both prompts
 
 **Tests:**
-- Create test cases with intentional security vulnerabilities
-- Verify security review catches:
-  - SQL injection vectors
-  - XSS vectors
-  - Secrets in code
-  - Missing input validation
-  - Insecure defaults
+- Verify performance section exists in prompts
+- Check performance-oracle agent exists and is integrated
+- Verify guidance covers N+1 queries, data structures, memory usage, indexes
 
 **Exit criteria:**
-- Security review agent exists with comprehensive checks
-- Iteration prompt includes security guidance
-- Test with intentional vulnerabilities passes (review catches them)
+- Iteration prompt includes performance guidelines
+- Performance guidance is practical and non-premature
 - Task status updated to `passed`
 - Changes committed

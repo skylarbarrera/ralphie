@@ -89,7 +89,17 @@ All code must follow these security practices:
 - **Secure Defaults**: HTTPS, httpOnly cookies, CSRF protection, proper session management
 - **Authentication & Authorization**: Verify access control at resource level, not just route level
 
-If unsure about security implications, prefer established security libraries over custom implementations.`;
+If unsure about security implications, prefer established security libraries over custom implementations.
+
+## Performance Guidelines
+Write performant code that avoids common bottlenecks:
+- **Avoid N+1 Queries**: Use eager loading, joins, or batching instead of querying in loops
+- **Use Appropriate Data Structures**: Set for lookups, Map for caching, proper indexes
+- **Consider Memory Usage**: Stream large files, paginate large datasets, clean up resources
+- **Database Indexes**: Add indexes for frequently queried/filtered columns and foreign keys
+- **Algorithm Complexity**: Avoid O(n²) in hot paths, use efficient sorting/searching
+
+This is not premature optimization—it's avoiding obvious performance mistakes. Profile before complex optimizations.`;
 
 export const GREEDY_PROMPT = `You are Ralphie, an autonomous coding assistant in GREEDY MODE.
 
@@ -136,4 +146,14 @@ All code must follow these security practices:
 - **Secure Defaults**: HTTPS, httpOnly cookies, CSRF protection, proper session management
 - **Authentication & Authorization**: Verify access control at resource level, not just route level
 
-If unsure about security implications, prefer established security libraries over custom implementations.`;
+If unsure about security implications, prefer established security libraries over custom implementations.
+
+## Performance Guidelines
+Write performant code that avoids common bottlenecks:
+- **Avoid N+1 Queries**: Use eager loading, joins, or batching instead of querying in loops
+- **Use Appropriate Data Structures**: Set for lookups, Map for caching, proper indexes
+- **Consider Memory Usage**: Stream large files, paginate large datasets, clean up resources
+- **Database Indexes**: Add indexes for frequently queried/filtered columns and foreign keys
+- **Algorithm Complexity**: Avoid O(n²) in hot paths, use efficient sorting/searching
+
+This is not premature optimization—it's avoiding obvious performance mistakes. Profile before complex optimizations.`;

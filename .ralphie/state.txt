@@ -626,3 +626,23 @@
   - Task completion criteria explicitly requires tests and coverage verification
   - Files: .claude/ralphie.md, agents/test-validator.md, agents/README.md, scripts/validate-iteration.md
   - Commit: 1670667 feat: T004 enforce test coverage in iteration loop
+
+✅ 2026-01-22: T005 - Added security checks to validation
+  - Enhanced iteration prompts (DEFAULT_PROMPT and GREEDY_PROMPT) with comprehensive security checklist
+  - Security requirements cover: input validation, SQL injection prevention, XSS protection, secrets management, secure defaults, authorization checks
+  - Created tests/agents/security-violations-test.md with 6 intentional vulnerability categories:
+    * SQL injection via string concatenation
+    * XSS via unsafe DOM manipulation
+    * Hardcoded secrets (API keys, passwords, tokens)
+    * Missing input validation (email, password, file uploads)
+    * Insecure session configuration (weak secrets, httpOnly disabled, CSRF vulnerable)
+    * Missing authorization checks (IDOR, privilege escalation)
+  - Added automated test suite tests/agents/security-sentinel.test.ts (22 tests)
+  - Tests verify: vulnerability detection, severity classification, remediation recommendations, OWASP Top 10 mapping
+  - Security-sentinel agent already integrated in review system (src/lib/review.ts)
+  - Runs automatically with `ralphie run --review`
+  - P1 issues (Critical/High severity) block iteration unless --force flag used
+  - All security checks aligned with OWASP Top 10 2021
+  - Files: src/lib/prompts.ts, tests/agents/security-violations-test.md, tests/agents/security-sentinel.test.ts, .ralphie/t005-verification.md
+  - Tests: 22 passing
+  - Commit: ceed9a6 feat: T005 add security checks to validation
