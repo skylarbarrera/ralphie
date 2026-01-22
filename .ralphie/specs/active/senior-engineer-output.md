@@ -72,7 +72,7 @@ Target: Code that would pass senior engineer code review - maintainable, well-ar
 ---
 
 ### T004: Enforce test coverage in iteration loop
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**

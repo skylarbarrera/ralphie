@@ -36,13 +36,14 @@ In Ralphie's context, **agents are specialized prompts**, not autonomous sub-pro
 | **typescript-reviewer** | TypeScript-specific code quality review | For TypeScript projects |
 | **python-reviewer** | Python-specific code quality review | For Python projects |
 
-### Validation Agents (1)
+### Validation Agents (2)
 
-**Purpose**: Validate specifications and plans before implementation
+**Purpose**: Validate specifications, plans, and test coverage
 
 | Agent | Use Case | When to Use |
 |-------|----------|-------------|
 | **spec-flow-analyzer** | Analyze specs for gaps, edge cases, and missing requirements | After spec generation, before implementation |
+| **test-validator** | Verify tests exist, pass, and meet >80% coverage threshold | Before marking any task as "passed", mandatory validation |
 
 ## How Ralphie Uses Agents
 
