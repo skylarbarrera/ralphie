@@ -20,22 +20,82 @@ Before searching externally, check local project resources:
 
 If local resources are insufficient, expand research:
 
-1. **Official Documentation**:
+1. **Check skills.sh for Domain Expertise** (NEW):
+   - **Step 1: Detect tech stack**
+     - Check `package.json` for frameworks (expo, next, react, etc.)
+     - Check `requirements.txt` or `pyproject.toml` for Python frameworks
+     - Note the primary stack (React Native, FastAPI, Next.js, etc.)
+
+   - **Step 2: Fetch available skills**
+     ```bash
+     curl -s https://skills.sh/api/skills
+     ```
+     Returns JSON with skills: `[{name, installs, topSource}]`
+
+   - **Step 3: Select 2-3 relevant skills**
+     - Filter by relevance (skill name matches tech stack + task)
+     - Prioritize by install count (higher = more vetted)
+     - Choose 2-3 most applicable skills
+     - Examples:
+       - Expo project → look for "expo-*", "react-native-*" skills
+       - Next.js project → "vercel-react-best-practices"
+       - Auth task → "better-auth-best-practices"
+
+   - **Step 4: Fetch skill content**
+     For each selected skill:
+     ```bash
+     # Extract source repo from API response
+     source="expo/skills"  # from topSource field
+     skill_name="building-ui"
+
+     # Clone repo and extract SKILL.md
+     git clone --depth 1 --filter=blob:none https://github.com/${source} /tmp/skill-${skill_name}
+     cat /tmp/skill-${skill_name}/${skill_name}/SKILL.md
+     ```
+
+   - **Step 5: Incorporate skill guidelines**
+     - Skills contain domain expert knowledge (45+ rules for React, etc.)
+     - Use skill recommendations in your research synthesis
+     - Skills override generic advice (expo patterns > generic React patterns)
+     - If skill conflicts with WebSearch findings, prefer skill (more specific)
+
+   - **Fallback**: If skills.sh unavailable or fetch fails, log warning and continue with WebSearch
+
+   - **Example**:
+     ```
+     User: "Build Expo app with auth"
+     Tech stack: Expo, React Native
+
+     Skills API returns: 50+ skills
+     Agent selects:
+       1. "building-ui" (expo/skills, 1163 installs)
+       2. "better-auth-best-practices" (better-auth/skills, 1619 installs)
+
+     Fetch both SKILL.md files (~200 lines total)
+
+     Skills say:
+       - "Use expo-auth-session, not custom OAuth implementation"
+       - "Prefer expo-secure-store for token storage"
+
+     Research output includes these as primary recommendations
+     ```
+
+2. **Official Documentation**:
    - Use `WebFetch` to access framework documentation
    - Search for API references and guides
    - Look for migration guides and changelogs
 
-2. **Community Standards**:
+3. **Community Standards**:
    - Use `WebSearch` to find recent articles (use 2026 in queries)
    - Search for style guides and best practices
    - Find case studies and real-world examples
 
-3. **Open Source Examples**:
+4. **Open Source Examples**:
    - Search GitHub for well-regarded projects
    - Analyze implementation patterns
    - Review test strategies
 
-4. **Anti-patterns**:
+5. **Anti-patterns**:
    - Identify common pitfalls
    - Research security considerations
    - Find performance gotchas
@@ -44,7 +104,13 @@ If local resources are insufficient, expand research:
 
 Organize and present your research:
 
-1. **Research Best Tools for This Problem** (USE WebSearch - DO NOT use static lists):
+**Prioritization of Sources**:
+1. **skills.sh domain expertise** (most authoritative for framework-specific patterns)
+2. **Official documentation** (authoritative for APIs and features)
+3. **WebSearch community consensus** (current best practices)
+4. **Local codebase patterns** (existing project conventions)
+
+1. **Research Best Tools for This Problem** (USE WebSearch + skills.sh - DO NOT use static lists):
    - **Step 1: Identify the problem domain** from the spec requirements
      - Example: "User needs to display charts in React Native app"
      - Example: "API responses need validation in TypeScript"
