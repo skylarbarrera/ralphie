@@ -94,7 +94,7 @@ Background for implementation.
 - Size: S|M|L
 
 **Deliverables:**
-- What to build
+- What to build (include quality requirements - see below)
 
 **Verify:** \`test command\`
 
@@ -107,13 +107,43 @@ Background for implementation.
 - WHEN X, THEN Y
 \`\`\`
 
+**CRITICAL: Every task deliverable MUST include quality requirements:**
+
+Each deliverable should specify:
+1. **Tests Required**: What testing is needed (unit, integration, >80% coverage)
+2. **Security Considerations**: Specific security measures for this task
+3. **Architecture**: Module boundaries and separation of concerns
+
+**Example deliverable format:**
+\`\`\`markdown
+**Deliverables:**
+- User authentication service with JWT validation
+  - MUST use bcrypt for password hashing (cost factor 12+)
+  - MUST include unit tests with >80% coverage
+  - MUST separate auth logic from route handlers (services layer)
+  - MUST validate all inputs with Zod schema
+  - MUST use httpOnly, secure cookies for sessions
+- Login API endpoint
+  - MUST use parameterized queries (no SQL injection)
+  - MUST include integration tests for success and error cases
+  - MUST implement rate limiting (5 attempts per minute)
+  - MUST return proper error codes (401, 429)
+\`\`\`
+
+**Quality standards to enforce:**
+- **Tools**: Recommend best-in-class libraries (Zod for validation, bcrypt for passwords, etc.)
+- **Testing**: Require unit + integration tests, >80% coverage for new code
+- **Security**: Input validation, parameterized queries, hashed passwords, httpOnly cookies
+- **Architecture**: Separation of concerns (routes, services, data layers), typed interfaces
+- **Performance**: Avoid N+1 queries, use appropriate data structures, pagination for large datasets
+
 **IMPORTANT**: If research findings are provided above, USE them in your spec:
 - Recommend specific libraries found in research (with rationale in deliverables)
 - Reference best practices from research findings
 - Include tool recommendations in task deliverables
 - Example: "Install victory-native (best TS support, actively maintained)"
 
-Analyze the codebase to understand context. Create 3-8 well-sized tasks that incorporate research recommendations.
+Analyze the codebase to understand context. Create 3-8 well-sized tasks that incorporate research recommendations AND quality requirements.
 When done, output: SPEC_COMPLETE`;
 
   // Inject research context into prompt if available
