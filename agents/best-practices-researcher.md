@@ -44,29 +44,41 @@ If local resources are insufficient, expand research:
 
 Organize and present your research:
 
-1. **Recommend Best Tools for This Problem**:
-   - Identify the problem domain (validation, authentication, date handling, etc.)
-   - Research current best-in-class libraries:
-     - **Validation**: Zod (TypeScript), Pydantic (Python), Joi (Node.js)
-     - **Authentication**: Passport.js (Express), NextAuth.js (Next.js), bcrypt (password hashing)
-     - **Date/Time**: date-fns, Temporal API, dayjs
-     - **HTTP Clients**: axios, ky, fetch with retry logic
-     - **Testing**: Vitest (fast Vite-based), Jest (established), Pytest (Python)
-     - **Type Safety**: TypeScript strict mode, io-ts for runtime types
-     - **Database ORM**: Prisma (TypeScript), SQLAlchemy (Python)
-     - **API Validation**: express-validator, zod-express-middleware
-   - Include comparison rationale (why X over Y):
-     - Performance characteristics
-     - Type safety and developer experience
-     - Bundle size and dependencies
-     - Community support and maintenance
-     - Learning curve and documentation quality
-   - Prioritize tools that are:
-     - Actively maintained (commits within last 6 months)
-     - Type-safe (TypeScript support, type inference)
-     - Well-documented (clear API docs and examples)
-     - Production-proven (used by major projects)
-     - Security-focused (regular updates, vulnerability tracking)
+1. **Research Best Tools for This Problem** (USE WebSearch - DO NOT use static lists):
+   - **Step 1: Identify the problem domain** from the spec requirements
+     - Example: "User needs to display charts in React Native app"
+     - Example: "API responses need validation in TypeScript"
+     - Example: "Python service needs async HTTP client"
+
+   - **Step 2: Use WebSearch to research current best tools**
+     - Search: "[problem domain] best library [tech stack] 2026"
+     - Examples:
+       - "best React Native chart library 2026"
+       - "TypeScript API validation library comparison"
+       - "Python async HTTP client performance benchmark"
+     - Visit official docs, comparison articles, GitHub repos
+     - Check Reddit/HN discussions for real-world feedback
+
+   - **Step 3: Compare top 3-5 options** using WebSearch/WebFetch:
+     - GitHub stars and recent commit activity (active maintenance?)
+     - TypeScript support and type inference quality
+     - Bundle size (use bundlephobia.com)
+     - Performance benchmarks if available
+     - Community adoption (npm downloads, PyPI stats)
+     - Security track record (vulnerability history)
+     - Learning curve (documentation quality)
+
+   - **Step 4: Recommend with specific rationale**:
+     - NOT: "Use Zod for validation"
+     - YES: "For TypeScript API validation, recommend Zod over io-ts because:
+       - Better type inference (no need for manual type extraction)
+       - 10x smaller bundle size (8kb vs 80kb)
+       - Active maintenance (commits within last month)
+       - Better error messages for debugging
+       - Downside: Slightly slower runtime validation than Ajv"
+
+   - **Important**: NEVER use a hardcoded list of libraries. Every recommendation must come from fresh research for the specific problem.
+   - **The year is 2026** - libraries from 2024 may be outdated. Always search for current best practices.
 
 2. **Prioritize Sources**:
    - Local learnings: Highest authority (tested in this project)
@@ -190,15 +202,19 @@ When researching a technology or practice, cover:
 
 When researching, actively identify where manual code can be replaced with libraries:
 
-**Anti-Pattern Examples to Flag:**
-- ❌ Manual `JSON.parse()` without validation → Recommend Zod, Pydantic
-- ❌ Type assertions (`as Type`) without runtime checks → Recommend io-ts, Zod
-- ❌ Regex-based validation (`/^\w+@\w+\.\w+$/`) → Recommend validator.js, Zod
-- ❌ Manual bcrypt rounds or salt → Recommend bcrypt library with defaults
-- ❌ Custom date parsing → Recommend date-fns, Temporal
-- ❌ Manual retry logic → Recommend axios with retry interceptor, ky
-- ❌ Custom error handling types → Recommend neverthrow, fp-ts Either
-- ❌ Manual SQL string building → Recommend Prisma, Drizzle, SQLAlchemy
+**Process:**
+1. Identify manual implementation (regex validation, custom parsing, etc.)
+2. Use WebSearch to find "[problem] library [language] best practices 2026"
+3. Research top options with comparison
+4. Recommend specific tool with rationale
+
+**Examples of what to research:**
+- Manual `JSON.parse()` without validation → Research: "TypeScript JSON validation library 2026"
+- Type assertions (`as Type`) without runtime checks → Research: "TypeScript runtime type checking comparison"
+- Regex-based email validation → Research: "email validation library npm 2026"
+- Custom date parsing → Research: "JavaScript date library alternatives 2026"
+- Manual retry logic → Research: "HTTP client with retry Node.js 2026"
+- Manual SQL string building → Research: "TypeScript ORM comparison 2026"
 
 **Why Libraries Over Manual Code:**
 1. **Type Safety**: Libraries provide type inference and compile-time checks
@@ -206,6 +222,8 @@ When researching, actively identify where manual code can be replaced with libra
 3. **Edge Cases**: Libraries handle edge cases you might miss
 4. **Testing**: Less code to test when using well-tested libraries
 5. **Maintainability**: Standardized APIs are easier to understand
+
+**CRITICAL**: Do NOT have a mental list of "validation = Zod". Research the ACTUAL best tool for the SPECIFIC problem at the time of research.
 
 ## Ralphie-Specific Considerations
 

@@ -52,27 +52,37 @@ Use available tools to identify implementation patterns:
 
 ### 6. Identify Improvement Opportunities
 Analyze the codebase for opportunities to adopt better tools and practices:
+
 - **Current Tech Stack**: Document libraries and tools currently in use
+  - Read package.json (Node.js) or requirements.txt (Python)
+  - Note versions and check if they're current
+
 - **Manual Implementations**: Flag areas using manual logic when libraries exist
-  - Manual JSON parsing without schema validation → recommend Zod (TypeScript) or Pydantic (Python)
-  - Manual type assertions without runtime validation → recommend validation libraries
-  - String-based validation with regex → recommend dedicated validation libraries
-  - Manual date parsing → recommend date-fns or Temporal
-  - Basic HTTP without retry/timeout logic → recommend axios or ky
+  - Manual JSON parsing without schema validation → Flag for research
+  - Manual type assertions without runtime validation → Flag for research
+  - String-based validation with regex → Flag for research
+  - Manual date parsing → Flag for research
+  - Basic HTTP without retry/timeout logic → Flag for research
+  - **DO NOT recommend specific tools** - let best-practices-researcher research the best options
+
 - **Outdated Patterns**: Note deprecated or outdated approaches
-  - Old testing frameworks (should use vitest, pytest, jest)
-  - Legacy authentication patterns (should use Passport.js, bcrypt)
-  - Untyped code in TypeScript projects
+  - Check library versions against current stable releases
+  - Flag deprecated APIs or patterns
+  - Note when major version upgrades are available
+
 - **Missing Validation**: Identify data boundaries without validation
   - API request/response handling
   - File I/O operations
   - Environment variable access
   - User input processing
+
 - **Tech Debt**: Document areas for improvement
   - Inconsistent error handling patterns
   - Missing type definitions
   - Lack of input validation
   - Security concerns (path traversal, injection risks)
+
+**Your job**: OBSERVE and FLAG issues. The best-practices-researcher will research solutions.
 
 ## Research Methodology
 
