@@ -1,50 +1,71 @@
-# Plan: Update spec generation to include quality requirements
+# Plan: Create example showcase
 
 ## Goal
-Inject senior engineer code quality standards into generated specs so deliverables explicitly require tests, security measures, and architectural boundaries.
+Demonstrate Ralphie's ability to generate senior engineer-level code across different stacks by creating 3 working example projects with quality explanations.
 
 ## Task ID
-T008
+T010
 
-## Files to Modify
-- `src/lib/spec-generator.ts` - Update the prompt template to include quality requirements
+## Files to Create
+- `examples/typescript-express-api/` - TypeScript/Express REST API example
+- `examples/python-fastapi-service/` - Python/FastAPI service example
+- `examples/react-component-library/` - React component library example
+- `examples/README.md` - Overview of examples and quality principles
 
 ## Implementation Approach
 
-1. **Update spec generation prompt** in `spec-generator.ts`:
-   - Add quality standards template to the deliverables section
-   - Include mandatory requirements: testing, security, architecture
-   - Provide concrete examples in the prompt
-   - Reference the code quality standards doc
-
-2. **Quality injection format**:
-   - Each deliverable should include:
-     - **Tests**: What test coverage is required (unit, integration)
-     - **Security**: Specific security considerations for the task
-     - **Architecture**: Module boundaries and separation of concerns
-   - Use bullet points in deliverables to make requirements explicit
-
-3. **Example format for generated specs**:
-   ```markdown
-   **Deliverables:**
-   - Auth service with JWT validation
-     - MUST use bcrypt for password hashing (cost factor 12+)
-     - MUST include unit tests (>80% coverage)
-     - MUST separate auth logic from route handlers
-     - MUST validate all inputs with Zod schema
+1. **Create examples directory structure**:
+   ```
+   examples/
+   ├── README.md (overview)
+   ├── typescript-express-api/
+   │   ├── README.md (quality explanation)
+   │   ├── src/ (generated code)
+   │   └── tests/ (generated tests)
+   ├── python-fastapi-service/
+   │   ├── README.md (quality explanation)
+   │   ├── app/ (generated code)
+   │   └── tests/ (generated tests)
+   └── react-component-library/
+       ├── README.md (quality explanation)
+       ├── src/ (generated code)
+       └── tests/ (generated tests)
    ```
 
+2. **TypeScript/Express API Example**:
+   - Feature: User authentication with JWT
+   - Demonstrates: Zod validation, bcrypt passwords, separation of concerns (routes/services/models)
+   - Quality highlights: typed interfaces, >80% test coverage, parameterized queries
+
+3. **Python/FastAPI Service Example**:
+   - Feature: Data validation service
+   - Demonstrates: Pydantic models, type hints, pytest tests
+   - Quality highlights: FastAPI best practices, async/await, comprehensive error handling
+
+4. **React Component Library Example**:
+   - Feature: Reusable form components
+   - Demonstrates: TypeScript, proper component composition, accessibility
+   - Quality highlights: typed props, comprehensive tests, Storybook integration
+
+5. **Each README explains**:
+   - What makes this code "senior engineer quality"
+   - Tool choices and rationale
+   - Architecture patterns used
+   - Security considerations
+   - Test coverage approach
+
 ## Tests
-- Generate a test spec using `generateSpec()` function
-- Verify the generated spec includes quality requirements in deliverables:
-  - Test requirements mentioned
-  - Security considerations specified
-  - Architecture boundaries noted
-  - Tool recommendations with rationale
+Manual verification:
+- Each example project builds successfully
+- Tests pass with >80% coverage
+- Code follows patterns from docs/code-quality-standards.md
+- READMEs clearly explain quality attributes
 
 ## Exit Criteria
-- ✅ Spec generation prompt includes quality injection template
-- ✅ Generated specs have explicit quality requirements in deliverables
-- ✅ Requirements cover tests, security, and architecture
-- ✅ Example demonstrates the format clearly
-- ✅ Manual verification shows quality requirements present
+- ✅ Examples directory created with 3 working projects
+- ✅ Each project has comprehensive README explaining quality
+- ✅ TypeScript/Express example demonstrates best practices
+- ✅ Python/FastAPI example demonstrates best practices
+- ✅ React component library example demonstrates best practices
+- ✅ All examples can be built and tested successfully
+- ✅ Main examples/README.md ties everything together

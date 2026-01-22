@@ -194,7 +194,7 @@ Target: Code that would pass senior engineer code review - maintainable, well-ar
 ---
 
 ### T010: Create example showcase
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**

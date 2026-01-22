@@ -694,3 +694,25 @@
   - All 52 tests passing
   - Verify command: npm test -- code-quality
   - Commit: 4abf853 feat: T007 create code quality validation test suite
+
+✅ 2026-01-22: T008 - Injected quality requirements into spec generation
+  - Updated src/lib/spec-generator.ts with enhanced spec generation prompt
+  - Added mandatory quality requirements template to spec generation
+  - Each task deliverable now explicitly requires:
+    * Tests: Unit + integration tests, >80% coverage for new code
+    * Security: Input validation (Zod), bcrypt for passwords, parameterized queries, httpOnly cookies, rate limiting
+    * Architecture: Separation of concerns (routes/services/data), typed interfaces, clear module boundaries
+  - Added example deliverable format with MUST statements
+  - Quality standards checklist integrated: tools, testing, security, architecture, performance
+  - Spec generation prompt includes concrete examples (bcrypt cost factor 12+, Zod schema validation, etc.)
+  - Verified with test spec generation: user registration endpoint spec includes all quality requirements
+  - Generated spec includes explicit requirements like:
+    * "MUST use bcrypt for password hashing (cost factor 12+)"
+    * "MUST include unit tests with >80% coverage"
+    * "MUST separate auth logic from route handlers"
+    * "MUST validate all inputs with Zod schema"
+    * "MUST implement rate limiting"
+  - Quality starts at specification stage, not as afterthought during implementation
+  - Tests: 844 passing (3 failures unrelated to changes)
+  - Type check passes
+  - Commit: 550786d feat: T008 inject quality requirements into spec generation
