@@ -51,28 +51,38 @@ If local resources are insufficient, expand research:
      - **Output in research:** "🎯 Selected skills: [skill1] ([source], [N] installs), [skill2] ([source], [N] installs)"
 
    - **Step 4: Fetch skill content**
-     For each selected skill, use raw GitHub URL (much faster than git clone):
+     **Use GitHub API to find SKILL.md** (repos have different structures):
      ```bash
      # Extract source repo from API response
      source="expo/skills"  # from topSource field
      skill_name="building-ui"
 
-     # Fetch SKILL.md directly via raw GitHub URL
+     # Search for SKILL.md using GitHub API
+     curl -s "https://api.github.com/search/code?q=filename:SKILL.md+repo:${source}+${skill_name}" \
+       | jq -r '.items[] | select(.name=="SKILL.md") | .path' | head -1
+
+     # Once you have the path, fetch the raw content
+     # Example path: "skills/react-best-practices/SKILL.md"
+     skill_path="skills/react-best-practices/SKILL.md"
+     curl -s https://raw.githubusercontent.com/${source}/main/${skill_path}
+     ```
+
+     **Fallback if GitHub API doesn't work:**
+     Try common path patterns:
+     ```bash
+     # Pattern 1: skills/{name}/SKILL.md (vercel, expo)
+     curl -s https://raw.githubusercontent.com/${source}/main/skills/${skill_name}/SKILL.md
+
+     # Pattern 2: {org-name}/{category}/SKILL.md (better-auth)
      curl -s https://raw.githubusercontent.com/${source}/main/${skill_name}/SKILL.md
 
-     # Fallback to master branch if main doesn't exist
-     # curl -s https://raw.githubusercontent.com/${source}/master/${skill_name}/SKILL.md
+     # Pattern 3: Try master branch
+     curl -s https://raw.githubusercontent.com/${source}/master/skills/${skill_name}/SKILL.md
      ```
 
-     **Alternative: Use WebFetch tool** (even better!)
-     ```
-     WebFetch tool with:
-       url: https://raw.githubusercontent.com/${source}/main/${skill_name}/SKILL.md
-       prompt: "Extract the skill guidelines as-is"
-     ```
-     - **Output in research:** "📄 Fetching [skill_name] from https://raw.githubusercontent.com/[source]/main/[skill_name]/SKILL.md"
-     - **After fetch:** "✅ Retrieved [skill_name]: [N] lines of guidance"
-     - **If fetch fails:** "⚠️ [skill_name] not found at main branch, trying master..." or "❌ Failed to fetch [skill_name], skipping"
+     - **Output in research:** "📄 Finding [skill_name] in https://github.com/[source]..."
+     - **After found:** "✅ Retrieved [skill_name]: [N] lines from [path]"
+     - **If all fail:** "❌ Could not locate [skill_name] SKILL.md, skipping to next"
 
    - **Step 5: Incorporate skill guidelines**
      - Skills contain domain expert knowledge (45+ rules for React, etc.)
@@ -82,23 +92,26 @@ If local resources are insufficient, expand research:
 
    - **Fallback**: If skills.sh unavailable or fetch fails, log warning and continue with WebSearch
 
-   - **Example**:
+   - **Example with actual paths**:
      ```
-     User: "Build Expo app with auth"
-     Tech stack: Expo, React Native
+     User: "Build Next.js app with auth"
+     Tech stack: Next.js, React
 
-     Skills API returns: 50+ skills
+     Skills API returns: 49+ skills
      Agent selects:
-       1. "building-ui" (expo/skills, 1163 installs)
-       2. "better-auth-best-practices" (better-auth/skills, 1619 installs)
+       1. "vercel-react-best-practices" (vercel-labs/agent-skills, 33,665 installs)
+       2. "better-auth-best-practices" (better-auth/skills, 1,749 installs)
 
-     Fetch both SKILL.md files (~200 lines total)
+     GitHub API search finds:
+       1. Path: "skills/react-best-practices/SKILL.md"
+       2. Path: "better-auth/best-practices/SKILL.md"
 
-     Skills say:
-       - "Use expo-auth-session, not custom OAuth implementation"
-       - "Prefer expo-secure-store for token storage"
+     Fetch both:
+       - https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/react-best-practices/SKILL.md
+       - https://raw.githubusercontent.com/better-auth/skills/main/better-auth/best-practices/SKILL.md
 
-     Research output includes these as primary recommendations
+     Skills provide 45+ specific rules and patterns
+     Research output prioritizes these over generic advice
      ```
 
 2. **Official Documentation**:
