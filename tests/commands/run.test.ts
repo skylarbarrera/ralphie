@@ -23,8 +23,8 @@ Goal: Test spec for validation.
 `;
 
 function createV2Spec(dir: string): void {
-  mkdirSync(join(dir, 'specs', 'active'), { recursive: true });
-  writeFileSync(join(dir, 'specs', 'active', 'test-spec.md'), V2_SPEC);
+  mkdirSync(join(dir, '.ralphie', 'specs', 'active'), { recursive: true });
+  writeFileSync(join(dir, '.ralphie', 'specs', 'active', 'test-spec.md'), V2_SPEC);
 }
 
 describe('validateProject', () => {
@@ -87,7 +87,7 @@ describe('validateProject', () => {
       createV2Spec(testDir);
       mkdirSync(join(testDir, '.claude'), { recursive: true });
       writeFileSync(join(testDir, '.claude', 'ralphie.md'), '# Ralphie');
-      mkdirSync(join(testDir, '.ai', 'ralphie'), { recursive: true });
+      mkdirSync(join(testDir, '.ralphie'), { recursive: true });
 
       // Add a file that would be "uncommitted" if it were a git repo
       writeFileSync(join(testDir, 'dirty.txt'), 'not tracked');
@@ -117,15 +117,17 @@ describe('validateProject', () => {
       expect(result.errors).toContain('.claude/ralphie.md not found. Run `ralphie init` first.');
     });
 
-    it('should fail when .ai/ralphie/ is missing', () => {
-      createV2Spec(testDir);
+    it('should fail when .ralphie/ is missing', () => {
+      // Create spec in old location (specs/active/) not new location (.ralphie/specs/active/)
+      mkdirSync(join(testDir, 'specs', 'active'), { recursive: true });
+      writeFileSync(join(testDir, 'specs', 'active', 'test-spec.md'), V2_SPEC);
       mkdirSync(join(testDir, '.claude'), { recursive: true });
       writeFileSync(join(testDir, '.claude', 'ralphie.md'), '# Ralphie');
 
       const result = validateProject(testDir);
 
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('.ai/ralphie/ not found. Run `ralphie init` first.');
+      expect(result.errors).toContain('.ralphie/ not found. Run `ralphie init` first.');
     });
 
     it('should fail when spec is not in .ralphie/specs/active/ or specs/active/', () => {
