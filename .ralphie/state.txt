@@ -584,3 +584,29 @@
   - Test cases cover: manual JSON.parse, inconsistent errors, YAML issues, circular deps, business logic in UI
   - Directly addresses gaps from T001 audit
   - Commit: 85ca11e feat: T003 add architecture quality checks to review agents
+
+✅ 2026-01-22: Completed T002 - Update research agents to recommend best tools (senior-engineer-output spec)
+  - Added "Identify Improvement Opportunities" section to repo-research-analyst agent
+  - Flags manual implementations: JSON.parse, regex validation, date parsing, HTTP without retry
+  - Documents current tech stack and recommends better alternatives
+  - Notes outdated patterns (legacy testing, untyped code, old auth methods)
+  - Identifies missing validation at data boundaries (API, file I/O, env vars, user input)
+  - Documents tech debt (inconsistent errors, missing types, security concerns)
+  - Added "Recommend Best Tools for This Problem" section to best-practices-researcher agent
+  - Lists best-in-class libraries by domain:
+    * Validation: Zod (TypeScript), Pydantic (Python), Joi (Node.js)
+    * Authentication: Passport.js, NextAuth.js, bcrypt
+    * Date/Time: date-fns, Temporal API, dayjs
+    * HTTP Clients: axios, ky
+    * Testing: Vitest, Jest, Pytest
+    * Type Safety: io-ts for runtime types
+    * Database ORM: Prisma (TypeScript), SQLAlchemy (Python)
+  - Added rationale framework: performance, type safety, DX, bundle size, community, learning curve
+  - Added "Avoiding Manual Implementations" section with anti-pattern examples
+  - Updated output formats to include "Tool Recommendations" template
+    * Recommended Tool, Rationale, Alternatives Considered, Example code, When to Use/NOT to Use
+  - Created tests/research/tool-recommendations.test.md with 3 test scenarios
+  - Created tests/research/verify-tool-recommendations.md with verification checklist
+  - Research agents now answer "what SHOULD we use" not just "what exists"
+  - Addresses T001 audit finding: recommend Zod/Pydantic instead of manual validation
+  - Commit: 2a26a83 feat: T002 update research agents to recommend best tools
