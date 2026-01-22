@@ -20,99 +20,15 @@ Before searching externally, check local project resources:
 
 If local resources are insufficient, expand research:
 
-**CRITICAL: Log all research steps in your output using the emoji markers below. This makes the research process transparent and debuggable.**
-
-1. **Check skills.sh for Domain Expertise** (NEW):
-
-   **IMPORTANT: Log each step in your research output so progress is visible:**
-
-   - **Step 1: Detect tech stack**
-     - Check `package.json` for frameworks (expo, next, react, etc.)
-     - Check `requirements.txt` or `pyproject.toml` for Python frameworks
-     - Note the primary stack (React Native, FastAPI, Next.js, etc.)
-     - **Output in research:** "📦 Detected tech stack: [framework names]"
-
-   - **Step 2: Fetch available skills**
-     ```bash
-     curl -s https://skills.sh/api/skills
-     ```
-     Returns JSON with skills: `[{name, installs, topSource}]`
-     - **Output in research:** "🔍 Fetching skills.sh API... Found [N] skills"
-     - **If fetch fails:** "⚠️ skills.sh unavailable, skipping to WebSearch"
-
-   - **Step 3: Select 2-3 relevant skills**
-     - Filter by relevance (skill name matches tech stack + task)
-     - Prioritize by install count (higher = more vetted)
-     - Choose 2-3 most applicable skills
-     - Examples:
-       - Expo project → look for "expo-*", "react-native-*" skills
-       - Next.js project → "vercel-react-best-practices"
-       - Auth task → "better-auth-best-practices"
-     - **Output in research:** "🎯 Selected skills: [skill1] ([source], [N] installs), [skill2] ([source], [N] installs)"
-
-   - **Step 4: Fetch skill content**
-     **Use GitHub API to find SKILL.md** (repos have different structures):
-     ```bash
-     # Extract source repo from API response
-     source="expo/skills"  # from topSource field
-     skill_name="building-ui"
-
-     # Search for SKILL.md using GitHub API
-     curl -s "https://api.github.com/search/code?q=filename:SKILL.md+repo:${source}+${skill_name}" \
-       | jq -r '.items[] | select(.name=="SKILL.md") | .path' | head -1
-
-     # Once you have the path, fetch the raw content
-     # Example path: "skills/react-best-practices/SKILL.md"
-     skill_path="skills/react-best-practices/SKILL.md"
-     curl -s https://raw.githubusercontent.com/${source}/main/${skill_path}
-     ```
-
-     **Fallback if GitHub API doesn't work:**
-     Try common path patterns:
-     ```bash
-     # Pattern 1: skills/{name}/SKILL.md (vercel, expo)
-     curl -s https://raw.githubusercontent.com/${source}/main/skills/${skill_name}/SKILL.md
-
-     # Pattern 2: {org-name}/{category}/SKILL.md (better-auth)
-     curl -s https://raw.githubusercontent.com/${source}/main/${skill_name}/SKILL.md
-
-     # Pattern 3: Try master branch
-     curl -s https://raw.githubusercontent.com/${source}/master/skills/${skill_name}/SKILL.md
-     ```
-
-     - **Output in research:** "📄 Finding [skill_name] in https://github.com/[source]..."
-     - **After found:** "✅ Retrieved [skill_name]: [N] lines from [path]"
-     - **If all fail:** "❌ Could not locate [skill_name] SKILL.md, skipping to next"
-
-   - **Step 5: Incorporate skill guidelines**
-     - Skills contain domain expert knowledge (45+ rules for React, etc.)
-     - Use skill recommendations in your research synthesis
-     - Skills override generic advice (expo patterns > generic React patterns)
-     - If skill conflicts with WebSearch findings, prefer skill (more specific)
-
-   - **Fallback**: If skills.sh unavailable or fetch fails, log warning and continue with WebSearch
-
-   - **Example with actual paths**:
-     ```
-     User: "Build Next.js app with auth"
-     Tech stack: Next.js, React
-
-     Skills API returns: 49+ skills
-     Agent selects:
-       1. "vercel-react-best-practices" (vercel-labs/agent-skills, 33,665 installs)
-       2. "better-auth-best-practices" (better-auth/skills, 1,749 installs)
-
-     GitHub API search finds:
-       1. Path: "skills/react-best-practices/SKILL.md"
-       2. Path: "better-auth/best-practices/SKILL.md"
-
-     Fetch both:
-       - https://raw.githubusercontent.com/vercel-labs/agent-skills/main/skills/react-best-practices/SKILL.md
-       - https://raw.githubusercontent.com/better-auth/skills/main/better-auth/best-practices/SKILL.md
-
-     Skills provide 45+ specific rules and patterns
-     Research output prioritizes these over generic advice
-     ```
+1. **Check skills.sh for Domain Expertise**:
+   - Detect tech stack from `package.json`, `requirements.txt`, or `pyproject.toml`
+   - Fetch skills: `curl -s https://skills.sh/api/skills` (returns `[{name, installs, topSource}]`)
+   - Select 2-3 relevant skills by matching tech stack + task (prioritize high install counts)
+   - Use GitHub API to find SKILL.md: `curl -s "https://api.github.com/search/code?q=filename:SKILL.md+repo:${source}+${skill_name}"`
+   - Fetch content via raw GitHub URL: `https://raw.githubusercontent.com/${source}/main/${path}`
+   - Fallback patterns if GitHub API fails: `skills/{name}/SKILL.md`, `{name}/SKILL.md`, try `master` branch
+   - Incorporate skill guidelines in research output (skills override generic WebSearch advice)
+   - If skills.sh unavailable, continue with WebSearch
 
 2. **Official Documentation**:
    - Use `WebFetch` to access framework documentation
@@ -353,11 +269,4 @@ If you can't find sufficient information:
 
 ## Completion
 
-**TIME LIMIT: You have 60 seconds maximum. Work quickly.**
-
-1. Check local resources FIRST (project learnings, llms.txt)
-2. If needed, ONE quick web search
-3. Output your findings immediately
-4. End with: RESEARCH_COMPLETE
-
-Keep it brief - 5-10 key recommendations only. Do NOT try to be comprehensive. Speed over completeness.
+End your research output with: RESEARCH_COMPLETE
