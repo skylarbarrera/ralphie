@@ -96,6 +96,47 @@ Follow this systematic four-phase approach:
 - **Data Flow**: Unnecessary data passing or transformation
 - **State Management**: Inconsistent or unclear state handling
 
+#### Validation & Parsing (TypeScript/JavaScript)
+- **Manual JSON.parse**: Using `JSON.parse()` without schema validation
+  - ❌ Bad: `const data = JSON.parse(content) as MyType`
+  - ✅ Good: Use Zod, io-ts, or similar runtime validation library
+  - Impact: Runtime errors from invalid data, no type safety
+- **YAML/Config Parsing**: Type assertions without validation
+  - ❌ Bad: `const config = yaml.load(content) as Config`
+  - ✅ Good: Define schema and validate with Zod or similar
+  - Impact: Configuration errors fail at runtime instead of early
+- **Manual Validation Logic**: Writing custom validation when libraries exist
+  - ❌ Bad: Manual `if (typeof x !== 'string')` checks scattered throughout
+  - ✅ Good: Centralized schema definitions with validation library
+  - Impact: Inconsistent validation, harder to maintain
+- **Recommended Libraries**:
+  - TypeScript: Zod (runtime validation + type inference)
+  - TypeScript: io-ts (functional approach with Either types)
+  - Python: Pydantic (data validation with type hints)
+
+#### Validation & Parsing (Python)
+- **Manual dict parsing**: Converting dicts to objects without validation
+  - ❌ Bad: Accessing dict keys directly without checking structure
+  - ✅ Good: Use Pydantic models for automatic validation
+- **Type hints without runtime checks**: Using type hints but no validation
+  - Impact: Type hints help IDE but don't catch runtime errors
+  - Solution: Use Pydantic, dataclasses with validators, or marshmallow
+
+#### Error Handling Consistency
+- **Mixed Error Patterns**: Inconsistent error handling across modules
+  - ❌ Bad: Some functions throw, others return null, others return undefined
+  - Example 1: `function loadConfig(): Config | null { try { ... } catch { return null; } }`
+  - Example 2: `function loadPrompt(): string { if (!exists) throw new Error(...); }`
+  - Impact: Callers don't know what to expect, error handling is inconsistent
+- **Recommended Patterns**:
+  - Option 1: **Throw consistently** - Document with `@throws` JSDoc tags
+  - Option 2: **Result types** - `{ success: true, data } | { success: false, error }`
+  - Option 3: **Functional error handling** - Use fp-ts Either/Option types
+  - Key: Pick ONE pattern and apply consistently across the codebase
+- **Error Information**: Check that errors include helpful context
+  - Good: Error messages include what failed, why, and how to fix
+  - Bad: Generic error messages with no context
+
 ### Phase 4: Long-term Impact Assessment
 
 **Objective**: Evaluate how changes affect future development.
@@ -133,6 +174,10 @@ Systematically check:
 - ✅ **Consistent Patterns**: Design patterns applied consistently
 - ✅ **Testability**: Changes maintain or improve testability
 - ✅ **Documentation**: Architecture decisions are documented
+- ✅ **Validation Libraries**: Using Zod/Pydantic instead of manual validation
+- ✅ **Error Handling**: Consistent error handling patterns across codebase
+- ✅ **No Manual Parsing**: JSON/YAML parsing uses schema validation
+- ✅ **Type Safety**: Runtime validation matches TypeScript types
 
 ## Deliverable Structure
 
@@ -230,6 +275,18 @@ Systematically check:
 - Simple changes require modifying many files
 - Logic scattered across codebase
 - No single place for a concern
+
+### 8. Manual Validation Over Libraries
+- Writing custom validation logic instead of using established libraries
+- JSON.parse with type assertions instead of schema validation
+- Scattered validation checks instead of centralized schemas
+- Impact: More code to maintain, inconsistent validation, no single source of truth
+
+### 9. Inconsistent Error Handling
+- Mix of error handling strategies (throw, return null, return undefined)
+- No documented error handling patterns
+- Callers don't know what to expect
+- Impact: Bugs from incorrect assumptions, difficult to reason about control flow
 
 ## Design Principles to Uphold
 

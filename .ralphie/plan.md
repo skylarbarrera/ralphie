@@ -1,53 +1,84 @@
-# Plan: T001 - Audit Current Code Quality Output
+# Plan: T003 - Add Architecture Quality Checks to Review Agents
 
 ## Goal
-Audit Ralphie's code generation capabilities by running it on itself to identify code quality strengths and weaknesses.
+Enhance architecture-strategist agent to enforce senior engineer architecture standards including validation library usage.
 
 ## Task ID
-T001
+T003
 
 ## Files
-- Create: `.ralphie/audit-results.md` (audit findings)
-- Create: `.ralphie/specs/active/config-validation-test.md` (test spec)
-- No code changes (this is an audit/analysis task)
+- Modify: `agents/architecture-strategist.md` (add quality checks)
+- Create: `tests/agents/architecture-strategist.test.md` (test cases for validation)
 
 ## Approach
 
-1. **Create a test spec** for a small feature to run Ralphie on itself
-   - Feature: "Add config validation" - validate .ralphie/settings.json structure
-   - Simple enough to complete in 1-2 iterations
-   - Complex enough to test: library selection, architecture, types, tests
+Based on the T001 audit findings, we need to enhance the architecture review agent to catch:
 
-2. **Run Ralphie iteration** (manually or via headless mode)
-   - Generate code for the config validation feature
-   - Observe what libraries it chooses
-   - Observe code organization and architecture
-   - Observe test quality
+1. **Separation of Concerns**
+   - Business logic vs presentation vs data
+   - One responsibility per module
+   - Clear module boundaries
 
-3. **Audit the output** against senior engineer criteria:
-   - ✅ Does it use appropriate libraries? (e.g., Zod for validation, not manual checks)
-   - ✅ Clean separation of concerns? (validation logic separate from config loading)
-   - ✅ Typed interfaces defined? (TypeScript types for config structure)
-   - ✅ Would pass code review? (maintainable, readable, follows best practices)
-   - ✅ Tests included? (unit tests with good coverage)
-   - ✅ Security-aware? (safe defaults, input validation)
+2. **Interface Definitions**
+   - Typed contracts between modules
+   - Exported interfaces with JSDoc
+   - Proper use of TypeScript types
 
-4. **Document findings** in `.ralphie/audit-results.md`:
-   - Executive Summary (overall grade: A/B/C/D)
-   - What's Good (specific examples with code snippets)
-   - What's Bad (specific examples with code snippets)
-   - Recommendations for improvement
-   - Baseline metrics (to track progress in future tasks)
+3. **Dependency Direction**
+   - High-level → low-level (not circular)
+   - Core logic doesn't depend on presentation
+   - Data layer at bottom
+
+4. **Module Boundaries**
+   - Clear imports/exports
+   - No reaching into internals
+   - Proper encapsulation
+
+5. **Validation Library Usage** (from audit)
+   - Flag manual JSON.parse without schema validation
+   - Recommend Zod for TypeScript projects
+   - Recommend Pydantic for Python projects
+   - Flag type assertions without runtime validation
+
+6. **Error Handling Consistency** (from audit)
+   - Check for consistent error patterns
+   - Flag mix of throw/return null/undefined
+   - Recommend Result types or consistent strategy
+
+## Enhancement Strategy
+
+Update `architecture-strategist.md` to add:
+
+1. **New section: "Validation & Parsing"**
+   - Check for manual JSON.parse → flag, recommend Zod
+   - Check for YAML.load with type assertion → flag, recommend schema
+   - Check for manual validation logic → suggest library alternative
+
+2. **New section: "Error Handling Patterns"**
+   - Identify error handling patterns in codebase
+   - Flag inconsistencies (throw vs null vs undefined)
+   - Recommend standardization
+
+3. **Enhanced severity levels**
+   - P1 (CRITICAL): Circular dependencies, no separation of concerns
+   - P2 (HIGH): Manual validation without schema, inconsistent error handling
+   - P3 (MEDIUM): Missing JSDoc, unclear module boundaries
 
 ## Tests
-- No automated tests (this is an audit task)
-- Manual verification: Audit document exists with specific examples
+
+Create test document with intentional violations:
+- Manual JSON.parse without validation
+- Circular dependencies
+- Business logic in presentation layer
+- Mixed error handling patterns
+
+Verify agent catches these issues and recommends fixes.
 
 ## Exit Criteria
-- [x] Test spec created in `.ralphie/specs/active/config-validation-test.md`
-- [x] Ralphie iteration run on the test spec
-- [x] Audit document exists at `.ralphie/audit-results.md`
-- [x] Audit includes specific code examples (good and bad)
-- [x] Audit includes actionable recommendations
-- [x] Task status updated to `in_progress` → `passed`
+- [x] Architecture agent updated with validation checks
+- [x] Architecture agent updated with error handling checks
+- [x] Test cases documented
+- [x] Agent catches manual JSON.parse and recommends Zod
+- [x] Agent catches inconsistent error handling
+- [x] Task status updated to `passed`
 - [x] Changes committed
