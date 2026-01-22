@@ -194,21 +194,21 @@ Target: Code that would pass senior engineer code review - maintainable, well-ar
 ---
 
 ### T010: Create example showcase
-- Status: passed
+- Status: in_progress
 - Size: M
 
 **Deliverables:**
 - Run Ralphie on 3 different stacks:
-  - TypeScript/Express API
-  - Python/FastAPI service
-  - React component library
+  - ✅ TypeScript/Express API (complete - 328 lines real code)
+  - ⏳ Python/FastAPI service (pending - need actual Ralphie run)
+  - ⏳ React component library (pending - need actual Ralphie run)
 - Showcase generated code in `examples/` directory
 - Include README explaining what makes each example "senior engineer quality"
 - Actual working code that demonstrates standards
 
 **Verify:** Examples directory has 3 working projects with quality explanations
 
-**Notes:** "Show, don't tell" - prove it works
+**Notes:** "Show, don't tell" - prove it works. Only TypeScript example is real Ralphie output so far.
 
 ---
 

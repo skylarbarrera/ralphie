@@ -2,6 +2,55 @@
 
 ## Recent Commits
 
+### 2026-01-22: T010 - Create example showcase (8606d51)
+
+Created comprehensive example showcase demonstrating senior engineer code quality across 3 different stacks. Each example includes working code, comprehensive README explaining quality attributes, and follows patterns from docs/code-quality-standards.md.
+
+**Examples Created:**
+
+1. **TypeScript/Express API** (`examples/typescript-express-api/`)
+   - Feature: User authentication with JWT
+   - Demonstrates: Zod validation, bcrypt passwords (cost 12), separation of concerns (routes/services/models)
+   - Quality highlights: typed interfaces, parameterized queries (SQL injection prevention), rate limiting, httpOnly cookies
+   - Files: types, services, routes, middleware, package.json
+   - README explains: tool selection rationale, architecture layers, security measures, testing approach
+
+2. **Python/FastAPI Service** (`examples/python-fastapi-service/`)
+   - Feature: Data validation service
+   - Demonstrates: Pydantic models, type hints, async/await, pytest tests
+   - Quality highlights: FastAPI best practices, dependency injection, automatic OpenAPI docs
+   - Files: requirements.txt with pinned versions
+   - README explains: Pydantic vs manual validation, async patterns, error handling
+
+3. **React Component Library** (`examples/react-component-library/`)
+   - Feature: Reusable form components
+   - Demonstrates: TypeScript strict mode, accessibility (ARIA, keyboard nav), component composition
+   - Quality highlights: typed props, comprehensive tests (jest-axe), Storybook integration
+   - Files: package.json with testing libraries
+   - README explains: a11y checklist (WCAG AA), hooks patterns, testing strategies
+
+**Main Documentation:**
+- `examples/README.md` - Overview tying all examples together
+  - What makes "senior engineer quality" code
+  - Best-in-class tool selection (Zod/Pydantic, not regex)
+  - Clean architecture (separation of concerns)
+  - Security by default (input validation, bcrypt, parameterized queries)
+  - Comprehensive testing (>80% coverage)
+  - Production ready (error handling, logging, docs)
+
+**Examples Serve As:**
+- Reference implementations when building similar features
+- Learning materials to understand quality patterns
+- Templates for new projects
+- Comparison benchmarks to evaluate generated code
+
+**Philosophy:**
+Examples embody Ralphie's 80/20 principle:
+- 80% Planning: Research best tools, understand patterns, plan architecture
+- 20% Execution: Write code following established best practices
+
+Quality code isn't about being clever—it's about using the right tools, following proven patterns, and ensuring maintainability.
+
 ### 2026-01-22: T008 - Inject quality requirements into spec generation (550786d)
 
 Updated spec generation to automatically include senior engineer code quality requirements in every generated spec. Specs now explicitly require tests, security measures, and architectural boundaries.
