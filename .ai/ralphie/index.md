@@ -325,3 +325,15 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: N/A (administrative move)
 - notes: All 10 tasks in compound-learnings spec completed and marked as passed (T001-T010); moved spec from active/ to completed/ directory; updated state.txt with completion summary; compound engineering features fully integrated: restructure to .ralphie/, deep research phase, SpecFlow analyzer, learnings capture system, learnings search, multi-agent review with cost tracking, CLI orchestration, agent prompt library (8 agents from Compound), updated /ralphie-spec skill, agent update tracking
 - next: No active specs remaining - project ready for new work or specs
+
+## 218c940 — feat: T001 audit current code quality output
+- files: .ralphie/audit-results.md, .ralphie/specs/active/config-validation-test.md, .ralphie/plan.md, .ralphie/specs/active/senior-engineer-output.md
+- tests: N/A (audit task, no code changes)
+- notes: Comprehensive audit of Ralphie's code generation quality; analyzed learnings-search.ts, cost-tracker.ts, research-orchestrator.ts; Grade B+ (good fundamentals, missing best practices); strengths: excellent test coverage (~95%), strong TypeScript, good separation of concerns; weaknesses: manual JSON.parse instead of Zod, inconsistent error handling; key gap: not recommending best-in-class libraries; created audit-results.md with specific code examples and baseline metrics; created config-validation-test.md for future testing
+- next: T003 - Add architecture quality checks to review agents
+
+## 85ca11e — feat: T003 add architecture quality checks to review agents
+- files: agents/architecture-strategist.md, tests/agents/architecture-violations-test.md, .ralphie/specs/active/senior-engineer-output.md, .ralphie/plan.md
+- tests: N/A (enhanced agent prompts, test cases documented)
+- notes: Enhanced architecture-strategist agent based on T001 audit findings; added "Validation & Parsing" section (TypeScript/JavaScript and Python); added "Error Handling Consistency" section; flags manual JSON.parse without schema validation; flags YAML parsing with type assertions; recommends Zod/io-ts for TypeScript, Pydantic for Python; detects mixed error patterns (throw vs null vs undefined); added architectural smells #8 (Manual Validation) and #9 (Inconsistent Errors); updated verification checklist; created architecture-violations-test.md with 5 intentional violations for validation
+- next: T002 or other tasks in senior-engineer-output spec
