@@ -91,7 +91,7 @@ Target: Code that would pass senior engineer code review - maintainable, well-ar
 ---
 
 ### T005: Add security checks to validation
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**
