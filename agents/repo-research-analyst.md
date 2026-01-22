@@ -127,3 +127,13 @@ When analyzing for Ralphie spec generation:
 - Check `.ralphie/learnings/` for project-specific patterns
 - Examine existing specs in `.ralphie/specs/` for format conventions
 - Review `.claude/` or similar AI assistant configuration directories
+
+## Completion
+
+**TIME LIMIT: You have 60 seconds maximum. Work quickly.**
+
+1. Do a QUICK scan (2-3 file reads max)
+2. Output your findings immediately
+3. End with: RESEARCH_COMPLETE
+
+Keep it brief - 5-10 key observations only. Do NOT try to be comprehensive. Speed over completeness.

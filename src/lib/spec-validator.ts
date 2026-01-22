@@ -161,7 +161,7 @@ export function validateSpecInDir(dir: string): ValidationResult {
     return {
       valid: false,
       violations: [],
-      warnings: ['No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.'],
+      warnings: ['No spec found. Create a spec in .ralphie/specs/active/ or run `ralphie spec "description"`.'],
     };
   }
 }

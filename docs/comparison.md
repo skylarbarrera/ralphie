@@ -34,8 +34,11 @@ How Ralphie compares to other spec-driven and autonomous AI coding tools.
 
 | Feature | Ralphie | ghuntley Ralph | Anthropic Plugin | Spec Kit |
 |---------|---------|----------------|------------------|----------|
-| **Spec generation** | Interview-based | Manual write | None | Manual |
-| **Spec format** | V2 specs in `specs/active/` with task IDs | Multiple `specs/*.md` + IMPLEMENTATION_PLAN.md | None | Constitution + specs + plans |
+| **Spec generation** | Interview-based w/ research | Manual write | None | Manual |
+| **Research phase** | Yes (2 agents, codebase + best practices) | No | No | No |
+| **Multi-agent review** | Yes (security, perf, arch) | No | No | No |
+| **Learnings system** | Yes (captures failure fixes) | No | No | No |
+| **Spec format** | V2 specs in `.ralphie/specs/active/` with task IDs | Multiple `specs/*.md` + IMPLEMENTATION_PLAN.md | None | Constitution + specs + plans |
 | **Autonomous loop** | Yes | Yes (bash) | Yes (Stop hook) | No (human invokes each step) |
 | **Plan/Build modes** | Single mode | Separate PROMPT_plan/build | No | Separate phases |
 | **Multi-harness** | Claude + Codex | Claude only | Claude only | 15+ agents |
@@ -121,11 +124,20 @@ How Ralphie compares to other spec-driven and autonomous AI coding tools.
 > "Don't know how to write specs? Don't want to mess with bash scripts? Just run `ralphie spec 'my idea'`, answer questions, then `ralphie run --all`."
 
 **Key differentiators:**
-1. **Interview-based spec generation** - Unique among Ralph implementations
-2. **Polished UX** - TUI, progress monitoring, not a bash script
-3. **Multi-harness** - Switch between Claude and Codex
-4. **SDK-based** - Modern approach, no CLI parsing
-5. **Greedy mode** - Multiple tasks per iteration for speed
+1. **80/20 Compound Engineering** - Only Ralph implementation with deep research phase, multi-agent review, and learnings system
+2. **Research-informed specs** - Two agents analyze codebase + best practices before generating spec
+3. **Interview-based spec generation** - Guided spec creation vs manual writing
+4. **Polished UX** - TUI, progress monitoring, not a bash script
+5. **Multi-harness** - Switch between Claude and Codex
+6. **SDK-based** - Modern approach, no CLI parsing
+7. **Greedy mode** - Multiple tasks per iteration for speed
+
+**Compound engineering features:**
+- **Research phase**: `repo-research-analyst` + `best-practices-researcher` analyze before spec creation
+- **Multi-agent review**: Security, performance, architecture reviews before iteration (`--review`)
+- **Learnings system**: Captures failure→fix transitions as reusable knowledge in `.ralphie/learnings/`
+
+No other Ralph implementation frontloads research and captures learnings for compounding improvements.
 
 ## Sources
 

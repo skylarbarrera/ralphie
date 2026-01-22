@@ -44,7 +44,7 @@ export function validateProject(cwd: string): ValidationResult {
     if (err instanceof SpecLocatorError) {
       errors.push(err.message);
     } else {
-      errors.push('No spec found. Create a spec in specs/active/ or run `ralphie spec "description"`.');
+      errors.push('No spec found. Create a spec in .ralphie/specs/active/ or run `ralphie spec "description"`.');
     }
   }
 
@@ -53,9 +53,9 @@ export function validateProject(cwd: string): ValidationResult {
     errors.push('.claude/ralphie.md not found. Run `ralphie init` first.');
   }
 
-  const aiRalphiePath = join(cwd, '.ai', 'ralphie');
-  if (!existsSync(aiRalphiePath)) {
-    errors.push('.ai/ralphie/ not found. Run `ralphie init` first.');
+  const ralphiePath = join(cwd, '.ralphie');
+  if (!existsSync(ralphiePath)) {
+    errors.push('.ralphie/ not found. Run `ralphie init` first.');
   }
 
   const valid = errors.length === 0;

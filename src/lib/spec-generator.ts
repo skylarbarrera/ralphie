@@ -52,7 +52,7 @@ export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecG
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .substring(0, 50);
-  const specPath = join(options.cwd, 'specs', 'active', `${specName}.md`);
+  const specPath = join(options.cwd, '.ralphie', 'specs', 'active', `${specName}.md`);
 
   // Conduct research phase before spec generation
   let researchContext = '';
@@ -75,7 +75,7 @@ export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecG
   // Autonomous spec generation prompt (no user interaction)
   let prompt = `Generate a V2 format spec for: ${options.description}
 
-Write the spec to: specs/active/${specName}.md
+Write the spec to: .ralphie/specs/active/${specName}.md
 
 Use this V2 format:
 \`\`\`markdown

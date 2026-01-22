@@ -162,3 +162,14 @@ If you can't find sufficient information:
 - Suggest where to find more authoritative sources
 - Recommend prototyping or experimentation if appropriate
 - Note areas where the team should consult experts
+
+## Completion
+
+**TIME LIMIT: You have 60 seconds maximum. Work quickly.**
+
+1. Check local resources FIRST (project learnings, llms.txt)
+2. If needed, ONE quick web search
+3. Output your findings immediately
+4. End with: RESEARCH_COMPLETE
+
+Keep it brief - 5-10 key recommendations only. Do NOT try to be comprehensive. Speed over completeness.

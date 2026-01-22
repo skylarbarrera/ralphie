@@ -41,17 +41,15 @@ npm install -g opencode-ai && opencode auth login
 **3. Build something**
 
 ```bash
-# Create a spec (autonomous)
+# Create a spec
 ralphie spec "REST API with JWT auth"
-
-# Or interactive (AI interviews you for requirements)
-npx add-skill skylarbarrera/ralphie
-/ralphie-spec "REST API with JWT auth"   # In Claude/Codex/OpenCode
 
 # Run the loop
 ralphie run --all
 git log --oneline                        # See what was built
 ```
+
+**What happens next?** Ralphie generates a structured spec with research and analysis, then executes task-by-task with fresh context each iteration. Progress lives in git commits—the AI can fail, the loop restarts clean.
 
 ## How It Works
 
@@ -65,89 +63,14 @@ Each iteration:
 
 **What makes Ralphie different:** Structured specs with task IDs, status tracking, size budgeting, and verify commands. The AI knows exactly what to build, how to check it worked, and when it's done. No ambiguity, no drift.
 
-## The 80/20 Philosophy
+## Key Features
 
-Ralphie inverts traditional development workflow: **80% planning, 20% execution.**
+**Compound Engineering** - Each failure makes the system better:
+- **Research phase**: Analyzes codebase patterns + best practices before spec generation
+- **Multi-agent review**: Security, performance, architecture checks before implementation
+- **Learnings system**: Captures failure→fix transitions as reusable knowledge
 
-Instead of spending most time debugging and iterating during implementation, Ralphie front-loads the work in spec generation—so execution becomes trivial.
-
-```
-┌─────────────────────────────────────────────────┐
-│                 80% OF WORK                     │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐         │
-│  │Research │→ │Spec Gen │→ │Analysis │         │
-│  └─────────┘  └─────────┘  └─────────┘         │
-│       ↓            ↓            ↓              │
-│  Codebase     Interview/    Edge cases         │
-│  patterns     Autonomous    & gaps             │
-└─────────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────────┐
-│                 20% OF WORK                     │
-│           ┌─────────────────┐                  │
-│           │  ralphie run    │                  │
-│           │  (iterations)   │                  │
-│           └─────────────────┘                  │
-└─────────────────────────────────────────────────┘
-                      ↓
-┌─────────────────────────────────────────────────┐
-│               COMPOUND LOOP                     │
-│  Failures → Learnings → Tests/Rules → Better   │
-└─────────────────────────────────────────────────┘
-```
-
-### Compound Engineering Integration
-
-Ralphie's compound engineering features are inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin), which pioneered the concept of making "each unit of work make subsequent units easier."
-
-**Core principle:** Turn failures into permanent upgrades. When a task fails then passes, Ralphie automatically documents the fix as a learning—complete with prevention rules and tests—so the same mistake never happens twice.
-
-**Three pillars:**
-
-1. **Deep Research Phase** (before spec generation)
-   - Analyzes codebase patterns, conventions, and architecture
-   - Researches framework best practices and common patterns
-   - Ensures specs align with existing code
-
-2. **Multi-Agent Review** (before iteration)
-   - Security review (OWASP, injection, auth)
-   - Performance review (complexity, N+1 queries, caching)
-   - Architecture review (design patterns, boundaries)
-   - Language-specific review (TypeScript/Python best practices)
-   - Blocks on critical findings (P1) unless overridden with `--force`
-
-3. **Learnings System** (after failures)
-   - Captures root cause analysis when tasks fail then pass
-   - Generates preventive tests and coding rules
-   - Stores globally (`~/.ralphie/learnings/`) for reuse across projects
-   - Injects relevant learnings into future iterations
-
-Learn more: [Compound Engineering articles](https://blog.every.com) by Compound team
-
-### 80/20 Workflow Example
-
-```bash
-# 80%: Thorough spec generation with research & analysis
-ralphie spec "user authentication with JWT"
-# → Research: scans codebase for auth patterns
-# → Interview: asks clarifying questions
-# → Analysis: identifies edge cases and gaps
-# Result: Comprehensive spec that anticipates problems
-
-# 20%: Execution with review & learnings
-ralphie run --review --all
-# → Pre-iteration: security + architecture review
-# → Iteration: implements one task at a time
-# → Post-iteration: captures learnings from failures
-# Result: High-quality code with permanent upgrades
-
-# View accumulated knowledge
-ls .ralphie/learnings/
-# → build-errors/
-# → test-failures/
-# → runtime-errors/
-# → patterns/
-```
+Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin). See [Architecture docs](docs/architecture.md) for details.
 
 ## Commands
 
@@ -168,8 +91,6 @@ ls .ralphie/learnings/
 | `ralphie status` | Show progress of active spec |
 | `ralphie spec-list` | List active and completed specs |
 | `ralphie archive` | Move completed spec to archive |
-
-Use `--harness codex` or `--harness opencode` to switch AI providers. See [CLI Reference](docs/cli.md) for all options.
 
 ## Spec Format
 
@@ -208,61 +129,14 @@ Goal: Build a REST API with authentication
 
 Tasks transition from `pending` → `in_progress` → `passed`/`failed`. See [Spec Guide](docs/spec-guide.md) for best practices.
 
-## Directory Structure
+## Project Structure
 
-Ralphie uses a `.ralphie/` directory for project-specific resources and `~/.ralphie/` for global resources:
+After `ralphie init`, you'll have:
+- `.ralphie/specs/active/` - Generated specs with task tracking
+- `.ralphie/learnings/` - Captured failure→fix knowledge
+- `.ralphie/state.txt` - Iteration progress log
 
-```
-your-project/
-├── .ralphie/
-│   ├── specs/
-│   │   ├── active/          # Current specs being worked on
-│   │   ├── completed/       # Archived completed specs
-│   │   └── templates/       # Spec templates
-│   ├── learnings/           # Project-specific learnings
-│   │   ├── build-errors/
-│   │   ├── test-failures/
-│   │   ├── runtime-errors/
-│   │   └── patterns/
-│   ├── llms.txt             # Architecture decisions
-│   ├── state.txt            # Iteration progress tracking
-│   └── settings.json        # Project configuration
-│
-~/.ralphie/                  # Global (shared across projects)
-├── learnings/               # Global learnings library
-│   ├── build-errors/
-│   ├── test-failures/
-│   ├── runtime-errors/
-│   └── patterns/
-└── settings.json            # Global defaults
-```
-
-**Learnings format** (YAML frontmatter):
-```yaml
----
-problem: "npm install fails with EACCES error"
-symptoms: ["Permission denied", "EACCES", "npm ERR!"]
-root-cause: "Global npm packages installed with sudo"
-solution: "Use nvm or configure npm prefix"
-prevention: "Never use sudo with npm"
-tags: [npm, permissions, build-error]
----
-
-# Detailed explanation and steps...
-```
-
-**llms.txt format** (architecture decisions):
-```
-# Architecture Decisions
-
-## Database
-- PostgreSQL for primary data
-- Redis for caching
-
-## Auth
-- JWT tokens, 24h expiry
-- Refresh tokens in httpOnly cookies
-```
+See [Architecture docs](docs/architecture.md) for complete structure and file formats.
 
 ## Troubleshooting
 
@@ -277,10 +151,10 @@ tags: [npm, permissions, build-error]
 
 ## Documentation
 
-- [CLI Reference](docs/cli.md) — All commands and options
-- [Spec Guide](docs/spec-guide.md) — Writing effective specs
-- [Architecture](docs/architecture.md) — How the loop works
-- [Harnesses](docs/harnesses.md) — Multi-AI provider support
+- [CLI Reference](docs/cli.md) - All commands, flags, harness options
+- [Spec Guide](docs/spec-guide.md) - Writing effective specs
+- [Architecture](docs/architecture.md) - How the loop works, compound engineering details
+- [Comparison](docs/comparison.md) - How Ralphie compares to other tools
 
 ## Requirements
 

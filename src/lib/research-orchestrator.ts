@@ -39,13 +39,29 @@ export function loadAgentPrompt(agentName: string, agentsDir?: string): string {
  * @param agentsDir - Optional override for agents directory (for testing)
  * @returns The research output
  */
+// Default timeout for research agents (90 seconds - agents told to work in 60s)
+const RESEARCH_TIMEOUT_MS = 90_000;
+
+/**
+ * Creates a timeout promise that rejects after the specified time
+ */
+function createTimeout(ms: number, agentName: string): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(`Research agent '${agentName}' timed out after ${ms / 1000}s`)), ms);
+  });
+}
+
 export async function runResearchAgent(
   harness: Harness,
   agentName: string,
   context: string,
   cwd: string,
-  agentsDir?: string
+  agentsDir?: string,
+  timeoutMs: number = RESEARCH_TIMEOUT_MS
 ): Promise<ResearchResult> {
+  // Track partial output for timeout cases
+  let partialOutput = '';
+
   try {
     const agentPrompt = loadAgentPrompt(agentName, agentsDir);
 
@@ -60,26 +76,37 @@ ${context}
 
 ## Instructions
 
-Please conduct research following the methodology described above and provide a comprehensive report in the specified output format.`;
+Please conduct research following the methodology described above and provide a comprehensive report in the specified output format. Keep research focused - you have limited time (${timeoutMs / 1000}s).`;
 
-    // Run the agent via harness
-    const result = await harness.run(
-      fullPrompt,
-      {
-        cwd,
-        interactive: false,
-      },
-      () => {} // No-op event handler for research phase
-    );
+    // Event handler to capture partial output
+    const onEvent = (event: { type: string; text?: string }) => {
+      if (event.type === 'message' && event.text) {
+        partialOutput += event.text;
+      }
+    };
+
+    // Run the agent via harness with timeout
+    const result = await Promise.race([
+      harness.run(
+        fullPrompt,
+        {
+          cwd,
+          interactive: false,
+        },
+        onEvent
+      ),
+      createTimeout(timeoutMs, agentName)
+    ]);
 
     return {
       agentName,
-      output: result.output || '',
+      output: result.output || partialOutput || '',
     };
   } catch (error) {
+    // On timeout, return partial output if available
     return {
       agentName,
-      output: '',
+      output: partialOutput || '',
       error: error instanceof Error ? error.message : String(error),
     };
   }
