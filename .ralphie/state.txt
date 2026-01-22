@@ -610,3 +610,19 @@
   - Research agents now answer "what SHOULD we use" not just "what exists"
   - Addresses T001 audit finding: recommend Zod/Pydantic instead of manual validation
   - Commit: 2a26a83 feat: T002 update research agents to recommend best tools
+
+✅ 2026-01-22: T004 - Enforced test coverage in iteration loop
+  - Updated .claude/ralphie.md with MANDATORY test requirements
+  - Added explicit test requirements in "Testing Standards" section
+  - Created test-validator.md agent for automated coverage validation
+    * Validates test existence for all implementation files
+    * Verifies tests run and pass
+    * Checks coverage meets >80% threshold
+    * Assesses test quality (assertions, edge cases, error handling)
+  - Updated scripts/validate-iteration.md to check coverage_verified
+  - Added test validation process to iteration loop documentation
+  - Updated agents/README.md to list test-validator agent
+  - Tests and >80% coverage now required before marking tasks passed
+  - Task completion criteria explicitly requires tests and coverage verification
+  - Files: .claude/ralphie.md, agents/test-validator.md, agents/README.md, scripts/validate-iteration.md
+  - Commit: 1670667 feat: T004 enforce test coverage in iteration loop
