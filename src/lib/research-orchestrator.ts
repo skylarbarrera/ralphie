@@ -40,8 +40,8 @@ export function loadAgentPrompt(agentName: string, agentsDir?: string): string {
  * @param agentsDir - Optional override for agents directory (for testing)
  * @returns The research output
  */
-// Default timeout for research agents (90 seconds - agents told to work in 60s)
-const RESEARCH_TIMEOUT_MS = 90_000;
+// Default timeout for research agents (180 seconds - allows time for skills.sh + web search)
+const RESEARCH_TIMEOUT_MS = 180_000;
 
 /**
  * Creates a timeout promise that rejects after the specified time
@@ -145,20 +145,22 @@ Project Goal: ${projectDescription}
 
 Please analyze the codebase and provide comprehensive research findings.`;
 
-  // Run both research agents in sequence (could be parallel in future)
-  console.log('Running repository research analyst...');
+  // Run both research agents in parallel for faster research
+  console.log('Running repository research analyst and best practices researcher in parallel...');
   const repoStartTime = Date.now();
-  const repoResearch = await runResearchAgent(harness, 'repo-research-analyst', context, cwd, agentsDir);
+  const bpStartTime = Date.now();
+
+  const [repoResearch, bestPracticesResearch] = await Promise.all([
+    runResearchAgent(harness, 'repo-research-analyst', context, cwd, agentsDir),
+    runResearchAgent(harness, 'best-practices-researcher', context, cwd, agentsDir),
+  ]);
+
   const repoDuration = Date.now() - repoStartTime;
+  const bpDuration = Date.now() - bpStartTime;
 
   if (repoResearch.error) {
     console.error(`Repository research failed: ${repoResearch.error}`);
   }
-
-  console.log('Running best practices researcher...');
-  const bpStartTime = Date.now();
-  const bestPracticesResearch = await runResearchAgent(harness, 'best-practices-researcher', context, cwd, agentsDir);
-  const bpDuration = Date.now() - bpStartTime;
 
   if (bestPracticesResearch.error) {
     console.error(`Best practices research failed: ${bestPracticesResearch.error}`);

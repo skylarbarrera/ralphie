@@ -20,17 +20,25 @@ Before searching externally, check local project resources:
 
 If local resources are insufficient, expand research:
 
+**CRITICAL: Log all research steps in your output using the emoji markers below. This makes the research process transparent and debuggable.**
+
 1. **Check skills.sh for Domain Expertise** (NEW):
+
+   **IMPORTANT: Log each step in your research output so progress is visible:**
+
    - **Step 1: Detect tech stack**
      - Check `package.json` for frameworks (expo, next, react, etc.)
      - Check `requirements.txt` or `pyproject.toml` for Python frameworks
      - Note the primary stack (React Native, FastAPI, Next.js, etc.)
+     - **Output in research:** "📦 Detected tech stack: [framework names]"
 
    - **Step 2: Fetch available skills**
      ```bash
      curl -s https://skills.sh/api/skills
      ```
      Returns JSON with skills: `[{name, installs, topSource}]`
+     - **Output in research:** "🔍 Fetching skills.sh API... Found [N] skills"
+     - **If fetch fails:** "⚠️ skills.sh unavailable, skipping to WebSearch"
 
    - **Step 3: Select 2-3 relevant skills**
      - Filter by relevance (skill name matches tech stack + task)
@@ -40,18 +48,31 @@ If local resources are insufficient, expand research:
        - Expo project → look for "expo-*", "react-native-*" skills
        - Next.js project → "vercel-react-best-practices"
        - Auth task → "better-auth-best-practices"
+     - **Output in research:** "🎯 Selected skills: [skill1] ([source], [N] installs), [skill2] ([source], [N] installs)"
 
    - **Step 4: Fetch skill content**
-     For each selected skill:
+     For each selected skill, use raw GitHub URL (much faster than git clone):
      ```bash
      # Extract source repo from API response
      source="expo/skills"  # from topSource field
      skill_name="building-ui"
 
-     # Clone repo and extract SKILL.md
-     git clone --depth 1 --filter=blob:none https://github.com/${source} /tmp/skill-${skill_name}
-     cat /tmp/skill-${skill_name}/${skill_name}/SKILL.md
+     # Fetch SKILL.md directly via raw GitHub URL
+     curl -s https://raw.githubusercontent.com/${source}/main/${skill_name}/SKILL.md
+
+     # Fallback to master branch if main doesn't exist
+     # curl -s https://raw.githubusercontent.com/${source}/master/${skill_name}/SKILL.md
      ```
+
+     **Alternative: Use WebFetch tool** (even better!)
+     ```
+     WebFetch tool with:
+       url: https://raw.githubusercontent.com/${source}/main/${skill_name}/SKILL.md
+       prompt: "Extract the skill guidelines as-is"
+     ```
+     - **Output in research:** "📄 Fetching [skill_name] from https://raw.githubusercontent.com/[source]/main/[skill_name]/SKILL.md"
+     - **After fetch:** "✅ Retrieved [skill_name]: [N] lines of guidance"
+     - **If fetch fails:** "⚠️ [skill_name] not found at main branch, trying master..." or "❌ Failed to fetch [skill_name], skipping"
 
    - **Step 5: Incorporate skill guidelines**
      - Skills contain domain expert knowledge (45+ rules for React, etc.)
