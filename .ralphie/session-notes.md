@@ -45,10 +45,39 @@ const settings = SettingsSchema.parse(JSON.parse(file));
 
 ## Progress
 
-- ✅ **T001:** Audit completed - documented baseline
+- ✅ **T001:** Audit completed - documented baseline (Grade: B+)
 - ✅ **T003:** Enhanced architecture-strategist agent to flag manual validation
-- ⏳ **T002:** Update research agents to recommend best tools (next)
+- ✅ **T002:** Updated research agents to recommend best-in-class tools
 - ⏳ **T004-T010:** Remaining tasks
+
+### T002 Results (Completed 2026-01-22 11:54am)
+
+**Changes Made:**
+
+**best-practices-researcher.md:**
+- Added **"Recommend Best Tools"** section with domain-specific libraries:
+  - Validation: Zod (TS), Pydantic (Python), Joi
+  - Auth: Passport.js, NextAuth.js, bcrypt
+  - Dates: date-fns, Temporal
+  - HTTP: axios, ky
+  - Testing: Vitest, Jest, Pytest
+  - Type Safety: io-ts
+- Added **"Avoiding Manual Implementations"** section with anti-patterns:
+  - ❌ Manual JSON.parse → Recommend Zod
+  - ❌ Type assertions without runtime checks → Recommend io-ts
+  - ❌ Regex validation → Recommend validator.js
+  - ❌ Manual bcrypt → Use bcrypt library
+- Includes comparison rationale (why X over Y)
+- Shows code examples and when to use/not use
+
+**repo-research-analyst.md:**
+- Added **"Identify Improvement Opportunities"** section
+- Flags manual implementations vs library alternatives
+- Documents current tech stack
+- Notes outdated patterns and tech debt
+- Identifies missing validation at data boundaries
+
+**Impact:** Research agents now **actively recommend** best-in-class tools instead of just observing existing code.
 
 ## Next Steps
 
