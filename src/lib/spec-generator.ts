@@ -138,6 +138,7 @@ Each deliverable should specify:
 - **Security**: Input validation, parameterized queries, hashed passwords, httpOnly cookies
 - **Architecture**: Separation of concerns (routes, services, data layers), typed interfaces
 - **Performance**: Avoid N+1 queries, use appropriate data structures, pagination for large datasets
+- **Documentation**: Use terse docstrings (one-liner, rely on type hints), inline "why" comments only when needed
 
 **IMPORTANT**: If research findings are provided above, USE them in your spec:
 - Recommend specific libraries found in research (with rationale in deliverables)

@@ -99,7 +99,27 @@ Write performant code that avoids common bottlenecks:
 - **Database Indexes**: Add indexes for frequently queried/filtered columns and foreign keys
 - **Algorithm Complexity**: Avoid O(n²) in hot paths, use efficient sorting/searching
 
-This is not premature optimization—it's avoiding obvious performance mistakes. Profile before complex optimizations.`;
+This is not premature optimization—it's avoiding obvious performance mistakes. Profile before complex optimizations.
+
+## Code Style
+Follow terse, token-efficient coding style:
+- **Terse Docstrings**: One-liner docstrings that rely on type hints (not Google/NumPy style with Args/Returns/Raises)
+- **Type Hints**: Let types document parameters and returns (TypeScript interfaces, Python type annotations)
+- **Inline Comments**: Only for "why" explanations, not "what" (code should be self-documenting)
+- **Example (Python)**:
+  \`\`\`python
+  # ❌ Verbose (150 tokens)
+  def hash_password(password: str) -> str:
+      """Hash a password using bcrypt.
+
+      Args: password: The plaintext password to hash.
+      Returns: The hashed password string.
+      """
+
+  # ✅ Terse (15 tokens)
+  def hash_password(password: str) -> str:
+      """Hash password with bcrypt (cost=12 for security)."""
+  \`\`\``;
 
 export const GREEDY_PROMPT = `You are Ralphie, an autonomous coding assistant in GREEDY MODE.
 
@@ -156,4 +176,24 @@ Write performant code that avoids common bottlenecks:
 - **Database Indexes**: Add indexes for frequently queried/filtered columns and foreign keys
 - **Algorithm Complexity**: Avoid O(n²) in hot paths, use efficient sorting/searching
 
-This is not premature optimization—it's avoiding obvious performance mistakes. Profile before complex optimizations.`;
+This is not premature optimization—it's avoiding obvious performance mistakes. Profile before complex optimizations.
+
+## Code Style
+Follow terse, token-efficient coding style:
+- **Terse Docstrings**: One-liner docstrings that rely on type hints (not Google/NumPy style with Args/Returns/Raises)
+- **Type Hints**: Let types document parameters and returns (TypeScript interfaces, Python type annotations)
+- **Inline Comments**: Only for "why" explanations, not "what" (code should be self-documenting)
+- **Example (Python)**:
+  \`\`\`python
+  # ❌ Verbose (150 tokens)
+  def hash_password(password: str) -> str:
+      """Hash a password using bcrypt.
+
+      Args: password: The plaintext password to hash.
+      Returns: The hashed password string.
+      """
+
+  # ✅ Terse (15 tokens)
+  def hash_password(password: str) -> str:
+      """Hash password with bcrypt (cost=12 for security)."""
+  \`\`\``;
