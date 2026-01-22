@@ -154,6 +154,7 @@ See [Architecture docs](docs/architecture.md) for complete structure and file fo
 - [CLI Reference](docs/cli.md) - All commands, flags, harness options
 - [Spec Guide](docs/spec-guide.md) - Writing effective specs
 - [Architecture](docs/architecture.md) - How the loop works, compound engineering details
+- [Code Quality Standards](docs/code-quality-standards.md) - Senior engineer code quality expectations
 - [Comparison](docs/comparison.md) - How Ralphie compares to other tools
 
 ## Requirements

@@ -646,3 +646,20 @@
   - Files: src/lib/prompts.ts, tests/agents/security-violations-test.md, tests/agents/security-sentinel.test.ts, .ralphie/t005-verification.md
   - Tests: 22 passing
   - Commit: ceed9a6 feat: T005 add security checks to validation
+
+✅ 2026-01-22: T006 - Added performance awareness to implementation
+  - Added Performance Guidelines section to iteration prompts (DEFAULT_PROMPT and GREEDY_PROMPT)
+  - Guidelines cover common performance bottlenecks:
+    * N+1 query prevention: eager loading, joins, batching
+    * Appropriate data structures: Set for lookups, Map for caching, proper indexes
+    * Memory management: streaming large files, pagination, resource cleanup
+    * Database optimization: indexes for frequently queried columns and foreign keys
+    * Algorithm complexity: avoid O(n²) in hot paths, efficient sorting/searching
+  - Emphasizes practical guidance: "not premature optimization—avoiding obvious performance mistakes"
+  - Encourages profiling before complex optimizations
+  - Performance-oracle agent already integrated in review system (src/lib/review.ts)
+  - Created test suite tests/lib/prompts.test.ts (13 tests)
+  - Tests verify: security requirements, performance guidelines, loop instructions, all key topics covered
+  - Files: src/lib/prompts.ts, tests/lib/prompts.test.ts
+  - Tests: 13 passing
+  - Commit: 6d81aa8 feat: T006 add performance awareness to implementation

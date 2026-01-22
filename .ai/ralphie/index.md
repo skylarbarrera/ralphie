@@ -343,3 +343,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 22 new tests in security-sentinel.test.ts (all passing)
 - notes: Enhanced iteration prompts (DEFAULT_PROMPT and GREEDY_PROMPT) with comprehensive security checklist covering input validation, SQL injection prevention, XSS protection, secrets management, secure defaults, and authorization checks; created security-violations-test.md with 6 intentional vulnerability categories (SQL injection, XSS, hardcoded secrets, missing input validation, insecure session config, missing auth checks); added automated test suite verifying security-sentinel agent detects vulnerabilities, assigns correct severity, provides remediation recommendations, and maps to OWASP Top 10; security-sentinel agent already integrated in review system (runs with --review flag); P1 issues block iteration unless --force used; documented verification in t005-verification.md
 - next: T006 - Add performance awareness to implementation
+
+## 6d81aa8 — feat: T006 add performance awareness to implementation
+- files: src/lib/prompts.ts, tests/lib/prompts.test.ts, .ralphie/specs/active/senior-engineer-output.md, .ralphie/plan.md
+- tests: 13 new tests in prompts.test.ts (all passing)
+- notes: Added Performance Guidelines section to DEFAULT_PROMPT and GREEDY_PROMPT; covers N+1 query prevention (eager loading, joins, batching), appropriate data structures (Set for lookups, Map for caching), memory management (streaming, pagination, cleanup), database indexes (frequently queried columns, foreign keys), algorithm complexity (avoid O(n²) in hot paths); emphasizes avoiding obvious performance mistakes, not premature optimization; performance-oracle agent already integrated in review system; comprehensive test suite verifies all guidelines present in both prompts
+- next: T009 - Document senior engineer code standards

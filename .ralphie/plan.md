@@ -1,19 +1,23 @@
-# Plan: T006 - Add performance awareness to implementation
+# Plan: T009 - Document senior engineer code standards
 
-**Goal:** Add performance guidance to iteration prompt to avoid common performance issues
+**Goal:** Create comprehensive documentation defining senior engineer code quality standards
 
-**Task ID:** T006
+**Task ID:** T009
 
-**Files to modify:**
-- `src/lib/prompts.ts` - Add performance section to both prompts
+**Files to create/modify:**
+- `docs/code-quality-standards.md` - Create comprehensive standards document
+- `README.md` - Add link to new documentation
 
 **Tests:**
-- Verify performance section exists in prompts
-- Check performance-oracle agent exists and is integrated
-- Verify guidance covers N+1 queries, data structures, memory usage, indexes
+- Verify documentation file exists
+- Check all required sections are present
+- Verify link in README works
+- Ensure examples are included
 
 **Exit criteria:**
-- Iteration prompt includes performance guidelines
-- Performance guidance is practical and non-premature
+- Documentation file created with all required sections
+- Standards cover: tool selection, architecture, testing, security
+- Good vs bad examples included
+- Link added to README
 - Task status updated to `passed`
 - Changes committed
