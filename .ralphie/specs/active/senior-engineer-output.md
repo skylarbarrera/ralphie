@@ -11,7 +11,7 @@ Target: Code that would pass senior engineer code review - maintainable, well-ar
 ## Tasks
 
 ### T001: Audit current code quality output
-- Status: pending
+- Status: passed
 - Size: M
 
 **Deliverables:**
@@ -53,7 +53,7 @@ Target: Code that would pass senior engineer code review - maintainable, well-ar
 ---
 
 ### T003: Add architecture quality checks to review agents
-- Status: pending
+- Status: in_progress
 - Size: M
 
 **Deliverables:**
