@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import type { Harness } from './harness/types.js';
+import { getLogger, type ResearchCompleteLog } from './logging/logger.js';
 
 /**
  * Research result from running a research agent
@@ -135,6 +136,7 @@ export async function conductResearch(
   }
 
   console.log('Starting research phase...');
+  const researchStartTime = Date.now();
 
   // Build context for research agents
   const context = `Project Directory: ${cwd}
@@ -145,14 +147,18 @@ Please analyze the codebase and provide comprehensive research findings.`;
 
   // Run both research agents in sequence (could be parallel in future)
   console.log('Running repository research analyst...');
+  const repoStartTime = Date.now();
   const repoResearch = await runResearchAgent(harness, 'repo-research-analyst', context, cwd, agentsDir);
+  const repoDuration = Date.now() - repoStartTime;
 
   if (repoResearch.error) {
     console.error(`Repository research failed: ${repoResearch.error}`);
   }
 
   console.log('Running best practices researcher...');
+  const bpStartTime = Date.now();
   const bestPracticesResearch = await runResearchAgent(harness, 'best-practices-researcher', context, cwd, agentsDir);
+  const bpDuration = Date.now() - bpStartTime;
 
   if (bestPracticesResearch.error) {
     console.error(`Best practices research failed: ${bestPracticesResearch.error}`);
@@ -181,6 +187,34 @@ ${bestPracticesResearch.output || 'Research failed: ' + (bestPracticesResearch.e
 
   writeFileSync(outputPath, combinedResearch, 'utf-8');
   console.log(`Research findings saved to ${outputPath}`);
+
+  // Log research completion
+  const researchDuration = Date.now() - researchStartTime;
+  const logger = getLogger(cwd);
+
+  const logData: ResearchCompleteLog = {
+    duration_ms: researchDuration,
+    agents: {
+      'repo-research-analyst': {
+        status: repoResearch.error ? 'error' : 'success',
+        duration_ms: repoDuration,
+        error: repoResearch.error,
+      },
+      'best-practices-researcher': {
+        status: bestPracticesResearch.error ? 'error' : 'success',
+        duration_ms: bpDuration,
+        error: bestPracticesResearch.error,
+      },
+    },
+    output_saved: outputPath,
+  };
+
+  logger.log({
+    phase: 'research',
+    type: 'complete',
+    data: logData,
+    timestamp: new Date(),
+  });
 
   return combinedResearch;
 }

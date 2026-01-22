@@ -5,6 +5,7 @@ import { getHarness } from './harness/index.js';
 import type { HarnessEvent, HarnessName } from './harness/types.js';
 import { conductResearch, injectResearchContext } from './research-orchestrator.js';
 import { analyzeSpec } from './spec-analyzer.js';
+import { getLogger, type SpecCompleteLog } from './logging/logger.js';
 
 export interface SpecGeneratorOptions {
   description: string;
@@ -44,6 +45,7 @@ function hasCompletionMarker(outputBuffer: string): boolean {
  * For interactive spec generation with user interview, run /ralphie-spec directly.
  */
 export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecGeneratorResult> {
+  const specStartTime = Date.now();
   const harness = getHarness(options.harness ?? 'claude');
 
   // Generate kebab-case filename from description
@@ -262,6 +264,34 @@ When done, output: SPEC_COMPLETE`;
         console.warn('Continuing without analysis...\n');
       }
     }
+
+    // Log spec generation completion
+    const specDuration = Date.now() - specStartTime;
+    const logger = getLogger(options.cwd);
+
+    const logData: SpecCompleteLog = {
+      duration_ms: specDuration,
+      input: {
+        description: options.description,
+        research_available: !!researchContext,
+      },
+      output: {
+        spec_file: specPath,
+        tasks_created: taskCount,
+      },
+      quality_injections: {
+        test_requirements: true,
+        security_considerations: true,
+        architecture_boundaries: true,
+      },
+    };
+
+    logger.log({
+      phase: 'spec',
+      type: 'complete',
+      data: logData,
+      timestamp: new Date(),
+    });
 
     return {
       success,
