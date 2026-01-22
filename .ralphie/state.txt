@@ -663,3 +663,22 @@
   - Files: src/lib/prompts.ts, tests/lib/prompts.test.ts
   - Tests: 13 passing
   - Commit: 6d81aa8 feat: T006 add performance awareness to implementation
+
+✅ 2026-01-22: T009 - Documented senior engineer code standards
+  - Created comprehensive docs/code-quality-standards.md defining code quality expectations
+  - Sections:
+    * What Makes "Senior Engineer" Code: clarity, abstraction, quality foundations, production ready, tool selection
+    * Tool Selection Criteria: best-in-class first, evaluation framework, recommendations (Zod/Pydantic, date-fns, axios/ky)
+    * Architecture Principles: separation of concerns, typed interfaces, dependency direction, anti-patterns to avoid
+    * Testing Requirements: 80% coverage minimum, unit/integration/e2e tests, test quality guidelines
+    * Security Checklist: input validation, SQL injection prevention, XSS, auth/authz, secrets management, secure defaults
+    * Performance Guidelines: database optimization (N+1 queries, indexes), data structures, memory management, algorithm complexity
+    * Examples of Good vs Bad: 3 detailed examples with code (config loading, user registration, database queries)
+  - Each example shows incorrect implementation with problems, then correct implementation
+  - Links to related agents: security-sentinel, architecture-strategist, performance-oracle, test-validator
+  - Links to test cases: security-violations-test.md, architecture-violations-test.md
+  - Added link to README.md Documentation section
+  - Codifies what Ralphie aims to achieve: maintainable, well-architected, tested, secure, performant code
+  - Files: docs/code-quality-standards.md (609 lines), README.md
+  - Tests: N/A (documentation)
+  - Commit: e2d60b9 docs: T009 document senior engineer code standards

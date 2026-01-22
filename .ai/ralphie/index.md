@@ -349,3 +349,9 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 13 new tests in prompts.test.ts (all passing)
 - notes: Added Performance Guidelines section to DEFAULT_PROMPT and GREEDY_PROMPT; covers N+1 query prevention (eager loading, joins, batching), appropriate data structures (Set for lookups, Map for caching), memory management (streaming, pagination, cleanup), database indexes (frequently queried columns, foreign keys), algorithm complexity (avoid O(n²) in hot paths); emphasizes avoiding obvious performance mistakes, not premature optimization; performance-oracle agent already integrated in review system; comprehensive test suite verifies all guidelines present in both prompts
 - next: T009 - Document senior engineer code standards
+
+## e2d60b9 — docs: T009 document senior engineer code standards
+- files: docs/code-quality-standards.md, README.md, .ralphie/specs/active/senior-engineer-output.md, .ralphie/plan.md
+- tests: N/A (documentation)
+- notes: Created comprehensive code-quality-standards.md covering what makes senior engineer code, tool selection criteria (best-in-class first with evaluation framework), architecture principles (separation of concerns, typed interfaces, dependency direction), testing requirements (80% coverage, unit/integration/e2e), security checklist (all OWASP categories), performance guidelines (database, data structures, memory, algorithms), and 3 detailed examples (config loading, user registration, database queries) showing good vs bad implementations; added link to README documentation section; codifies Ralphie's code quality goals
+- next: Tasks T005, T006, T009 complete - 3 of 3 selected tasks done
