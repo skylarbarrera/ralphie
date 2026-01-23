@@ -123,7 +123,7 @@ export function UserBio({ bio }: { bio: string }) {
 ```typescript
 // ❌ Hardcoded API keys in source code
 export const API_CONFIG = {
-  stripeKey: 'sk_live_4eC39HqLyjWDarjtT1zdp7dc',
+  stripeKey: 'sk_live_FAKE_KEY_FOR_TESTING_ONLY',
   twilioSid: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
   twilioToken: 'your_auth_token_here',
   databaseUrl: 'postgresql://admin:password123@prod-db.example.com:5432/myapp',
