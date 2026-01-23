@@ -66,18 +66,18 @@ Each iteration:
 ## Key Features
 
 **Compound Engineering** - Each failure makes the system better:
-- **Research phase**: Parallel research (repo analysis + best practices) fetches domain expertise from [skills.sh](https://skills.sh) (React/Next.js/Expo patterns with 30k+ installs), falls back to WebSearch when needed
+- **Research phase**: Fetches framework-specific best practices from [skills.sh](https://skills.sh) (React, Next.js, Expo, etc.) and web research
 - **Dynamic tool selection**: Discovers best-in-class libraries for your stack (not hardcoded recommendations)
 - **Multi-agent review**: Security, performance, architecture checks before implementation
 - **Learnings system**: Captures failure→fix transitions as reusable knowledge
 - **Quality enforcement**: >80% test coverage mandatory, typed interfaces required, security by default
-- **Logging infrastructure**: Complete audit trail in `.ralphie/logs/` (research, spec, iterations)
+- **Debug logs**: Full audit trail in `.ralphie/logs/` viewable with `ralphie logs`
 
 **Senior Engineer Output** - Code quality built-in:
 - Research recommends current best tools (Zod, bcrypt, expo-auth-session)
 - Specs include explicit quality requirements (tests, security, architecture)
 - Test validator blocks task completion without >80% coverage
-- Terse docstrings (70-80% token reduction vs verbose style, type hints do the work)
+- Clean, maintainable code with proper separation of concerns
 - See [Code Quality Standards](docs/code-quality-standards.md) for details
 
 Inspired by [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin). See [Architecture docs](docs/architecture.md) for details.
