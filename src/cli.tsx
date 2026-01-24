@@ -40,9 +40,13 @@ import {
   formatArchive,
   runLessons,
 } from './commands/spec-v2.js';
+import { runLogs, formatLogs } from './commands/logs.js';
 import { generateTaskContext } from './lib/prompt-generator.js';
-import { DEFAULT_PROMPT, GREEDY_PROMPT } from './lib/prompts.js';
+import { DEFAULT_PROMPT, GREEDY_PROMPT, injectLearnings } from './lib/prompts.js';
 import { executeRun } from './commands/run-interactive.js'; // .tsx compiled to .js
+import { parseSpecV2 } from './lib/spec-parser-v2.js';
+import { runReview } from './lib/review.js';
+import { getHarness } from './lib/harness/index.js';
 
 export interface RunOptions {
   iterations: number;
@@ -61,6 +65,8 @@ export interface RunOptions {
   harness?: string;
   greedy: boolean;
   budget: number;
+  review: boolean;
+  force: boolean;
 }
 
 export type CliOptions = RunOptions;
@@ -82,7 +88,24 @@ export function resolvePrompt(options: RunOptions, specPath?: string): string {
   }
 
   // Get base prompt
-  const basePrompt = options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
+  let basePrompt = options.greedy ? GREEDY_PROMPT : DEFAULT_PROMPT;
+
+  // Inject learnings if we have a spec
+  if (specPath) {
+    try {
+      const spec = parseSpecV2(specPath);
+      // Find the first pending task to extract context
+      const pendingTask = spec.tasks.find((t) => t.status === 'pending');
+
+      if (pendingTask) {
+        const deliverables = pendingTask.deliverables?.join('\n') || '';
+        basePrompt = injectLearnings(basePrompt, pendingTask.title, deliverables, options.cwd);
+      }
+    } catch (error) {
+      // If learnings search fails, just use the original prompt
+      // This is not critical to the iteration, so we continue
+    }
+  }
 
   // Generate task context from spec and budget
   const taskContext = generateTaskContext(specPath, { budget: options.budget });
@@ -103,14 +126,34 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
     process.exit(3);
   }
 
-  const prompt = resolvePrompt(options, validation.specPath);
-  const harness = options.harness ? getHarnessName(options.harness, options.cwd) : undefined;
+  const harnessName = options.harness ? getHarnessName(options.harness, options.cwd) : 'claude';
 
-  const envValidation = validateHarnessEnv(harness ?? 'claude');
+  const envValidation = validateHarnessEnv(harnessName);
   if (!envValidation.valid) {
     emitFailed(envValidation.message);
     process.exit(1);
   }
+
+  // Run review if --review flag is set
+  if (options.review) {
+    console.log('Running multi-agent review...\n');
+
+    const harness = getHarness(harnessName);
+    const reviewSummary = await runReview(harness, options.cwd, options.model);
+
+    // Check for P1 issues
+    if (reviewSummary.hasP1Issues && !options.force) {
+      console.error(`\n❌ Found ${reviewSummary.p1Count} P1 issue(s). Review blocked.`);
+      console.error('Fix critical/high severity issues before running, or use --force to override.\n');
+      process.exit(1);
+    }
+
+    if (reviewSummary.hasP1Issues && options.force) {
+      console.warn(`\n⚠️  Found ${reviewSummary.p1Count} P1 issue(s), but continuing due to --force flag.\n`);
+    }
+  }
+
+  const prompt = resolvePrompt(options, validation.specPath);
 
   const exitCode = await runHeadless({
     prompt,
@@ -120,7 +163,7 @@ export async function executeHeadlessRun(options: RunOptions): Promise<void> {
     idleTimeoutMs: options.timeoutIdle * 1000,
     saveJsonl: options.saveJsonl,
     model: options.model,
-    harness,
+    harness: harnessName,
   });
 
   process.exit(exitCode);
@@ -159,6 +202,15 @@ function main(): void {
           }
         }
 
+        // Show global directory info
+        if (result.globalDirectory) {
+          if (result.globalDirectory.created) {
+            console.log(`\n✓ Created global directory: ${result.globalDirectory.path}`);
+          } else {
+            console.log(`\n✓ Using existing global directory: ${result.globalDirectory.path}`);
+          }
+        }
+
         console.log('\nRalphie initialized! Next steps:');
         console.log('  1. Create a spec:');
         console.log('     ralphie spec "your project idea"    # autonomous');
@@ -189,6 +241,8 @@ function main(): void {
     .option('--harness <name>', 'AI harness to use (claude, codex, opencode)')
     .option('-g, --greedy', 'Complete multiple tasks per iteration until context fills')
     .option('--budget <points>', 'Size points budget per iteration (default 4)', '4')
+    .option('-r, --review', 'Run multi-agent review before iterations', false)
+    .option('-f, --force', 'Force run even if P1 issues found in review', false)
     .action((opts) => {
       let iterations = parseInt(opts.iterations, 10);
       const all = opts.all ?? false;
@@ -215,6 +269,8 @@ function main(): void {
         harness: opts.harness,
         greedy: opts.greedy ?? false,
         budget: parseInt(opts.budget, 10),
+        review: opts.review ?? false,
+        force: opts.force ?? false,
       };
 
       if (options.headless) {
@@ -268,6 +324,8 @@ function main(): void {
     .option('--timeout <seconds>', 'Timeout for generation', '300')
     .option('-m, --model <name>', 'Claude model to use (sonnet, opus, haiku)', 'opus')
     .option('--harness <name>', 'AI harness to use: claude, codex, opencode', 'claude')
+    .option('--skip-research', 'Skip the research phase', false)
+    .option('--skip-analyze', 'Skip the spec analysis phase', false)
     .action(async (description: string, opts) => {
       const cwd = resolve(opts.cwd);
 
@@ -278,6 +336,8 @@ function main(): void {
         timeoutMs: parseInt(opts.timeout, 10) * 1000,
         model: opts.model,
         harness: opts.harness,
+        skipResearch: opts.skipResearch ?? false,
+        skipAnalyze: opts.skipAnalyze ?? false,
       });
 
       if (!result.success) {
@@ -354,6 +414,31 @@ function main(): void {
       try {
         const result = runLessons(cwd, opts.add);
         console.log(result);
+      } catch (err) {
+        console.error(`Error: ${err instanceof Error ? err.message : err}`);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command('logs')
+    .description('Query and view Ralphie logs')
+    .option('--cwd <path>', 'Working directory', process.cwd())
+    .option('--phase <phase>', 'Filter by phase (research, spec, iteration, review)')
+    .option('--since <date>', 'Show logs since date (ISO 8601 or relative like "2024-01-01")')
+    .option('--limit <n>', 'Limit number of results', '10')
+    .option('--summary', 'Show summary statistics instead of logs', false)
+    .action((opts) => {
+      const cwd = resolve(opts.cwd);
+      try {
+        const result = runLogs({
+          cwd,
+          phase: opts.phase as any,
+          since: opts.since,
+          limit: opts.limit ? parseInt(opts.limit, 10) : undefined,
+          summary: opts.summary ?? false,
+        });
+        console.log(formatLogs(result));
       } catch (err) {
         console.error(`Error: ${err instanceof Error ? err.message : err}`);
         process.exit(1);

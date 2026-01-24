@@ -35,23 +35,47 @@ ralphie run --greedy     # Complete multiple tasks per iteration
 
 ### `ralphie spec`
 
-Generate a spec autonomously from a project description.
+Generate a spec autonomously from a project description with research and analysis.
 
 ```bash
-ralphie spec "Build a REST API"           # Autonomous spec generation
+ralphie spec "Build a REST API"           # Full workflow: research → spec → analysis
+ralphie spec --skip-research "Bug fix"    # Skip research phase
+ralphie spec --skip-analyze "Quick task"  # Skip SpecFlow analysis
 ralphie spec --headless "Blog platform"   # JSON output for automation
 ```
 
-Creates spec in `specs/active/` using V2 format.
+Creates spec in `.ralphie/specs/active/` using V2 format.
+
+#### Workflow Phases
+
+1. **Research Phase** (~60-90s) - Two agents analyze codebase and best practices
+2. **Spec Generation** - AI creates structured spec informed by research
+3. **SpecFlow Analysis** - Identifies edge cases and gaps, suggests improvements
 
 #### Options
 
 | Option | Description |
 |--------|-------------|
+| `--skip-research` | Skip codebase + best practices research phase |
+| `--skip-analyze` | Skip SpecFlow analysis phase |
 | `--headless` | Output JSON events, great for automation |
 | `--timeout <seconds>` | Timeout for generation (default: 300) |
 | `-m, --model <name>` | Claude model to use (sonnet, opus, haiku) |
 | `--harness <name>` | AI harness to use: claude, codex, opencode (default: claude) |
+
+### `ralphie run` (continued)
+
+#### Review Options
+
+| Option | Description |
+|--------|-------------|
+| `--review` | Run multi-agent review before iteration (security, performance, architecture) |
+| `--force` | Override P1 blocking findings (use with `--review`) |
+
+```bash
+ralphie run --review --all     # Review before each iteration
+ralphie run --review --force   # Continue despite critical findings
+```
 
 ### `ralphie init`
 
@@ -63,10 +87,10 @@ ralphie init
 ```
 
 Creates:
-- `specs/active/` - Directory for spec files
-- `specs/completed/` - Archive for completed specs
-- `.claude/ralphie.md` - Coding standards
-- `STATE.txt` - Progress log
+- `.ralphie/specs/active/` - Directory for spec files
+- `.ralphie/specs/completed/` - Archive for completed specs
+- `.ralphie/learnings/` - Compound learning storage
+- `.claude/CLAUDE.md` - Coding standards (if using Claude)
 
 ### `ralphie validate`
 

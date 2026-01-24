@@ -81,8 +81,17 @@ const orders = response.orders ?? [];
 
 ## Testing Standards
 
+### MANDATORY: Tests Required for All Deliverables
+**CRITICAL**: All code deliverables MUST include tests. This is non-negotiable.
+
+- **You CANNOT mark a task as "passed" without tests**
+- Tests must be written AND passing before status change
+- Coverage threshold: **>80% for all new code**
+- Tests are part of the deliverable, not a separate task
+
 ### Coverage Requirements
-- Aim for **80% minimum** code coverage
+- **Minimum 80%** code coverage for all new code
+- Coverage must be verified before marking task complete
 - 100% coverage for:
   - Core business logic
   - Utility functions
@@ -94,6 +103,7 @@ const orders = response.orders ?? [];
 - Unit tests for individual functions/classes
 - Integration tests for workflows
 - E2E tests for critical user paths
+- Run test suite AND coverage check before marking "passed"
 
 ### Test Structure
 ```typescript
@@ -259,6 +269,33 @@ Before starting work in a Ralphie loop:
 
 Lazy load context. Spec has the tasks; only read STATE.txt if you need to verify progress.
 
+### Test Requirements in Iteration Loop
+
+**CRITICAL WORKFLOW CHANGE**: Test validation is now MANDATORY before marking tasks as passed.
+
+#### The New Iteration Loop
+
+```
+1. Read spec → Find pending task
+2. Implement task
+3. Write tests (MANDATORY)
+4. Run test suite (MANDATORY)
+5. Verify coverage >80% (MANDATORY)
+6. Run verification commands from spec
+7. ONLY THEN mark task as "passed"
+8. Commit with task ID
+```
+
+**You cannot skip step 3-5. Tests are part of the implementation, not optional.**
+
+#### When to Write Tests
+
+- **Unit tests**: Immediately after writing the function/class
+- **Integration tests**: After connecting components
+- **E2E tests**: After completing a user flow
+
+**Never commit code without tests. Never mark a task passed without verified coverage.**
+
 ### Integration Verification
 
 When building code that integrates with existing systems:
@@ -398,7 +435,13 @@ When generating a SPEC, optimize for **iteration efficiency**. Each checkbox = o
 
 Each task should include a **Verify:** section with concrete checks to run before marking complete.
 
-**Good verification steps:**
+**MANDATORY verification steps for all tasks:**
+1. `npm test` (or equivalent) → all tests pass
+2. Coverage check → >80% for new code
+3. Type check → no errors
+4. Lint → no errors
+
+**Additional verification steps:**
 - API calls with expected response codes
 - CLI commands with expected output
 - Database queries to confirm data was written
@@ -407,6 +450,9 @@ Each task should include a **Verify:** section with concrete checks to run befor
 **Verification format:**
 ```
 **Verify:**
+- `npm test` → all tests pass (MANDATORY)
+- `npm run test:coverage` → >80% coverage (MANDATORY)
+- `npm run type-check` → no errors (MANDATORY)
 - `<command>` → <expected result>
 - `<command>` → <expected result>
 ```
@@ -415,20 +461,57 @@ Each task should include a **Verify:** section with concrete checks to run befor
 ```markdown
 **Verify:**
 - `npm test` → all tests pass
+- `npm run test:coverage` → coverage >80%
+- `npm run type-check` → no TypeScript errors
 - `curl localhost:3000/health` → 200
 - `ls dist/` → contains index.js
 - `node dist/cli.js --version` → prints version number
 ```
 
+**If any mandatory verification fails, the task is NOT complete.**
 If verification can't run (server not available, etc.), note this in the commit and leave the checkbox unchecked.
 
 ### Task Completion Criteria
-A task is ONLY complete when:
+A task is ONLY complete when ALL of these are met:
 - [ ] Code is written and works
-- [ ] Tests are written and passing
+- [ ] **Tests are written and passing (MANDATORY)**
+- [ ] **Test coverage >80% for new code (MANDATORY)**
+- [ ] **Test validation has been run (MANDATORY)**
 - [ ] No linting errors
 - [ ] Documentation updated (if public API)
 - [ ] Changes committed with clear message
+
+**Tasks without tests are NOT COMPLETE, period.**
+
+### Test Validation Process
+
+Before marking ANY task as "passed", you MUST:
+
+1. **Run the test suite**:
+   ```bash
+   npm test              # TypeScript/JavaScript
+   pytest --cov=src      # Python
+   go test ./... -cover  # Go
+   cargo test            # Rust
+   ```
+
+2. **Verify coverage >80%**:
+   ```bash
+   npm run test:coverage    # Check coverage report
+   pytest --cov-report=term # Python coverage
+   ```
+
+3. **Validate test quality**:
+   - Tests exist for all new code
+   - Tests are passing (no failures, no skipped)
+   - Coverage meets threshold
+   - Tests cover edge cases and error paths
+
+4. **Document validation results** in your work log
+
+If validation fails, you CANNOT mark the task as passed. Fix the issues first.
+
+**The test-validator agent can be invoked to automate this process.**
 
 **A task is NOT complete if:**
 - Code contains `// TODO:` or `// FIXME:` comments
@@ -468,9 +551,11 @@ If a task fails:
 
 ## Code Review Checklist
 
-Before committing, verify:
+Before committing, verify ALL of these (non-negotiable):
+- [ ] **Tests are written and passing (MANDATORY)**
+- [ ] **Test coverage >80% verified (MANDATORY)**
+- [ ] **Type check passes (MANDATORY)**
 - [ ] Code works (manual test + automated tests)
-- [ ] Tests pass with good coverage
 - [ ] No linting errors
 - [ ] No commented-out code
 - [ ] No console.log/print statements (use proper logging)
@@ -479,6 +564,8 @@ Before committing, verify:
 - [ ] Security vulnerabilities checked
 - [ ] Performance is acceptable
 - [ ] Commit message is clear
+
+**If any of the MANDATORY items fail, DO NOT commit or mark task as passed.**
 
 ## Anti-Patterns to Avoid
 

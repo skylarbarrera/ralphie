@@ -3,6 +3,9 @@ import { join } from 'path';
 import { validateSpecInDir, formatValidationResult } from './spec-validator.js';
 import { getHarness } from './harness/index.js';
 import type { HarnessEvent, HarnessName } from './harness/types.js';
+import { conductResearch, injectResearchContext } from './research-orchestrator.js';
+import { analyzeSpec } from './spec-analyzer.js';
+import { getLogger, type SpecCompleteLog } from './logging/logger.js';
 
 export interface SpecGeneratorOptions {
   description: string;
@@ -11,6 +14,8 @@ export interface SpecGeneratorOptions {
   timeoutMs: number;
   model?: string;
   harness?: HarnessName;
+  skipResearch?: boolean;
+  skipAnalyze?: boolean;
 }
 
 export interface SpecGeneratorResult {
@@ -40,6 +45,7 @@ function hasCompletionMarker(outputBuffer: string): boolean {
  * For interactive spec generation with user interview, run /ralphie-spec directly.
  */
 export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecGeneratorResult> {
+  const specStartTime = Date.now();
   const harness = getHarness(options.harness ?? 'claude');
 
   // Generate kebab-case filename from description
@@ -48,12 +54,30 @@ export async function generateSpec(options: SpecGeneratorOptions): Promise<SpecG
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .substring(0, 50);
-  const specPath = join(options.cwd, 'specs', 'active', `${specName}.md`);
+  const specPath = join(options.cwd, '.ralphie', 'specs', 'active', `${specName}.md`);
+
+  // Conduct research phase before spec generation
+  let researchContext = '';
+  try {
+    researchContext = await conductResearch(
+      harness,
+      options.description,
+      options.cwd,
+      options.skipResearch || false
+    );
+  } catch (error) {
+    // Research failures are non-fatal, continue with spec generation
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    if (!options.headless) {
+      console.warn(`Research phase failed: ${errorMsg}`);
+      console.warn('Continuing with spec generation without research context...\n');
+    }
+  }
 
   // Autonomous spec generation prompt (no user interaction)
-  const prompt = `Generate a V2 format spec for: ${options.description}
+  let prompt = `Generate a V2 format spec for: ${options.description}
 
-Write the spec to: specs/active/${specName}.md
+Write the spec to: .ralphie/specs/active/${specName}.md
 
 Use this V2 format:
 \`\`\`markdown
@@ -72,7 +96,7 @@ Background for implementation.
 - Size: S|M|L
 
 **Deliverables:**
-- What to build
+- What to build (include quality requirements - see below)
 
 **Verify:** \`test command\`
 
@@ -85,8 +109,50 @@ Background for implementation.
 - WHEN X, THEN Y
 \`\`\`
 
-Analyze the codebase to understand context. Create 3-8 well-sized tasks.
+**CRITICAL: Every task deliverable MUST include quality requirements:**
+
+Each deliverable should specify:
+1. **Tests Required**: What testing is needed (unit, integration, >80% coverage)
+2. **Security Considerations**: Specific security measures for this task
+3. **Architecture**: Module boundaries and separation of concerns
+
+**Example deliverable format:**
+\`\`\`markdown
+**Deliverables:**
+- User authentication service with JWT validation
+  - MUST use bcrypt for password hashing (cost factor 12+)
+  - MUST include unit tests with >80% coverage
+  - MUST separate auth logic from route handlers (services layer)
+  - MUST validate all inputs with Zod schema
+  - MUST use httpOnly, secure cookies for sessions
+- Login API endpoint
+  - MUST use parameterized queries (no SQL injection)
+  - MUST include integration tests for success and error cases
+  - MUST implement rate limiting (5 attempts per minute)
+  - MUST return proper error codes (401, 429)
+\`\`\`
+
+**Quality standards to enforce:**
+- **Tools**: Recommend best-in-class libraries (Zod for validation, bcrypt for passwords, etc.)
+- **Testing**: Require unit + integration tests, >80% coverage for new code
+- **Security**: Input validation, parameterized queries, hashed passwords, httpOnly cookies
+- **Architecture**: Separation of concerns (routes, services, data layers), typed interfaces
+- **Performance**: Avoid N+1 queries, use appropriate data structures, pagination for large datasets
+- **Documentation**: Use terse docstrings (one-liner, rely on type hints), inline "why" comments only when needed
+
+**IMPORTANT**: If research findings are provided above, USE them in your spec:
+- Recommend specific libraries found in research (with rationale in deliverables)
+- Reference best practices from research findings
+- Include tool recommendations in task deliverables
+- Example: "Install victory-native (best TS support, actively maintained)"
+
+Analyze the codebase to understand context. Create 3-8 well-sized tasks that incorporate research recommendations AND quality requirements.
 When done, output: SPEC_COMPLETE`;
+
+  // Inject research context into prompt if available
+  if (researchContext) {
+    prompt = injectResearchContext(prompt, researchContext);
+  }
 
   if (options.headless) {
     emitJson({
@@ -175,6 +241,58 @@ When done, output: SPEC_COMPLETE`;
         console.log('Consider reviewing the spec manually.');
       }
     }
+
+    // Run spec analysis phase after generation
+    // In headless mode, autonomous=true (auto-refine if gaps found)
+    // In interactive mode, autonomous=false (present gaps to user)
+    try {
+      const analysis = await analyzeSpec(
+        harness,
+        specPath,
+        options.cwd,
+        options.skipAnalyze || false,
+        options.headless // autonomous mode when headless
+      );
+
+      if (analysis && !options.headless) {
+        console.log(''); // Blank line for readability
+      }
+    } catch (error) {
+      // Analysis failures are non-fatal, continue
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (!options.headless) {
+        console.warn(`Analysis phase failed: ${errorMsg}`);
+        console.warn('Continuing without analysis...\n');
+      }
+    }
+
+    // Log spec generation completion
+    const specDuration = Date.now() - specStartTime;
+    const logger = getLogger(options.cwd);
+
+    const logData: SpecCompleteLog = {
+      duration_ms: specDuration,
+      input: {
+        description: options.description,
+        research_available: !!researchContext,
+      },
+      output: {
+        spec_file: specPath,
+        tasks_created: taskCount,
+      },
+      quality_injections: {
+        test_requirements: true,
+        security_considerations: true,
+        architecture_boundaries: true,
+      },
+    };
+
+    logger.log({
+      phase: 'spec',
+      type: 'complete',
+      data: logData,
+      timestamp: new Date(),
+    });
 
     return {
       success,

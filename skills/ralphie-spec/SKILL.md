@@ -21,19 +21,48 @@ Generate comprehensive specs using the V2 format with task IDs, status tracking,
 - Complex projects needing clarification
 - When requirements need discussion
 
+## 80/20 Integration
+
+This skill works with Ralphie's compound engineering features:
+
+- **Research Phase (optional):** If Ralphie ran `ralphie spec` with research, findings are in `.ralphie/research-context.md`
+- **Analysis Phase (optional):** After spec generation, Ralphie may analyze for gaps (saved to `.ralphie/analysis.md`)
+- **Interactive Review:** Since user is present, gaps are discussed and resolved in real-time
+
+The skill checks for these files and incorporates findings, but doesn't trigger research/analysis itself (that's the CLI's job).
+
 ## Output Location
 
-Write specs to `specs/active/{name}.md`:
+Write specs to `.ralphie/specs/active/{name}.md`:
 
 - Generate a kebab-case filename from the description
-- Example: "user authentication" → `specs/active/user-authentication.md`
-- Only one spec allowed in `specs/active/` at a time
+- Example: "user authentication" → `.ralphie/specs/active/user-authentication.md`
+- Only one spec allowed in `.ralphie/specs/active/` at a time
 
 ## Workflow
 
 ```
-Interview User → Explore Codebase → Draft Tasks → Size Review → Write V2 Spec → Present for Approval
+Check Research → Interview User → Explore Codebase → Draft Tasks → Size Review → Write V2 Spec → Check Analysis → Review Gaps → Present for Approval
 ```
+
+**80/20 Philosophy:** Research and analysis are part of the 80% (planning). Incorporate their findings to make specs thorough.
+
+---
+
+## Step 0: Check for Research Context (Optional)
+
+Before interviewing, check if Ralphie ran research:
+
+```bash
+cat .ralphie/research-context.md 2>/dev/null
+```
+
+If the file exists:
+- Read it to understand codebase patterns, conventions, and framework best practices
+- Use findings to inform your interview questions
+- Reference research in Context section of final spec
+
+If it doesn't exist, skip this step—interview will gather requirements directly from user.
 
 ---
 
@@ -234,6 +263,7 @@ Background information for the agent implementing this spec:
 - What problem does this solve?
 - What existing code/patterns should it follow?
 - Any constraints or requirements?
+- (If research was conducted) Key findings from codebase research
 
 ## Tasks
 
@@ -313,14 +343,42 @@ Background information for the agent implementing this spec:
 
 ---
 
-## Step 6: Present for Approval
+## Step 6: Check for Analysis (Optional)
 
-Write spec to `specs/active/{name}.md` and present summary:
+After writing the spec, check if Ralphie ran analysis:
+
+```bash
+cat .ralphie/analysis.md 2>/dev/null
+```
+
+If the file exists:
+- Read it to identify any gaps, edge cases, or missing elements
+- Analysis may include:
+  - Missing error handling scenarios
+  - Unclear user flows
+  - Missing verify commands or test coverage
+  - Tasks that should be split
+  - Integration points not addressed
+
+If gaps found:
+1. Review each concern
+2. Decide with user whether to:
+   - Revise spec to address gaps
+   - Accept as-is (document why in spec Notes)
+   - Add follow-up tasks
+
+If analysis doesn't exist, skip to Step 7.
+
+---
+
+## Step 7: Present for Approval
+
+Write spec to `.ralphie/specs/active/{name}.md` and present summary:
 
 ```markdown
 ## Spec Created
 
-`specs/active/{name}.md` created with X tasks (Y size points total).
+`.ralphie/specs/active/{name}.md` created with X tasks (Y size points total).
 
 ### Task Summary
 | ID | Task | Size |
@@ -333,6 +391,15 @@ Write spec to `specs/active/{name}.md` and present summary:
 - Total points: Y
 - Iterations needed: ~Z (at 4 pts/iteration)
 
+### Research Findings (if available)
+- [Key pattern 1 from research-context.md]
+- [Key pattern 2 from research-context.md]
+
+### Analysis Results (if available)
+- ✅ All critical flows covered
+- ⚠️ [Gap 1] - [How we addressed it or why it's acceptable]
+- ⚠️ [Gap 2] - [How we addressed it or why it's acceptable]
+
 ### Key Decisions from Interview
 - [Decision 1]
 - [Decision 2]
@@ -340,7 +407,7 @@ Write spec to `specs/active/{name}.md` and present summary:
 Please review the spec. Ready to start with `ralphie run`?
 ```
 
-The user reviews and approves. No automated review needed since user is present.
+The user reviews and approves. Since user is present, analysis gaps are discussed and resolved during the interview—no additional automated review needed.
 
 ---
 

@@ -24,6 +24,11 @@ Check each of the following criteria. An iteration is ONLY valid if ALL criteria
 - [ ] All tests passed (no failures in test output)
 - [ ] New tests were added for new functionality (unless docs-only change)
 
+#### 2.5. Test Coverage Verified
+- [ ] Coverage check was run (look for coverage report in output)
+- [ ] Coverage meets >80% threshold for new code
+- [ ] Coverage report shows no critical gaps in test coverage
+
 #### 3. Type Check Passes
 - [ ] Type check was run (look for `npm run type-check` or `tsc` output)
 - [ ] No type errors were reported
@@ -57,6 +62,7 @@ Respond with a JSON object in this exact format:
   "checks": {
     "task_implemented": true | false,
     "tests_passed": true | false,
+    "coverage_verified": true | false,
     "type_check_passed": true | false,
     "commit_made": true | false,
     "index_updated": true | false,
@@ -76,6 +82,7 @@ Respond with a JSON object in this exact format:
 **VALID** - All of the following must be true:
 - `task_implemented` is true
 - `tests_passed` is true (or N/A for docs-only changes)
+- `coverage_verified` is true (or N/A for docs-only changes)
 - `type_check_passed` is true (or N/A for non-TypeScript projects)
 - `commit_made` is true
 - `index_updated` is true
@@ -91,6 +98,7 @@ Respond with a JSON object in this exact format:
   "checks": {
     "task_implemented": true,
     "tests_passed": true,
+    "coverage_verified": true,
     "type_check_passed": true,
     "commit_made": true,
     "index_updated": true,
@@ -109,6 +117,7 @@ Respond with a JSON object in this exact format:
   "checks": {
     "task_implemented": true,
     "tests_passed": false,
+    "coverage_verified": false,
     "type_check_passed": true,
     "commit_made": false,
     "index_updated": false,
@@ -117,6 +126,7 @@ Respond with a JSON object in this exact format:
   },
   "issues": [
     "3 tests failed in auth.test.ts",
+    "Coverage not verified due to test failures",
     "No commit was made due to test failures",
     "index.md was not updated"
   ],
@@ -131,6 +141,7 @@ Respond with a JSON object in this exact format:
   "checks": {
     "task_implemented": true,
     "tests_passed": true,
+    "coverage_verified": true,
     "type_check_passed": true,
     "commit_made": false,
     "index_updated": false,
@@ -147,10 +158,11 @@ Respond with a JSON object in this exact format:
 
 ### Special Cases
 
-1. **Documentation-only changes**: `tests_passed` can be considered true if no code changes require testing
+1. **Documentation-only changes**: `tests_passed` and `coverage_verified` can be considered true if no code changes require testing
 2. **Non-TypeScript projects**: `type_check_passed` can be considered true if project doesn't use TypeScript
 3. **Partial implementation**: If only part of a batched task was completed, mark as INVALID - Ralphie should complete the full batched checkbox
 4. **Multiple tasks completed**: If more than one SPEC task was marked complete, note this as an issue (Ralphie should do ONE task per iteration)
+5. **Coverage not applicable**: For changes to test files only, configuration files, or documentation, `coverage_verified` can be true even without running coverage
 
 ### Context to Examine
 

@@ -28,6 +28,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe('Custom prompt text');
@@ -49,6 +51,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe('Prompt from file content');
@@ -71,6 +75,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(() => resolvePrompt(options)).toThrow('Prompt file not found: /test/missing.txt');
@@ -88,6 +94,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe(DEFAULT_PROMPT);
@@ -110,6 +118,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: false,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe('Direct prompt');
@@ -128,6 +138,8 @@ describe('cli', () => {
         stuckThreshold: 3,
         greedy: true,
         budget: 4,
+        review: false,
+        force: false,
       };
 
       expect(resolvePrompt(options)).toBe(GREEDY_PROMPT);
@@ -137,13 +149,13 @@ describe('cli', () => {
   describe('DEFAULT_PROMPT', () => {
     it('contains Ralphie loop instructions', () => {
       expect(DEFAULT_PROMPT).toContain('Ralphie');
-      expect(DEFAULT_PROMPT).toContain('specs/active/');
-      expect(DEFAULT_PROMPT).toContain('STATE.txt');
+      expect(DEFAULT_PROMPT).toContain('.ralphie/specs/active/');
+      expect(DEFAULT_PROMPT).toContain('.ralphie/state.txt');
       expect(DEFAULT_PROMPT.toLowerCase()).toContain('commit');
     });
 
     it('instructs to work on one task per iteration', () => {
-      expect(DEFAULT_PROMPT).toContain('Complete ONE task from specs/active/');
+      expect(DEFAULT_PROMPT).toContain('Complete ONE task from .ralphie/specs/active/');
     });
 
     it('includes memory file instructions', () => {
@@ -165,7 +177,7 @@ describe('cli', () => {
   describe('GREEDY_PROMPT', () => {
     it('contains greedy mode instructions', () => {
       expect(GREEDY_PROMPT).toContain('GREEDY MODE');
-      expect(GREEDY_PROMPT).toContain('AS MANY tasks as possible from specs/active/');
+      expect(GREEDY_PROMPT).toContain('AS MANY tasks as possible from .ralphie/specs/active/');
     });
 
     it('instructs to continue to next task', () => {

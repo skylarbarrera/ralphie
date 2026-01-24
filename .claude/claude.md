@@ -62,6 +62,77 @@ const index = binarySearch(sortedItems, target);
 const orders = response.orders ?? [];
 ```
 
+### Docstrings & Documentation
+
+**For AI-maintained codebases, prioritize token efficiency:**
+
+- **Terse one-liners preferred** over Google/NumPy style with Args/Returns/Raises
+- Type hints already document parameters and return types
+- Only add detail for non-obvious behavior or complex logic
+- Inline comments for "why" explanations when needed
+
+**Bad (Verbose - wastes 80% tokens):**
+```python
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt.
+
+    Uses cost factor 12 for secure hashing with salt.
+
+    Args:
+        password: The plaintext password to hash.
+
+    Returns:
+        The hashed password string.
+    """
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()
+```
+
+**Good (Terse - relies on type hints):**
+```python
+def hash_password(password: str) -> str:
+    """Hash password with bcrypt (cost=12 for security)."""
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12)).decode()
+```
+
+**TypeScript/JavaScript example:**
+
+```typescript
+// ❌ Verbose
+/**
+ * Register a new user.
+ *
+ * @param user - User registration data with email and password
+ * @param userService - Injected user service dependency
+ * @returns UserResponse with created user data
+ * @throws HTTPException 400 if email already exists
+ */
+async function register(user: UserCreate, userService: UserService): Promise<UserResponse>
+
+// ✅ Terse (type hints show the parameters and return type)
+/** Register new user. Raises 400 if email exists. */
+async function register(user: UserCreate, userService: UserService): Promise<UserResponse>
+```
+
+**When to add more detail:**
+- Complex algorithms that aren't obvious from code
+- Public APIs consumed by external teams
+- Security-critical functions with important constraints
+- Functions with surprising behavior or edge cases
+
+**Test docstrings:**
+```python
+# ❌ Verbose
+def test_register_login_protected_invalid_token_rejected():
+    """Test complete user journey: register -> login -> access protected -> invalid token rejected.
+
+    This test validates the entire authentication flow in sequence.
+    """
+
+# ✅ Terse (test name already describes it)
+def test_complete_auth_flow():
+    """Register → login → protected access → invalid token rejection."""
+```
+
 ### Naming Conventions
 - Use descriptive, meaningful names
 - Prefer `getUserById` over `get` or `fetchUser`

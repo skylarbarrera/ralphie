@@ -1,0 +1,92 @@
+# Architecture Decisions
+
+> High-level technical decisions for the Ralphie project.
+> Update this file when making significant architectural choices.
+
+## Technology Stack
+- Language: TypeScript
+- Runtime: Node.js 18+
+- UI Framework: React (Ink for CLI)
+- Testing: Vitest
+- Build: esbuild (via tsup)
+
+## Key Patterns
+
+### Harness Abstraction
+- All AI interactions go through the `Harness` interface
+- Currently: ClaudeCodeHarness wraps `claude` CLI
+- Future: Support for Codex, OpenCode, and other AI tools
+- Factory pattern: `createHarness(type)` for extensibility
+
+### Spec Format V2
+- Task-based specs with IDs (T001, T002, etc.)
+- Status tracking: pending → in_progress → passed/failed
+- Size estimation: S/M/L for planning
+- Deliverables as outcomes (not implementation details)
+- Verify commands for validation
+
+### Path Detection
+- Supports both old (specs/, STATE.txt) and new (.ralphie/) structures
+- Backward compatible via `detectStructure()` in paths.ts
+- Migration guide for users (MIGRATION.md)
+
+### Orchestration Model
+- Ralphie (Node.js) orchestrates agent calls
+- Agents are prompts, not spawned sub-agents
+- Ralphie calls `harness.run(prompt)` for each agent
+- Parallel execution via `Promise.all()` for reviews
+
+## Conventions
+
+### File Organization
+- `/src/commands/` - CLI command implementations
+- `/src/lib/` - Core functionality (spec parsing, path utils, etc.)
+- `/src/components/` - React Ink UI components
+- `/tests/` - Test files mirror src/ structure
+- `/templates/` - Init templates for new projects
+- `/skills/` - Claude Code skills (distributed with npm)
+
+### Testing
+- Unit tests for all library functions
+- Integration tests for CLI commands
+- Mock filesystem operations in tests
+- No snapshot tests (prefer explicit assertions)
+
+### Dependencies
+- Minimal external dependencies
+- Prefer Node.js built-ins where possible
+- Bundle CLI with esbuild for single-file distribution
+- Skills shipped separately (not bundled)
+
+## External Dependencies
+
+### Claude Code CLI
+- Primary harness for AI interactions
+- Assumes `claude` command is in PATH
+- Future: Support for other AI tools via harness abstraction
+
+### Context7 MCP (Optional)
+- External documentation lookup during research phase
+- Works with all harnesses (Claude, Codex, OpenCode support MCP)
+- Free tier available, API key optional
+- Configured in .ralphie/settings.json
+
+## Design Philosophy
+
+### The 80/20 Principle
+- 80% planning/research, 20% execution
+- Front-load work so iteration loop is simple
+- Thorough specs = fewer iteration failures
+- Turn failures into learnings for compound growth
+
+### Compound Engineering
+- Each unit of work makes subsequent units easier
+- Learnings reduce repeated mistakes
+- Tests auto-generated from failures
+- Rules added to prevent future issues
+
+### Simplicity
+- Keep iteration loop simple
+- Complex logic in orchestration (Node.js), not AI prompts
+- Clear separation: Ralphie orchestrates, AI follows prompts
+- No magic - explicit steps, clear flow

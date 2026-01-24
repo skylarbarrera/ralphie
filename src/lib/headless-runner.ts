@@ -1,11 +1,12 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { isSpecCompleteV2, getProgressV2 } from './spec-parser-v2.js';
+import { isSpecCompleteV2, getProgressV2, parseSpecV2 } from './spec-parser-v2.js';
 import { locateActiveSpec } from './spec-locator.js';
 import { getToolCategory } from './tool-categories.js';
 import type { HeadlessIterationResult } from './types.js';
 import type { HarnessName, HarnessEvent } from './harness/types.js';
 import { getHarness } from './harness/index.js';
+import { injectLearnings } from './prompts.js';
 import {
   emitStarted,
   emitIteration,
@@ -18,6 +19,14 @@ import {
   emitFailed,
   emitWarning,
 } from './headless-emitter.js';
+import {
+  recordTaskStatuses,
+  detectFailedToPassedTasks,
+  generateLearningFromFailure,
+  createLearning,
+  generateLearningCaptureInstructions,
+} from './learnings/index.js';
+import { getLogger, type IterationCompleteLog } from './logging/logger.js';
 
 export interface HeadlessRunOptions {
   prompt: string;
@@ -108,6 +117,66 @@ export async function runSingleIteration(
   let commitMessage: string | undefined;
   let lastError: Error | undefined;
 
+  // Track task status for logging
+  let currentTaskId: string | undefined;
+  let currentTaskTitle: string | undefined;
+  let taskStatusBefore: string | undefined;
+
+  // Search for learnings and inject into prompt
+  let promptToUse = options.prompt;
+  try {
+    const specResult = locateActiveSpec(options.cwd);
+    if (specResult && specResult.path) {
+      const spec = parseSpecV2(specResult.path);
+
+      // Check if we need to capture learnings from failed→passed tasks
+      const tasks = spec.tasks.map((t) => ({ id: t.id, status: t.status }));
+      const failedToPassedTasks = detectFailedToPassedTasks(options.cwd, tasks);
+
+      if (failedToPassedTasks.length > 0) {
+        // Inject learning capture instructions for the first failed→passed task
+        const taskId = failedToPassedTasks[0];
+        const task = spec.tasks.find((t) => t.id === taskId);
+
+        if (task) {
+          // Create stub learning file
+          const learningInput = generateLearningFromFailure({
+            taskId: task.id,
+            taskTitle: task.title,
+            errorMessage: 'Task failed in previous iteration',
+          });
+
+          const learningResult = createLearning(learningInput, options.cwd);
+
+          // Inject instructions to complete the learning
+          const instructions = generateLearningCaptureInstructions(
+            task.id,
+            task.title,
+            learningResult.path
+          );
+
+          promptToUse = `${options.prompt}\n\n${instructions}`;
+        }
+      }
+
+      // Find the first pending task to extract context for learnings search
+      const pendingTask = spec.tasks.find((t) => t.status === 'pending');
+
+      if (pendingTask) {
+        // Capture task info for logging
+        currentTaskId = pendingTask.id;
+        currentTaskTitle = pendingTask.title;
+        taskStatusBefore = pendingTask.status;
+
+        const deliverables = pendingTask.deliverables?.join('\n') || '';
+        promptToUse = injectLearnings(promptToUse, pendingTask.title, deliverables, options.cwd);
+      }
+    }
+  } catch (error) {
+    // If learnings search fails, just use the original prompt
+    // This is not critical to the iteration, so we continue
+  }
+
   const handleEvent = (event: HarnessEvent) => {
     switch (event.type) {
       case 'tool_start': {
@@ -146,9 +215,58 @@ export async function runSingleIteration(
     }
   };
 
+  // Helper to log iteration completion
+  const logIteration = (durationMs: number, error?: Error) => {
+    try {
+      const logger = getLogger(options.cwd);
+
+      // Get final task status
+      let taskStatusAfter = taskStatusBefore;
+      try {
+        const specResult = locateActiveSpec(options.cwd);
+        if (specResult && specResult.path && currentTaskId) {
+          const spec = parseSpecV2(specResult.path);
+          const task = spec.tasks.find((t) => t.id === currentTaskId);
+          if (task) {
+            taskStatusAfter = task.status;
+          }
+        }
+      } catch {
+        // If we can't get the final status, use the initial status
+      }
+
+      const logData: IterationCompleteLog = {
+        duration_ms: durationMs,
+        iteration_number: iteration,
+        task: {
+          id: currentTaskId || 'unknown',
+          title: currentTaskTitle || 'unknown',
+          status_before: taskStatusBefore || 'unknown',
+          status_after: taskStatusAfter || 'unknown',
+        },
+        steps: [
+          { action: 'tools_executed', tools_started: stats.toolsStarted, tools_completed: stats.toolsCompleted, tools_errored: stats.toolsErrored },
+          { action: 'file_operations', reads: stats.reads, writes: stats.writes },
+          { action: 'commands', commands: stats.commands },
+        ],
+        commit_hash: commitHash,
+      };
+
+      logger.log({
+        phase: 'iteration',
+        type: error ? 'error' : 'complete',
+        data: logData,
+        timestamp: new Date(),
+      });
+    } catch (err) {
+      // Don't fail the iteration if logging fails
+      console.warn('Failed to log iteration:', err);
+    }
+  };
+
   try {
     const result = await harness.run(
-      options.prompt,
+      promptToUse,
       {
         cwd: options.cwd,
         model: options.model,
@@ -160,20 +278,27 @@ export async function runSingleIteration(
       lastError = new Error(result.error);
     }
 
+    const durationMs = result.durationMs || Date.now() - startTime;
+    logIteration(durationMs, lastError);
+
     return {
       iteration,
-      durationMs: result.durationMs || Date.now() - startTime,
+      durationMs,
       stats,
       error: lastError,
       commitHash,
       commitMessage,
     };
   } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    const durationMs = Date.now() - startTime;
+    logIteration(durationMs, error);
+
     return {
       iteration,
-      durationMs: Date.now() - startTime,
+      durationMs,
       stats,
-      error: err instanceof Error ? err : new Error(String(err)),
+      error,
       commitHash,
       commitMessage,
     };
@@ -240,6 +365,16 @@ export async function executeHeadlessRun(
     }
 
     emitIterationDone(i, result.durationMs, result.stats);
+
+    // Record task statuses for next iteration (to detect failed→passed transitions)
+    try {
+      const spec = parseSpecV2(specPath);
+      const tasks = spec.tasks.map((t) => ({ id: t.id, status: t.status }));
+      recordTaskStatuses(options.cwd, tasks);
+    } catch (error) {
+      // Status tracking is not critical - log but continue
+      console.warn('[status-tracker] Failed to track task statuses:', error);
+    }
 
     // Check for stuck condition
     if (iterationsWithoutProgress >= options.stuckThreshold) {

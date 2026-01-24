@@ -1,5 +1,40 @@
 # Changelog
 
+## [1.2.0] - 2026-01-22
+
+### Added
+- **Skills.sh Integration**: Research phase now fetches domain expertise from [skills.sh](https://skills.sh) API
+  - Automatically detects tech stack (React, Next.js, Expo, FastAPI, etc.)
+  - Fetches 2-3 relevant skill guides (45+ rules for React best practices, etc.)
+  - Uses GitHub API to discover SKILL.md files in repositories
+  - Gracefully falls back to WebSearch if skills unavailable
+- **Parallel Research Execution**: Repository and best-practices research run concurrently (saves ~49s)
+- **Research Logging**: Structured logs in `.ralphie/logs/research/` with timestamps and agent status
+- **Iteration Logging**: Session logs in `.ralphie/logs/iterations/` for debugging and analysis
+- **`ralphie logs`**: New command to view iteration logs with filtering and tail support
+- **Terse Docstring Guidance**: Token-efficient documentation style (70-80% reduction vs Google/NumPy style)
+  - Type hints document parameters/returns instead of verbose Args/Returns sections
+  - Added to `.claude/CLAUDE.md` coding standards
+  - Applied to spec generator and iteration prompts
+
+### Changed
+- **Research Timeout**: Increased from 90s to 180s to accommodate skills.sh fetch + WebSearch fallback
+- **Research Agent Prompt**: Condensed from 280 lines to 189 lines (removed verbose logging instructions)
+- **Spec Generator**: Now includes terse docstring guidance in quality requirements
+- **Best Practices Researcher**: Streamlined skills.sh integration (96 lines → 8 lines of core logic)
+
+### Improved
+- **Research Quality**: Skills.sh provides vetted, framework-specific patterns (e.g., Vercel React Best Practices with 33k+ installs)
+- **Code Quality**: Generated code now uses terse docstrings, saving ~1,200 tokens per 50 functions
+- **Transparency**: Research process visible through emoji markers and structured logs
+- **Reliability**: GitHub API path discovery prevents skills.sh fetch failures from different repo structures
+
+### Technical
+- Research agents use raw GitHub URLs instead of git clone (15-20s speedup per skill)
+- Fallback patterns for common repo structures: `skills/{name}/`, `{org}/{category}/`, `main` vs `master` branches
+- Logging infrastructure supports multiple phases (research, spec, iterations)
+- All logging output saved to `.ralphie/logs/` with timestamped JSON format
+
 ## [1.1.0] - 2026-01-19
 
 ### Added

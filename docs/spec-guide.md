@@ -62,13 +62,34 @@ Goal: What this achieves when complete.
 
 ## Creating a SPEC
 
+Ralphie uses an **80/20 approach**: 80% of work happens during spec generation through deep research and analysis.
+
 ```bash
-# Autonomous (no interaction)
+# Full workflow: research → spec → analysis
 ralphie spec "REST API with user auth"
+
+# Skip research for simple projects (~$0.30 savings)
+ralphie spec --skip-research "Bug fix"
+
+# Skip analysis for well-defined tasks (~$0.15 savings)
+ralphie spec --skip-analyze "Quick task"
 
 # Interactive (with interview)
 # Use /ralphie-spec skill in Claude Code
 ```
+
+### The Research Phase
+
+When you run `ralphie spec`, two agents analyze your codebase in parallel (~60-90s):
+
+1. **repo-research-analyst** - Scans your codebase for patterns, conventions, architecture
+2. **best-practices-researcher** - Researches framework docs and best practices
+
+This research is injected into the spec generation prompt, ensuring the spec aligns with your existing code and follows best practices.
+
+Then **SpecFlow analysis** runs to identify edge cases and gaps in the generated spec.
+
+**Result:** A comprehensive, research-informed spec that anticipates problems before execution.
 
 ## Good Tasks
 

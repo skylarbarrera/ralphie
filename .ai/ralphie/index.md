@@ -253,3 +253,105 @@ Commit-anchored memory log. Each entry summarizes one completed task.
 - tests: 613 passing (all tests pass, no regressions)
 - notes: Ran full test suite to verify refactoring tasks T001-T005; all 613 tests passed with no failures; verified import paths working correctly with new module structure; no behavior changes from refactoring
 - next: Component refactor spec complete - all 6 tasks passed
+
+## dbf445d — feat: T001 restructure to .ralphie/ folder
+- files: MIGRATION.md, src/lib/paths.ts, src/lib/spec-locator.ts, src/commands/init.ts, src/lib/prompts.ts, templates/.ralphie/, tests/lib/paths.test.ts, tests/spec-locator.test.ts, tests/cli.test.tsx, tests/commands/run.test.ts
+- tests: 637 passing (18 new tests for paths module)
+- notes: Created .ralphie/ directory structure with specs/, learnings/, state.txt, llms.txt; added global ~/.ralphie/ with learnings/ and settings.json; backward compatible with old specs/ structure; migration detection shows MIGRATION.md guidance; all path utilities centralized in paths.ts
+- next: T005 - Add learnings search to iteration loop
+
+## f2a74e4 — feat: T005 add learnings search to iteration loop
+- files: src/lib/learnings-search.ts, tests/lib/learnings-search.test.ts, src/lib/prompts.ts, src/lib/headless-runner.ts, src/cli.tsx, specs/active/compound-learnings.md
+- tests: 659 passing (22 new tests for learnings-search module)
+- notes: Implemented comprehensive learnings search with YAML frontmatter parsing; keyword extraction from task title/deliverables; searches project learnings first, then global learnings; deduplication; formatLearningsForPrompt() generates markdown injection; injectLearnings() helper in prompts.ts; integrated into headless-runner.ts and cli.tsx resolvePrompt(); searches before calling harness.run() or rendering UI
+- next: T006 - Implement multi-agent review with cost tracking (requires T008 agent prompts first)
+
+## b4f5631 — chore: migrate Ralphie repo to .ralphie/ structure
+- files: .ralphie/specs/, .ralphie/state.txt, .ralphie/llms.txt, .ralphie/learnings/, .gitignore
+- tests: 659 passing (all tests pass after migration)
+- notes: Applied T001 migration to Ralphie's own repository; moved specs/ → .ralphie/specs/ and STATE.txt → .ralphie/state.txt using git mv (preserving history); created .ralphie/llms.txt with architecture decisions for TypeScript, harness abstraction, spec V2 format, path detection, orchestration model; created learnings subdirectories (build-errors, test-failures, runtime-errors, patterns); updated .gitignore to exclude .ralphie/state.txt; kept .ai/ralphie/ for development memory (not part of official Ralphie structure)
+- next: T008 - Create agent prompt library (foundation for T002, T003, T006)
+
+## 13179c9 — feat: T008 create agent prompt library
+- files: agents/ (8 agent prompts + README.md + SOURCE.md), .ralphie/specs/active/compound-learnings.md, .ai/ralphie/plan.md
+- tests: N/A (documentation and prompts)
+- notes: Created comprehensive agent library with 8 specialized prompts adapted from EveryInc/compound-engineering-plugin; Research agents (repo-research-analyst, best-practices-researcher); Review agents (security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer); Validation agent (spec-flow-analyzer); Replaced Compound tools with Ralphie tools (Grep, Glob, Read, WebFetch, WebSearch); Added Ralphie-specific sections for .ralphie/learnings/ and llms.txt; Expanded to comprehensive guides with examples; SOURCE.md documents mapping and adaptations; README.md explains agent system and Ralphie integration
+- next: T004 - Implement learnings capture with auto-upgrades (or T002/T003/T006 that depend on T008)
+
+## c28bbad — T004: Implement learnings capture with auto-upgrades
+- files: src/lib/learnings/{types,manager,status-tracker,prompt-template,index}.ts, src/lib/headless-runner.ts, tests/lib/learnings/{manager,status-tracker}.test.ts, .ralphie/learnings/patterns/learnings-system-architecture.md
+- tests: 28 new tests (17 manager + 11 status-tracker), 687 total pass
+- notes: Automatic learning capture when tasks go failed→passed; YAML frontmatter with category detection; global vs project scope; status tracking in .ralphie/.task-status.json; integration with headless runner; prompt template for AI to complete learnings
+- next: Continue with remaining compound-learnings tasks (T002, T003, T006, T007, T009, T010)
+
+## 079523e — docs: T010 add commit hash to agent source tracking
+- files: agents/SOURCE.md, .ralphie/specs/active/compound-learnings.md
+- tests: 687 passing (no code changes, documentation only)
+- notes: Added specific commit hash cb2485ff from upstream EveryInc/compound-engineering-plugin to SOURCE.md for accurate version tracking; verified all 8 agents correctly mapped; update instructions comprehensive and actionable
+- next: T002 - Enhance spec gen with deep research phase (or T003, T006 - all unblocked now)
+
+## 5060f42 — feat: T002 add deep research phase to spec generation
+- files: src/lib/research-orchestrator.ts, src/lib/spec-generator.ts, src/cli.tsx, templates/.ralphie/settings.json, tests/lib/research-orchestrator.test.ts, tests/lib/spec-generator.test.ts
+- tests: 699 passing (12 new for research-orchestrator), type check passes
+- notes: Created research orchestration system with loadAgentPrompt, runResearchAgent, conductResearch functions; uses repo-research-analyst and best-practices-researcher agent prompts from T008; research output saved to .ralphie/research-context.md; findings injected into spec gen prompt; --skip-research CLI flag; MCP configuration template; research failures non-fatal
+- next: T003 - Add SpecFlow analyzer for spec validation (or T006 - multi-agent review)
+
+## 2cd76e2 — feat: T003 add SpecFlow analyzer for spec validation
+- files: src/lib/spec-analyzer.ts, tests/lib/spec-analyzer.test.ts, src/lib/spec-generator.ts, src/cli.tsx, .ralphie/specs/active/compound-learnings.md
+- tests: 720 passing (21 new for spec-analyzer), type check passes
+- notes: Created analyzer orchestration with loadAnalyzerPrompt, runAnalyzer, refineSpec, analyzeSpec functions; uses spec-flow-analyzer agent prompt from T008; analysis runs AFTER spec generation automatically; output saved to .ralphie/analysis.md; autonomous mode runs auto-refinement when gaps found; interactive mode presents gaps without auto-fix; --skip-analyze CLI flag; analysis failures non-fatal
+- next: T006 - Implement multi-agent review with cost tracking (or T007 - CLI integration)
+
+## 2687688 — feat: T006 Implement multi-agent review with cost tracking
+- files: src/lib/{review,cost-tracker}.ts, src/lib/types.ts, src/cli.tsx, src/commands/run-interactive.tsx, tests/lib/{review,cost-tracker}.test.ts, tests/{cli,commands/run}.test.tsx
+- tests: 760 passing (40 new: 25 review + 15 cost-tracker), type check passes
+- notes: Multi-agent review system with parallel execution via Promise.all(); 5 review agents: security-sentinel, performance-oracle, architecture-strategist, typescript-reviewer, python-reviewer; language detection (TypeScript/Python); cost tracking with custom pricing support; severity parsing (Critical/High→P1, Medium→P2, Low→P3); P1 blocking (unless --force); review results saved to .ralphie/review.md; --review and --force CLI flags for both interactive and headless modes
+- next: T007 - Integrate orchestration into CLI commands (or T009 - Update /ralphie-spec skill)
+
+## 73524de — docs: T007 integrate orchestration into CLI with 80/20 workflow docs
+- files: README.md, .ralphie/specs/active/compound-learnings.md, .ai/ralphie/{plan,index}.md, .ralphie/state.txt
+- tests: 760 passing (all tests pass, no code changes)
+- notes: Added comprehensive 80/20 philosophy section to README with visual workflow diagram (80% planning / 20% execution); Compound Engineering attribution to EveryInc plugin; three pillars (Deep Research, Multi-Agent Review, Learnings System); directory structure docs (.ralphie/ and ~/.ralphie/); learnings YAML format examples; updated commands table with new flags (--review, --force, --skip-research, --skip-analyze); verified all orchestration already complete from T002-T006
+- next: T009 - Update /ralphie-spec skill for new flow
+
+## f9fd4e2 — feat: T009 update ralphie-spec skill for 80/20 workflow
+- files: skills/ralphie-spec/SKILL.md, .ralphie/specs/active/compound-learnings.md, .ai/ralphie/plan.md
+- tests: N/A (documentation only, no code changes)
+- notes: Enhanced /ralphie-spec skill with research and analysis integration; added Step 0 (check .ralphie/research-context.md), Step 6 (check .ralphie/analysis.md); updated workflow to include research and analysis phases; added 80/20 Integration section; updated output path to .ralphie/specs/active/; enhanced presentation summary to include research findings and analysis results; skill remains self-contained (reads outputs, doesn't call harness); follows 80/20 philosophy with research/analysis as part of 80% planning
+- next: Compound learnings spec complete - all tasks passed
+
+## b6324a2 — chore: move compound-learnings spec to completed
+- files: .ralphie/specs/completed/2026-01-21-compound-learnings.md (moved from active/), .ralphie/state.txt
+- tests: N/A (administrative move)
+- notes: All 10 tasks in compound-learnings spec completed and marked as passed (T001-T010); moved spec from active/ to completed/ directory; updated state.txt with completion summary; compound engineering features fully integrated: restructure to .ralphie/, deep research phase, SpecFlow analyzer, learnings capture system, learnings search, multi-agent review with cost tracking, CLI orchestration, agent prompt library (8 agents from Compound), updated /ralphie-spec skill, agent update tracking
+- next: No active specs remaining - project ready for new work or specs
+
+## 218c940 — feat: T001 audit current code quality output
+- files: .ralphie/audit-results.md, .ralphie/specs/active/config-validation-test.md, .ralphie/plan.md, .ralphie/specs/active/senior-engineer-output.md
+- tests: N/A (audit task, no code changes)
+- notes: Comprehensive audit of Ralphie's code generation quality; analyzed learnings-search.ts, cost-tracker.ts, research-orchestrator.ts; Grade B+ (good fundamentals, missing best practices); strengths: excellent test coverage (~95%), strong TypeScript, good separation of concerns; weaknesses: manual JSON.parse instead of Zod, inconsistent error handling; key gap: not recommending best-in-class libraries; created audit-results.md with specific code examples and baseline metrics; created config-validation-test.md for future testing
+- next: T003 - Add architecture quality checks to review agents
+
+## 85ca11e — feat: T003 add architecture quality checks to review agents
+- files: agents/architecture-strategist.md, tests/agents/architecture-violations-test.md, .ralphie/specs/active/senior-engineer-output.md, .ralphie/plan.md
+- tests: N/A (enhanced agent prompts, test cases documented)
+- notes: Enhanced architecture-strategist agent based on T001 audit findings; added "Validation & Parsing" section (TypeScript/JavaScript and Python); added "Error Handling Consistency" section; flags manual JSON.parse without schema validation; flags YAML parsing with type assertions; recommends Zod/io-ts for TypeScript, Pydantic for Python; detects mixed error patterns (throw vs null vs undefined); added architectural smells #8 (Manual Validation) and #9 (Inconsistent Errors); updated verification checklist; created architecture-violations-test.md with 5 intentional violations for validation
+- next: T002 or other tasks in senior-engineer-output spec
+
+## ceed9a6 — feat: T005 add security checks to validation
+- files: src/lib/prompts.ts, tests/agents/security-violations-test.md, tests/agents/security-sentinel.test.ts, .ralphie/t005-verification.md, .ralphie/specs/active/senior-engineer-output.md, .ralphie/plan.md
+- tests: 22 new tests in security-sentinel.test.ts (all passing)
+- notes: Enhanced iteration prompts (DEFAULT_PROMPT and GREEDY_PROMPT) with comprehensive security checklist covering input validation, SQL injection prevention, XSS protection, secrets management, secure defaults, and authorization checks; created security-violations-test.md with 6 intentional vulnerability categories (SQL injection, XSS, hardcoded secrets, missing input validation, insecure session config, missing auth checks); added automated test suite verifying security-sentinel agent detects vulnerabilities, assigns correct severity, provides remediation recommendations, and maps to OWASP Top 10; security-sentinel agent already integrated in review system (runs with --review flag); P1 issues block iteration unless --force used; documented verification in t005-verification.md
+- next: T006 - Add performance awareness to implementation
+
+## 6d81aa8 — feat: T006 add performance awareness to implementation
+- files: src/lib/prompts.ts, tests/lib/prompts.test.ts, .ralphie/specs/active/senior-engineer-output.md, .ralphie/plan.md
+- tests: 13 new tests in prompts.test.ts (all passing)
+- notes: Added Performance Guidelines section to DEFAULT_PROMPT and GREEDY_PROMPT; covers N+1 query prevention (eager loading, joins, batching), appropriate data structures (Set for lookups, Map for caching), memory management (streaming, pagination, cleanup), database indexes (frequently queried columns, foreign keys), algorithm complexity (avoid O(n²) in hot paths); emphasizes avoiding obvious performance mistakes, not premature optimization; performance-oracle agent already integrated in review system; comprehensive test suite verifies all guidelines present in both prompts
+- next: T009 - Document senior engineer code standards
+
+## e2d60b9 — docs: T009 document senior engineer code standards
+- files: docs/code-quality-standards.md, README.md, .ralphie/specs/active/senior-engineer-output.md, .ralphie/plan.md
+- tests: N/A (documentation)
+- notes: Created comprehensive code-quality-standards.md covering what makes senior engineer code, tool selection criteria (best-in-class first with evaluation framework), architecture principles (separation of concerns, typed interfaces, dependency direction), testing requirements (80% coverage, unit/integration/e2e), security checklist (all OWASP categories), performance guidelines (database, data structures, memory, algorithms), and 3 detailed examples (config loading, user registration, database queries) showing good vs bad implementations; added link to README documentation section; codifies Ralphie's code quality goals
+- next: Tasks T005, T006, T009 complete - 3 of 3 selected tasks done
